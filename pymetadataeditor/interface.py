@@ -1,12 +1,11 @@
 import warnings
 from json import JSONDecodeError
 from numbers import Number
-from typing import Annotated, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import pandas as pd
 import requests
-from pydantic import BaseModel, ConfigDict, PrivateAttr, UrlConstraints, model_validator
-from pydantic_core import Url
+from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, PrivateAttr, SecretStr, model_validator
 from requests.exceptions import HTTPError, SSLError
 
 import pymetadataeditor.schemas.survey_schema as sms
@@ -48,22 +47,25 @@ class MetadataEditor(BaseModel):
 
     model_config = ConfigDict(extra="forbid", validate_assignment=True)
 
-    api_url: Annotated[
-        Url,
-        UrlConstraints(max_length=2083, allowed_schemes=["https"]),
-    ]
-    api_key: str
+    api_url: AnyHttpUrl
+    api_key: SecretStr = Field(repr=False)
+    allow_unsecure: bool = Field(
+        default=False,
+        description="API urls that begin HTTPS are favoured. Set allow_unsecure=True to use of the less secure HTTP",
+    )
     _metadata_types: dict = PrivateAttr(
         default={"timeseries": tss.TimeseriesSchema, "survey": sms.SurveyMicrodataSchema}
     )
 
     @model_validator(mode="after")
     def check_endpoint_accessible(self):
-        self.list_projects()
-        return self
-
-    # def get_api_key(self) -> str:
-    #     return self.api_key
+        if str(self.api_url).startswith("https") or self.allow_unsecure:
+            self.list_projects()
+            return self
+        else:
+            raise ValueError(
+                "URL scheme should be 'https'. To allow the less secure use of 'http', set allow_unsecure=True"
+            )
 
     def _request(
         self, method: str, pth: str, json: Optional[MetadataDict] = None, id: Optional[Union[int, str]] = None
@@ -97,7 +99,9 @@ class MetadataEditor(BaseModel):
 
         try:
             response = None
-            response = requests.request(method, url, headers={"x-api-key": self.api_key}, **request_kwargs)
+            response = requests.request(
+                method, url, headers={"x-api-key": self.api_key.get_secret_value()}, **request_kwargs
+            )
             response.raise_for_status()
         except (HTTPError, SSLError) as e:
             if response is None or response.status_code == 404:
@@ -373,8 +377,7 @@ class MetadataEditor(BaseModel):
 
         pth = "editor/delete/{}"
         try:
-            response = self._post_request(pth=pth, id=id)
-            response.json()
+            self._post_request(pth=pth, id=id)
         except JSONDecodeError:
             pass
 

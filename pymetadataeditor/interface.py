@@ -1,7 +1,7 @@
 import warnings
 from json import JSONDecodeError
-from numbers import Number
-from typing import Dict, List, Optional, Union
+from ssl import SSLError as ssl_SSLError
+from typing import Callable, Dict, List, Optional, Union
 
 import pandas as pd
 import requests
@@ -17,7 +17,10 @@ warnings.filterwarnings(
     "ignore", category=UserWarning, module="pydantic"
 )  # suppresses warning when metadata passed as dict instead of a pydantic object
 
-MetadataDict = Dict[str, Union[str, Number, "MetadataDict", List["MetadataDict"]]]
+MetadataDict = Dict[
+    str,
+    Union[str, bytes, int, float, SchemaBaseModel, "MetadataDict", List["MetadataDict"], List[SchemaBaseModel], None],
+]
 
 
 class DeleteNotAppliedError(Exception):
@@ -49,9 +52,14 @@ class MetadataEditor(BaseModel):
 
     api_url: AnyHttpUrl
     api_key: SecretStr = Field(repr=False)
-    allow_unsecure: bool = Field(
+    allow_http: bool = Field(
         default=False,
-        description="API urls that begin HTTPS are favoured. Set allow_unsecure=True to use of the less secure HTTP",
+        description="API urls that begin HTTPS are favoured. Set allow_http=True to use of the less secure HTTP",
+    )
+    verify_ssl: bool = Field(
+        default=True,
+        description="Calls to the API are authenticated with an SSL certificate. "
+        "Set verify_ssl=False to remove this requirement",
     )
     _metadata_types: dict = PrivateAttr(
         default={"timeseries": tss.TimeseriesSchema, "survey": sms.SurveyMicrodataSchema}
@@ -59,7 +67,7 @@ class MetadataEditor(BaseModel):
 
     @model_validator(mode="after")
     def check_endpoint_accessible(self):
-        if str(self.api_url).startswith("https") or self.allow_unsecure:
+        if str(self.api_url).startswith("https") or self.allow_http:
             self.list_projects()
             return self
         else:
@@ -96,14 +104,23 @@ class MetadataEditor(BaseModel):
             assert id is not None, "If passing a url format, an id must be passed"
             pth = pth.format(id)
         url = str(self.api_url).strip("/") + "/" + pth.strip("/")
-
+        # print(f"accessing {url}")
         try:
             response = None
             response = requests.request(
-                method, url, headers={"x-api-key": self.api_key.get_secret_value()}, **request_kwargs
+                method,
+                url,
+                verify=self.verify_ssl,
+                headers={"x-api-key": self.api_key.get_secret_value()},
+                **request_kwargs,
             )
             response.raise_for_status()
-        except (HTTPError, SSLError) as e:
+        except (SSLError, ssl_SSLError) as e:
+            raise SSLError(
+                f"Usually this means the admin of {self.api_url} has not verified an SSL certificate.\n"
+                f"You can bypass the requirement by setting MetadataEditor.verify_ssl=False.\n{e}"
+            ) from None
+        except HTTPError as e:
             if response is None or response.status_code == 404:
                 error_msg = (
                     f"Page not found. Try checking the URL.\nGenerally the required URL looks like "
@@ -372,10 +389,28 @@ class MetadataEditor(BaseModel):
         Raises:
             DeleteNotAppliedError: This can be the result of system admins blocking data deletion
         """
-        # first check that the project is there to be deleted
-        self.get_project_by_id(id=id)
-
         pth = "editor/delete/{}"
+        self._delete_by_id(pth=pth, id=id, checker_fn=self.get_project_by_id)
+
+    def delete_collection_by_id(self, id: int):
+        """
+        Checks the collection exists, deletes it, then checks it was deleted.
+
+        Args:
+            id (int): the id of the colection.
+
+        Raises:
+            DeleteNotAppliedError: This can be the result of system admins blocking data deletion
+        """
+        pth = "collections/delete/{}"
+        self._delete_by_id(pth=pth, id=id, checker_fn=self.get_collection_by_id)
+
+    def _delete_by_id(self, pth: str, id: int, checker_fn: Callable[[int], pd.Series]):
+        """
+        Internal, generic method for deleting either collections or projects
+        """
+        # first check that the project/collection is there to be deleted
+        checker_fn(id)
         try:
             self._post_request(pth=pth, id=id)
         except JSONDecodeError:
@@ -383,7 +418,7 @@ class MetadataEditor(BaseModel):
 
         # check that the entity was deleted
         try:
-            self.get_project_by_id(id=id)
+            checker_fn(id)
         except PermissionError:
             pass  # evidently the entity was deleted because now it can't be found
         else:
@@ -715,3 +750,60 @@ class MetadataEditor(BaseModel):
         self._post_request(
             post_request_template_path, id=id, metadata=md.model_dump(exclude_none=True, exclude_unset=True)
         )
+
+    def list_collections(self) -> pd.DataFrame:
+        """
+        Lists all the collections associated with your API key.
+
+        Returns:
+            pd.DataFrame: Collections sorted by the date on which they were created
+        """
+        response = self._get_request("collections")
+        if "collections" not in response or len(response["collections"]) == 0:
+            return pd.DataFrame([], columns=["id", "title", "created"]).set_index("id")
+        return pd.DataFrame(response["collections"]).set_index("id").sort_values("created")
+
+    def get_collection_by_id(self, id: int) -> pd.Series:
+        """
+        Args:
+            id (int): the id of the collection.
+
+        Raises:
+            Exception: You don't have permission to access this project - often this means the id is incorrect
+        """
+        collection_data = self._get_request("collections/{}", id=id)
+        if "collection" not in collection_data:
+            raise ValueError(f"API call was good but collection data missing from: {collection_data}")
+        return pd.Series(collection_data["collection"])
+
+    def create_collection(self, title: str, description: str):
+        """
+        Creates a new collection with the specified title and description.
+
+        Args:
+            title (str): The title of the collection.
+            description (str): The description of the collection.
+        """
+        assert title != "", "The collection must have a title but an empty string was passed"
+        self._post_request("collections", metadata={"title": title, "description": description})
+
+    def update_collection(self, id: int, title: Optional[str] = None, description: Optional[str] = None):
+        """
+            Updates the specified collection with a new title and/or description.
+
+        Args:
+            id (int): The unique identifier of the collection to update.
+            title (Optional[str]): The new title of the collection. Defaults to None.
+            description (Optional[str]): The new description of the collection. Defaults to None.
+
+        Raises:
+            Assertion error if both title and description are None, since we must update one or the other.
+        """
+        # todo(gblackadder): Is it clear this means update the title/description and not what data is in the collection?
+        assert title is not None or description is not None, "can update title or description or both, but not neither"
+        metadata = {}
+        if title is not None:
+            metadata["title"] = title
+        if description is not None:
+            metadata["description"] = description
+        self._post_request("collections/update/{}", id=id, metadata=metadata)

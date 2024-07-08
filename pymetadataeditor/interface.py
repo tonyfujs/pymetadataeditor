@@ -131,7 +131,7 @@ class MetadataEditor(BaseModel):
             elif response.status_code == 403:
                 raise PermissionError("Access to that URL is denied. " "Check that the API key is correct") from None
             elif response.status_code == 400 and id is not None:
-                raise PermissionError(f"Access to this id is denied. Check that the id '{id}' is correct") from None
+                raise PermissionError(f"Access to this id is denied. Check that '{id}' is correct") from None
             else:
                 raise Exception(f"Status Code: {response.status_code}, Response: {response.text}") from e
         return response.json()
@@ -405,7 +405,7 @@ class MetadataEditor(BaseModel):
         pth = "collections/delete/{}"
         self._delete_by_id(pth=pth, id=id, checker_fn=self.get_collection_by_id)
 
-    def _delete_by_id(self, pth: str, id: int, checker_fn: Callable[[int], pd.Series]):
+    def _delete_by_id(self, pth: str, id: Union[int, str], checker_fn: Callable[[int], pd.Series]):
         """
         Internal, generic method for deleting either collections or projects
         """
@@ -452,6 +452,9 @@ class MetadataEditor(BaseModel):
             additional (Optional[Dictionary]): Any other custom metadata not covered by the schema. A dictionary.
                 Defaults to None.
 
+        Returns:
+            int: the id of the newly created metadata
+
         Examples:
         >>> from pymetadataeditor.schemas import (SeriesDescription,
         ...                                       MetadataInformation,
@@ -483,7 +486,7 @@ class MetadataEditor(BaseModel):
             "tags": tags,
             "additional": additional,
         }
-        self._create_and_log(metadata, "timeseries")
+        return self._create_and_log(metadata, "timeseries")
 
     def create_and_log_survey_microdata(
         self,
@@ -537,6 +540,8 @@ class MetadataEditor(BaseModel):
             additional : Optional[Dict[str, Any]]
                 Any additional metadata to be associated with the survey data.
 
+        Returns:
+            int: the id of the newly created metadata
 
         >>> from pymetadataeditor.schemas import (
         ...     AccessPolicy,
@@ -594,7 +599,7 @@ class MetadataEditor(BaseModel):
             "embeddings": embeddings,
             "additional": additional,
         }
-        self._create_and_log(metadata, "survey")
+        return self._create_and_log(metadata, "survey")
 
     def _create_and_log(self, metadata: MetadataDict, metadata_type: str):
         assert metadata_type in self._metadata_types, (
@@ -605,7 +610,8 @@ class MetadataEditor(BaseModel):
         md = self._metadata_types[metadata_type](**metadata)
 
         post_request_pth = f"/editor/create/{metadata_type}"
-        self._post_request(pth=post_request_pth, metadata=md.model_dump(exclude_none=True, exclude_unset=True))
+        ret = self._post_request(pth=post_request_pth, metadata=md.model_dump(exclude_none=True, exclude_unset=True))
+        return ret["id"]
 
     def update_timeseries_by_id(
         self,
@@ -768,6 +774,9 @@ class MetadataEditor(BaseModel):
         Args:
             id (int): the id of the collection.
 
+        Returns:
+            (pd.Series): a pandas series of the collection information
+
         Raises:
             Exception: You don't have permission to access this project - often this means the id is incorrect
         """
@@ -783,9 +792,13 @@ class MetadataEditor(BaseModel):
         Args:
             title (str): The title of the collection.
             description (str): The description of the collection.
+
+        Returns:
+            (int): The id of the newly created collection
         """
         assert title != "", "The collection must have a title but an empty string was passed"
-        self._post_request("collections", metadata={"title": title, "description": description})
+        ret = self._post_request("collections", metadata={"title": title, "description": description})
+        return ret["collection"]
 
     def update_collection(self, id: int, title: Optional[str] = None, description: Optional[str] = None):
         """
@@ -807,3 +820,62 @@ class MetadataEditor(BaseModel):
         if description is not None:
             metadata["description"] = description
         self._post_request("collections/update/{}", id=id, metadata=metadata)
+
+    def list_templates(self) -> pd.DataFrame:
+        """
+        Retrieves templates, both standard and any custom templates
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the templates. If none are found, an empty DataFrame is returned.
+        """
+        response = self._get_request("templates")
+        if "templates" not in response or len(response["templates"]) == 0:
+            return pd.DataFrame([], columns=["uid", "template_type", "name", "template"])
+        else:
+            return pd.DataFrame([v_item for _, v in response["templates"].items() for v_item in v])
+
+    def get_template_by_uid(self, uid: str) -> pd.Series:
+        """
+        Retrieves given template by *UID*, not id.
+
+        Args:
+            uid (str): The Unique Identifier of the template to retrieve.
+
+        Returns:
+            pd.Series: A pandas Series containing the template details.
+        """
+        response = self._get_request("templates/{}", uid)
+        if "result" not in response:
+            raise KeyError(
+                f"No template found although API call appeared successful for that UPI.\nResponse: {response}"
+            )
+        else:
+            return pd.Series(response["result"], name=response["result"]["name"])
+
+    def set_template_for_collection(self, collection_id: int, template_uid: str):
+        """
+        Set the specified template to be used for all metadata of its type (for example survey, timeseries, or
+            document metadata) in the collection.
+
+        Args:
+            collection_id (int): the id of the collection.
+            template_uid (str): The Unique Identifier of the template to apply to the collection.
+        """
+        # check collection exists
+        self.get_collection_by_id(collection_id)
+        template = self.get_template_by_uid(uid=template_uid)
+        template_type = template["data_type"]
+        self._post_request(
+            "collections/template",
+            metadata={"collection_id": collection_id, "template_uid": template_uid, "project_type": template_type},
+        )
+
+    def delete_template(self, uid: str):
+        """
+        Deletes the given template.
+
+        Args:
+            uid (str): The Unique Identifier of the template to delete.
+
+        """
+        self._delete_by_id("templates/delete/{}", id=uid, checker_fn=self.get_template_by_uid)

@@ -184,7 +184,7 @@ def test_get_project_by_id(monkeypatch, metadata_editor):
     monkeypatch.setattr(requests, "request", mock_response)
     with pytest.raises(Exception) as e:
         metadata_editor.get_project_by_id(1)
-    assert str(e.value) == "Access to this id is denied. Check that the id '1' is correct"
+    assert str(e.value) == "Access to this id is denied. Check that '1' is correct"
 
     # id is good
     project = {"status": "success", "project": {"id": "1", "created": "2024-06-11T09:58:14-04:00"}}
@@ -200,7 +200,7 @@ def test_get_project_by_id(monkeypatch, metadata_editor):
 
 def test_create_and_log_timeseries(monkeypatch, metadata_editor):
     def mock_response(*args, **kwargs):
-        return MockResponse(http_status_code=200)
+        return MockResponse(http_status_code=200, json_data={"id": 1})
 
     monkeypatch.setattr(requests, "request", mock_response)
 
@@ -214,10 +214,12 @@ def test_create_and_log_timeseries(monkeypatch, metadata_editor):
             idno="GB123", series_description={"doi": "string", "name": "Gordons Test", "display_name": "string"}
         )
 
-    metadata_editor.create_and_log_timeseries(
+    # call is good
+    timeseries_id = metadata_editor.create_and_log_timeseries(
         idno="GB123",
         series_description={"idno": "string", "doi": "string", "name": "Gordons Test", "display_name": "string"},
     )
+    assert timeseries_id == 1
 
     def mock_response(*args, **kwargs):
         return MockResponse(http_status_code=400)
@@ -232,7 +234,7 @@ def test_create_and_log_timeseries(monkeypatch, metadata_editor):
 
 def test_create_and_log_survey_microdata(monkeypatch, metadata_editor):
     def mock_response(*args, **kwargs):
-        return MockResponse(http_status_code=200)
+        return MockResponse(http_status_code=200, json_data={"id": 1})
 
     monkeypatch.setattr(requests, "request", mock_response)
 
@@ -243,12 +245,13 @@ def test_create_and_log_survey_microdata(monkeypatch, metadata_editor):
     with pytest.raises(ValueError):
         metadata_editor.create_and_log_survey_microdata(study_desc={})
 
-    metadata_editor.create_and_log_survey_microdata(
+    survey_id = metadata_editor.create_and_log_survey_microdata(
         study_desc={
             "title_statement": {"idno": "1", "title": "survey1"},
             "study_info": {"nation": [{"name": "nation_name"}]},
         }
     )
+    assert survey_id == 1
 
 
 def test_update_timeseries_by_id(monkeypatch, metadata_editor):
@@ -268,7 +271,7 @@ def test_update_timeseries_by_id(monkeypatch, metadata_editor):
         metadata_editor.update_timeseries_by_id(
             1, series_description=series_description, metadata_information=metadata_information
         )
-    assert str(e.value) == "Access to this id is denied. Check that the id '1' is correct"
+    assert str(e.value) == "Access to this id is denied. Check that '1' is correct"
 
     # id is good
     def mock_response(*args, **kwargs):
@@ -303,7 +306,7 @@ def test_update_survey_microdata_by_id(monkeypatch, metadata_editor):
     monkeypatch.setattr(requests, "request", mock_response)
     with pytest.raises(Exception) as e:
         metadata_editor.update_survey_microdata_by_id(1, repositoryid="123abc")
-    assert str(e.value) == "Access to this id is denied. Check that the id '1' is correct"
+    assert str(e.value) == "Access to this id is denied. Check that '1' is correct"
 
     # id is good but type of existing data is listed as timeseries even though the user is trying to update a survey
     def mock_response(*args, **kwargs):
@@ -587,3 +590,108 @@ def test_update_collection(monkeypatch, metadata_editor):
 
     with pytest.raises(AssertionError):
         metadata_editor.update_collection(id=1)
+
+
+def test_list_templates(monkeypatch, metadata_editor):
+    # there are no templates
+    def mock_response(*args, **kwargs):
+        return MockResponse(http_status_code=200, json_data={})
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    actual = metadata_editor.list_templates()
+    assert isinstance(actual, pd.DataFrame)
+    assert len(actual) == 0
+
+    # templates is empty
+    def mock_response(*args, **kwargs):
+        return MockResponse(http_status_code=200, json_data={"templates": {}})
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    actual = metadata_editor.list_templates()
+    assert isinstance(actual, pd.DataFrame)
+    assert len(actual) == 0
+
+    # templates is empty but does have some keys
+    def mock_response(*args, **kwargs):
+        return MockResponse(http_status_code=200, json_data={"templates": {"core": []}})
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    actual = metadata_editor.list_templates()
+    assert isinstance(actual, pd.DataFrame)
+    assert len(actual) == 0
+
+    # has templates
+    def mock_response(*args, **kwargs):
+        return MockResponse(
+            http_status_code=200,
+            json_data={
+                "templates": {
+                    "core": [
+                        {"uid": "example", "template_type": "core", "name": "example", "template": "example_template"}
+                    ]
+                }
+            },
+        )
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    actual = metadata_editor.list_templates()
+    assert isinstance(actual, pd.DataFrame)
+    assert len(actual) == 1
+    assert actual.iloc[0].uid == "example"
+
+
+def test_get_template_by_uid(monkeypatch, metadata_editor):
+    # call good but no result
+    def mock_response(*args, **kwargs):
+        return MockResponse(http_status_code=200, json_data={})
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    with pytest.raises(KeyError):
+        metadata_editor.get_template_by_uid("example")
+
+    # template exists
+    def mock_response(*args, **kwargs):
+        return MockResponse(http_status_code=200, json_data={"result": {"uid": "example", "name": "example name"}})
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    actual = metadata_editor.get_template_by_uid("example")
+    assert actual.name == "example name"
+
+
+def test_set_template_for_collection(monkeypatch, metadata_editor):
+    # This test also feel unsatisfying since it's testing the implementation not the funcationality.
+    # An integration test is surely required
+
+    # no such collection
+    def get_collection_by_id(*args, **kwargs):
+        raise PermissionError("Access to this id is denied")
+
+    monkeypatch.setattr(MetadataEditor, "get_collection_by_id", get_collection_by_id)
+    with pytest.raises(PermissionError):
+        metadata_editor.set_template_for_collection(1, "example_uid")
+
+    # no such template
+    def get_collection_by_id(*args, **kwargs):
+        pass
+
+    monkeypatch.setattr(MetadataEditor, "get_collection_by_id", get_collection_by_id)
+
+    def get_template_by_uid(*args, **kwargs):
+        raise PermissionError("Access to this id is denied")
+
+    monkeypatch.setattr(MetadataEditor, "get_template_by_uid", get_template_by_uid)
+
+    with pytest.raises(PermissionError):
+        metadata_editor.set_template_for_collection(1, "example_uid")
+
+    # all good
+    def get_template_by_uid(*args, **kwargs):
+        return pd.Series({"data_type": "survey"})
+
+    monkeypatch.setattr(MetadataEditor, "get_template_by_uid", get_template_by_uid)
+
+    def mock_response(*args, **kwargs):
+        return MockResponse(http_status_code=200, json_data={})
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    metadata_editor.set_template_for_collection(1, "example_uid")

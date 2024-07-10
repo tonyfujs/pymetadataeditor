@@ -703,39 +703,25 @@ def test_get_template_by_uid(monkeypatch, metadata_editor):
 
 
 def test_set_template_for_collection(monkeypatch, metadata_editor):
-    # This test also feel unsatisfying since it's testing the implementation not the funcationality.
-    # An integration test is surely required
-
-    # no such collection
-    def get_collection_by_id(*args, **kwargs):
-        raise PermissionError("Access to this id is denied")
-
-    monkeypatch.setattr(MetadataEditor, "get_collection_by_id", get_collection_by_id)
-    with pytest.raises(PermissionError):
-        metadata_editor.set_template_for_collection(1, "example_uid")
-
-    # no such template
-    def get_collection_by_id(*args, **kwargs):
-        pass
-
-    monkeypatch.setattr(MetadataEditor, "get_collection_by_id", get_collection_by_id)
-
-    def get_template_by_uid(*args, **kwargs):
-        raise PermissionError("Access to this id is denied")
-
-    monkeypatch.setattr(MetadataEditor, "get_template_by_uid", get_template_by_uid)
-
-    with pytest.raises(PermissionError):
-        metadata_editor.set_template_for_collection(1, "example_uid")
-
-    # all good
-    def get_template_by_uid(*args, **kwargs):
-        return pd.Series({"data_type": "survey"})
-
-    monkeypatch.setattr(MetadataEditor, "get_template_by_uid", get_template_by_uid)
-
     def mock_response(*args, **kwargs):
-        return MockResponse(http_status_code=200, json_data={})
+        return MockResponse(
+            http_status_code=200,
+            json_data={
+                "status": "success",
+                "result": {"updated": [{"id": "1607", "type": "survey"}, {"id": "1502", "type": "survey"}]},
+            },
+        )
 
     monkeypatch.setattr(requests, "request", mock_response)
-    metadata_editor.set_template_for_collection(1, "example_uid")
+
+    # bad project type
+    with pytest.raises(AssertionError):
+        metadata_editor.set_template_for_collection(1, "example_uid", "bad_template_type")
+
+    # good call
+    updates = metadata_editor.set_template_for_collection(1, "example_uid", "survey")
+    assert len(updates) == 2
+    assert "1607" in list(updates.index)
+    assert "1502" in list(updates.index)
+    assert updates["type"].iloc[0] == "survey"
+    assert updates["type"].iloc[1] == "survey"

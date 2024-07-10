@@ -1,7 +1,7 @@
 import warnings
 from json import JSONDecodeError
 from ssl import SSLError as ssl_SSLError
-from typing import Callable, Dict, List, Optional, Union
+from typing import Callable, Dict, Iterable, List, Optional, Union
 
 import pandas as pd
 import requests
@@ -131,10 +131,14 @@ class MetadataEditor(BaseModel):
             elif response.status_code == 403:
                 raise PermissionError("Access to that URL is denied. " "Check that the API key is correct") from None
             elif response.status_code == 400 and id is not None:
-                raise PermissionError(f"Access to this id is denied. Check that '{id}' is correct") from None
+                raise PermissionError(f"Access to this id is denied. Check that '{id}' is correct") from e
             else:
                 raise Exception(f"Status Code: {response.status_code}, Response: {response.text}") from e
-        return response.json()
+        try:
+            json_response = response.json()
+        except JSONDecodeError as e:
+            raise JSONDecodeError(response) from e
+        return json_response
 
     def _get_request(self, pth: str, id: Optional[Union[int, str]] = None) -> Dict:
         """
@@ -211,174 +215,6 @@ class MetadataEditor(BaseModel):
         else:
             return metadata_object.model_dump(exclude_none=exclude_unset, exclude_unset=exclude_unset)
 
-    @staticmethod
-    def skeleton_timeseries_metadata(
-        idno: str, name: str, as_object: bool = False
-    ) -> Union[SchemaBaseModel, MetadataDict]:
-        """
-        Create outline timeseries metadata, either as a dictionary or an object, with the minimally required information
-
-        Args:
-            idno (str): The unique identifier for the timeseries.
-            name (str): The name of the timeseries.
-            as_object (bool): If True, return the metadata as a pydantic object.
-                Otherwise, return a dictionary instance. Defaults to False.
-
-        Returns:
-            Union[SchemaBaseModel, Dict]: The timeseries metadata as either a dictionary or as an object.
-        """
-        ts = tss.TimeseriesSchema(
-            idno=idno,
-            metadata_information=tss.MetadataInformation(
-                producers=[tss.Producer()], version_statement=tss.VersionStatement()
-            ),
-            series_description=tss.SeriesDescription(
-                idno=idno,
-                name=name,
-                authoring_entity=[tss.AuthoringEntityItem(name="")],
-                version_statement=tss.VersionStatement(),
-                aliases=[tss.Alias()],
-                alternate_identifiers=[tss.AlternateIdentifier(identifier="")],
-                languages=[tss.Language()],
-                dimensions=[tss.Dimension(label="")],
-                definition_references=[tss.DefinitionReference(uri="")],
-                statistical_concept_references=[tss.StatisticalConceptReference(uri="")],
-                concepts=[tss.Concept(name="")],
-                data_collection=tss.DataCollection(),
-                methodology_references=[tss.MethodologyReference(uri="")],
-                derivation_references=[tss.DerivationReference(uri="")],
-                imputation_references=[tss.ImputationReference(uri="")],
-                adjustments=[],
-                validation_rules=[],
-                themes=[tss.Theme(name="")],
-                topics=[tss.Topic(name="")],
-                disciplines=[tss.Discipline(name="")],
-                mandate=tss.Mandate(),
-                time_periods=[tss.TimePeriod()],
-                ref_country=[tss.RefCountryItem()],
-                geographic_units=[tss.GeographicUnit(name="")],
-                bbox=[tss.BboxItem()],
-                aggregation_method_references=[tss.AggregationMethodReference(uri="")],
-                license=[tss.LicenseItem()],
-                links=[tss.Link()],
-                api_documentation=[tss.ApiDocumentationItem()],
-                sources=[tss.Source(name="")],
-                keywords=[tss.Keyword(name="")],
-                acronyms=[tss.Acronym(acronym="", expansion="")],
-                errata=[tss.Erratum()],
-                acknowledgements=[tss.Acknowledgement()],
-                notes=[tss.Note()],
-                related_indicators=[tss.RelatedIndicator()],
-                compliance=[tss.ComplianceItem(standard="")],
-                framework=[tss.FrameworkItem(name="")],
-                series_groups=[tss.SeriesGroup()],
-                contacts=[tss.Contact()],
-            ),
-            datacite=tss.DataciteSchema(
-                creators=[tss.Creator(name="", nameType=tss.NameType.Organizational)],
-                titles=[tss.Title(title="", titleType=tss.TitleType.AlternativeTitle)],
-                types=tss.Types(resourceType="", resourceTypeGeneral=tss.ResourceTypeGeneral.Dataset),
-            ),
-            provenance=[tss.ProvenanceSchema(origin_description=tss.OriginDescription())],
-            tags=[tss.Tag()],
-            additional={},
-        )
-        if as_object:
-            return ts
-        else:
-            return ts.model_dump()
-
-    @staticmethod
-    def skeleton_survey_microdata_metadata(
-        idno: str, title: str, as_object: bool = False
-    ) -> Union[SchemaBaseModel, MetadataDict]:
-        """
-        Create outline survey microdata metadata, either as a dictionary or as an object.
-
-        Args:
-            idno (str): The unique identifier for the microdata.
-            title (str): The title of the survey microdata.
-            as_object (bool): If True, return the metadata as a pydantic object.
-                Otherwise, return a dictionary instance. Defaults to False.
-
-        Returns:
-            Union[SchemaBaseModel, Dict]: The survey microdata metadata as either a dictionary or as an object.
-        """
-        sm = sms.SurveyMicrodataSchema(
-            # repositoryid=None,
-            # access_policy=None,
-            # published=None,
-            # overwrite=None,
-            doc_desc=sms.DocDesc(idno=idno, title=title),
-            study_desc=sms.StudyDesc(
-                title_statement=sms.TitleStatement(idno=idno, title=title),
-                authoring_entity=[sms.AuthoringEntityItem(name="")],
-                oth_id=[sms.OthIdItem(name="")],
-                production_statement=sms.ProductionStatement(),
-                distribution_statement=sms.DistributionStatement(
-                    distributors=[sms.Distributor(name="")],
-                    contact=[sms.ContactItem()],
-                    depositor=[sms.DepositorItem()],
-                ),
-                series_statement=sms.SeriesStatement(),
-                version_statement=sms.VersionStatement(),
-                holdings=[sms.Holding()],
-                study_authorization=sms.StudyAuthorization(agency=[sms.AgencyItem(name="")]),
-                study_info=sms.StudyInfo(
-                    keywords=[sms.Keyword(name="")],
-                    topics=[sms.Topic(topic="")],
-                    time_periods=[sms.TimePeriod(start="")],
-                    coll_dates=[sms.CollDate(start="")],
-                    nation=[sms.NationItem(name="")],
-                    bbox=[sms.BboxItem()],
-                    bound_poly=[sms.BoundPolyItem()],
-                    quality_statement=sms.QualityStatement(standards=[sms.Standard()]),
-                    ex_post_evaluation=sms.ExPostEvaluation(evaluator=[sms.EvaluatorItem(name="")]),
-                ),
-                study_development=sms.StudyDevelopment(
-                    development_activity=[
-                        sms.DevelopmentActivityItem(participants=[sms.Participant(name="")], resources=[sms.Resource()])
-                    ]
-                ),
-                data_access=sms.DataAccess(
-                    dataset_availability=sms.DatasetAvailability(),
-                    dataset_use=sms.DatasetUse(
-                        conf_dec=[sms.ConfDecItem()], spec_perm=[sms.SpecPermItem()], contact=[sms.ContactItem1()]
-                    ),
-                ),
-            ),
-            data_files=[sms.DatafileSchema(file_id="", file_name="")],
-            variables=[
-                sms.VariableSchema(
-                    file_id="",
-                    vid="",
-                    name="",
-                    labl="",
-                    var_intrvl=sms.VarIntrvl.contin,
-                    var_sumstat=[sms.VarSumstatItem()],
-                    var_catgry=[sms.VarCatgryItem()],
-                    var_std_catgry=sms.VarStdCatgry(),
-                    var_concept=[sms.VarConceptItem(title="")],
-                    var_format=sms.VarFormat(),
-                )
-            ],
-            variable_groups=[sms.VariableGroupSchema(vgid="", group_type=sms.GroupType.subject)],
-            provenance=[sms.ProvenanceSchema(origin_description=sms.OriginDescription())],
-            tags=[sms.Tag()],
-            lda_topics=[
-                sms.LdaTopic(
-                    model_info=[sms.ModelInfoItem()],
-                    topic_description=[sms.TopicDescriptionItem(topic_words=[sms.TopicWord()])],
-                )
-            ],
-            embeddings=[sms.Embedding(id="", vector={})],
-            additional={},
-        )
-        if as_object:
-            return sm
-        else:
-            return sm.model_dump()
-
     def delete_project_by_id(self, id: int):
         """
         Checks the project exists, deletes it, then checks it was deleted.
@@ -421,6 +257,8 @@ class MetadataEditor(BaseModel):
             checker_fn(id)
         except PermissionError:
             pass  # evidently the entity was deleted because now it can't be found
+        # except JSONDecodeError as e:
+
         else:
             raise DeleteNotAppliedError()
 
@@ -820,6 +658,172 @@ class MetadataEditor(BaseModel):
         if description is not None:
             metadata["description"] = description
         self._post_request("collections/update/{}", id=id, metadata=metadata)
+
+    def list_projects_in_collection(self, collection: int) -> pd.DataFrame:
+        """
+        Retrieve projects that have been added to the given collection.
+
+        Args:
+
+            collection (int):
+                The id of the collection
+
+        Returns:
+
+            pd.DataFrame:
+                Information on the projects in the collection, such as id, idno, title and type
+        """
+
+        ret = self._get_request("editor?collection={}&limit=100", id=collection)
+        if ret["total"] > ret["limit"]:
+            warnings.warn(
+                f"There are {ret['total']} projects in this collection but a limit of {ret['limit']} were retreived",
+                UserWarning,
+            )
+        if len(ret["projects"]) == 0:
+            return pd.DataFrame([], columns=["id", "type", "idno", "title"]).set_index("id")
+        return pd.DataFrame(ret["projects"]).set_index("id")
+
+    def add_projects_to_collection(
+        self, collection: Union[int, List[int]], id_format: str, projects: Union[int, List[int], str, List[str]]
+    ):
+        """
+        Adds project or projects to specified collection or collections.
+
+        This method associates one or more projects with one or more collections. The `collection`
+        parameter can be a single collection ID or a list of collection IDs. The `projects` parameter
+        can be a single project ID, a single project ID number (idno), a list of project IDs, or a list
+        of project idnos. The `id_format` parameter specifies whether the project identifiers
+        are in the form of IDs (integer) or idno (string).
+
+        Args:
+
+            collection : Union[int, List[int]]
+                A single collection ID or a list of collection IDs to which projects should be added.
+
+            id_format : str
+                Specifies the format of the project identifiers. Must be either 'id' or 'idno'.
+
+            projects : Union[int, List[int], str, List[str]]
+                A single project ID, a single project idno, a list of project IDs, or a list of
+                project idnos to be added to the specified collection(s).
+
+        Raises:
+
+            AssertionError
+                If `id_format` is not 'id' or 'idno'.
+
+            ValueError
+                If a specified collection ID does not exist.
+
+            ValueError
+                If a specified project ID or idno does not exist.
+
+            AssertionError
+                If a project ID is not an integer when `id_format` is 'id'.
+
+            AssertionError
+                If a project ID number is not a string when `id_format` is 'idno'.
+
+        Example:
+            >>> client.add_projects_to_collection(collection=1, id_format='id', projects=[101, 102])
+            >>> client.add_projects_to_collection(collection=[1, 2], id_format='idno', projects=['A101', 'A102'])
+        """
+        self._manage_projects_in_collections("add", collection=collection, id_format=id_format, projects=projects)
+
+    def remove_projects_from_collection(
+        self, collection: Union[int, List[int]], id_format: str, projects: Union[int, List[int], str, List[str]]
+    ):
+        """
+        Removes project or projects from specified collection or collections.
+
+        This method dissociates one or more projects from one or more collections. The `collection`
+        parameter can be a single collection ID or a list of collection IDs. The `projects` parameter
+        can be a single project ID, a single project ID number (idno), a list of project IDs, or a list
+        of project idnos. The `id_format` parameter specifies whether the project identifiers
+        are in the form of IDs or idnos.
+
+        Args
+
+            collection : Union[int, List[int]]
+                A single collection ID or a list of collection IDs to which projects should be removed.
+
+            id_format : str
+                Specifies the format of the project identifiers. Must be either 'id' or 'idno'.
+
+            projects : Union[int, List[int], str, List[str]]
+                A single project ID, a single project idno, a list of project IDs, or a list of
+                project idnos to be removed from the specified collection(s).
+
+        Raises:
+
+            AssertionError
+                If `id_format` is not 'id' or 'idno'.
+
+            ValueError
+                If a specified collection ID does not exist.
+
+            AssertionError
+                If a project ID is not an integer when `id_format` is 'id'.
+
+            AssertionError
+                If a project ID number is not a string when `id_format` is 'idno'.
+
+
+        Example:
+
+            >>> client.remove_projects_from_collection(collection=1, id_format='id', projects=[101, 102])
+            >>> client.remove_projects_from_collection(collection=[1, 2], id_format='idno', projects=['A101', 'A102'])
+
+        """
+        self._manage_projects_in_collections("remove", collection=collection, id_format=id_format, projects=projects)
+
+    def _manage_projects_in_collections(
+        self,
+        operation: str,
+        collection: Union[int, List[int]],
+        id_format: str,
+        projects: Union[int, List[int], str, List[str]],
+    ):
+        assert operation in ["add", "remove"], f"expected operation to be add or remove but found '{operation}'"
+        assert id_format.lower() in ["id", "idno"], f"id_format must be either 'id' or 'idno' but got '{id_format}'"
+        collection_ids = self.list_collections().index
+        if operation == "add":
+            if not isinstance(collection, Iterable) or isinstance(collection, str):
+                collection = [collection]
+            for c in collection:
+                if c not in collection_ids and str(c) not in collection_ids:
+                    raise ValueError(f"Collection {c} not found")
+        else:
+            if collection not in collection_ids and str(collection) not in collection_ids:
+                raise ValueError(f"Collection {collection} not found")
+        if not isinstance(projects, Iterable) or isinstance(projects, str):
+            projects = [projects]
+        if id_format.lower() == "id":
+            for proj in projects:
+                assert isinstance(proj, int), f"When passing ids the projects must be ints, but found: {proj}"
+        else:
+            for proj in projects:
+                assert isinstance(proj, str), f"While passing idnos the projects must be strs but found: {proj}"
+
+        # note, no need to check if the projects exist in the collection.
+        # the user is saying they don't want the project in the collection so if it's not in there to begin with then
+        # that's what they wanted anyway
+        if operation == "add":
+            known_projects = self.list_projects()
+            if id_format == "id":
+                project_ids = known_projects.index
+            else:
+                project_ids = known_projects.idno.values
+            for proj in projects:
+                if proj not in project_ids and str(proj) not in project_ids:
+                    raise ValueError(f"Project {proj} not found in {project_ids}")
+
+        collection_key = "collections" if operation == "add" else "collection_id"
+        self._post_request(
+            f"collections/{operation}_projects",
+            metadata={collection_key: collection, "id_format": id_format, "projects": projects},
+        )
 
     def list_templates(self) -> pd.DataFrame:
         """

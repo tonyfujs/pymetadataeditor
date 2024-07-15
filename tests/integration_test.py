@@ -65,13 +65,23 @@ def test_projects_integration(metadata_editor):
         for k, v in creation_data[metadata_type].items():
             assert project_metadata[k] == v
 
-        # update timeseries
+        # update project
         update_functions[metadata_type](project_id, **update_data[metadata_type])
         project_metadata_updated = metadata_editor.get_project_by_id(project_id).metadata
         for k, v in update_data[metadata_type].items():
             assert project_metadata_updated[k] == v
 
-        # delete timeseries
+        # check project is searchable
+        title_contains_updated = metadata_editor.list_projects(keywords="updated")
+        assert (
+            project_id in title_contains_updated.index or str(project_id) in title_contains_updated.index
+        ), title_contains_updated
+        title_contains_bogus = metadata_editor.list_projects(keywords="bogus")
+        assert (
+            project_id not in title_contains_bogus.index and str(project_id) not in title_contains_bogus.index
+        ), title_contains_bogus
+
+        # delete project
         metadata_editor.delete_project_by_id(project_id)
         final_projects = metadata_editor.list_projects()
         assert len(final_projects) == num_original_projects
@@ -113,15 +123,22 @@ def test_collections_integration(metadata_editor):
     assert len(initial_projects_collection) == 0, f"expected zero projects but got {initial_projects_collection}"
 
     # create a project and add it to the collection by id
-    project_idno = "project_for_collection_integration_test"
-    project_name = "project_for_collection_integration_test"
+    project_idno = "project for collection integration test"
+    project_name = "project for collection integration test"
     project_id = metadata_editor.create_and_log_timeseries(
         idno=project_idno, series_description={"idno": project_idno, "name": project_name}
     )
     metadata_editor.add_projects_to_collection(collection_id, "id", project_id)
+
+    # check the project can be found
     oneproject_collection = metadata_editor.list_projects_in_collection(collection_id)
     assert len(oneproject_collection) == 1
     assert oneproject_collection.iloc[0].idno == project_idno
+    good_search = metadata_editor.list_projects_in_collection(collection_id, keywords="integration")
+    assert len(good_search) == 1
+    assert good_search.iloc[0].idno == project_idno
+    bad_search = metadata_editor.list_projects_in_collection(collection_id, keywords="bogus")
+    assert len(bad_search) == 0
 
     # set template for collection
     metadata_editor.set_template_for_collection(

@@ -76,7 +76,12 @@ class MetadataEditor(BaseModel):
             )
 
     def _request(
-        self, method: str, pth: str, json: Optional[MetadataDict] = None, id: Optional[Union[int, str]] = None
+        self,
+        method: str,
+        pth: str,
+        json: Optional[MetadataDict] = None,
+        params: Optional[Dict[str, Union[str, List[str]]]] = None,
+        id: Optional[Union[int, str]] = None,
     ) -> Dict:
         """
         Sends a GET or POST request to the specified URL with the API key in the headers and returns the JSON response.
@@ -97,8 +102,11 @@ class MetadataEditor(BaseModel):
         assert method in ["get", "post"], f"unknown method {method}"
         request_kwargs = {}
         if method == "post":
-            assert "json" != None, "when using post, json cannot be none"
+            assert params is None, "when using post, pass json not params"
             request_kwargs["json"] = json
+        if method == "get" and params is not None:
+            assert json is None, "when using post, pass params not json"
+            request_kwargs["params"] = params
 
         if "{" in pth:
             assert id is not None, "If passing a url format, an id must be passed"
@@ -137,18 +145,25 @@ class MetadataEditor(BaseModel):
         try:
             json_response = response.json()
         except JSONDecodeError as e:
-            raise JSONDecodeError(response) from e
+            raise json.JSONDecodeError(
+                f"Error decoding JSON response: {e.msg}\nFull Response: {response}", e.doc, e.pos
+            ) from e
         return json_response
 
-    def _get_request(self, pth: str, id: Optional[Union[int, str]] = None) -> Dict:
+    def _get_request(
+        self, pth: str, id: Optional[Union[int, str]] = None, params: Optional[Dict[str, Union[str, List[str]]]] = None
+    ) -> Dict:
         """
         Args:
             pth (str): The path appended to the API_URL to which the GET request is sent.
+            id (optional int or str): The id of a specific collection or project.
+                                      If not none, then pth should contain '{}' where the id ought to go.
+            params (optional dict): additional parameters to send with the get request such as 'keywords'
 
         Returns:
             Dict[str, str]: The JSON response from the server, parsed into a dictionary.
         """
-        return self._request("get", pth=pth, id=id)
+        return self._request("get", pth=pth, id=id, params=params)
 
     def _post_request(self, pth: str, metadata: Optional[MetadataDict] = None, id: Optional[Union[int, str]] = None):
         """
@@ -161,20 +176,28 @@ class MetadataEditor(BaseModel):
         """
         return self._request("post", pth=pth, id=id, json=metadata)
 
-    def list_projects(self) -> pd.DataFrame:
+    def list_projects(self, keywords: Optional[Union[str, List[str]]] = None) -> pd.DataFrame:
         """
         Lists all the projects associated with your API key.
+
+        Args:
+
+            keywords (optional str or list of str): Keywords for filtering projects by title and/or idno.
 
         Returns:
             pd.DataFrame: Projects sorted by the date on which they were created
         """
         list_projects_get_path = "/editor"
-        response = self._get_request(list_projects_get_path)
+        params = {}
+        if keywords is not None:
+            params["keywords"] = keywords
+        response = self._get_request(pth=list_projects_get_path, params=params)
         try:
             projects = response["projects"]
-        except KeyError:  # is this the best way to cope with new accounts with no projects?
-            return pd.DataFrame()
-        return pd.DataFrame.from_dict(projects).set_index("id").sort_values("created")
+            projects = pd.DataFrame.from_dict(projects).set_index("id").sort_values("created")
+        except KeyError:  # is this the best way to cope with times when there are no projects?
+            return pd.DataFrame(columns=["id", "created"]).set_index("id").sort_values("created")
+        return projects
 
     def get_project_by_id(self, id: int) -> pd.Series:
         """
@@ -659,7 +682,9 @@ class MetadataEditor(BaseModel):
             metadata["description"] = description
         self._post_request("collections/update/{}", id=id, metadata=metadata)
 
-    def list_projects_in_collection(self, collection: int) -> pd.DataFrame:
+    def list_projects_in_collection(
+        self, collection: int, keywords: Optional[Union[str, List[str]]] = None
+    ) -> pd.DataFrame:
         """
         Retrieve projects that have been added to the given collection.
 
@@ -673,8 +698,10 @@ class MetadataEditor(BaseModel):
             pd.DataFrame:
                 Information on the projects in the collection, such as id, idno, title and type
         """
-
-        ret = self._get_request("editor?collection={}&limit=100", id=collection)
+        params = {"limit": 100}
+        if keywords is not None:
+            params["keywords"] = keywords
+        ret = self._get_request("editor?collection={}", id=collection, params=params)
         if ret["total"] > ret["limit"]:
             warnings.warn(
                 f"There are {ret['total']} projects in this collection but a limit of {ret['limit']} were retreived",

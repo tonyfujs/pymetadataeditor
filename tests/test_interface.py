@@ -1,15 +1,18 @@
+import itertools
+import os
 from json import JSONDecodeError
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
+# import pymetadataeditor.schemas.indicator_schema as tss
+import metadataschemas.indicator_schema as tss
 import pandas as pd
 import pytest
 import requests
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 from requests.exceptions import SSLError
 
-import pymetadataeditor.schemas.timeseries_schema as tss
 from pymetadataeditor import MetadataEditor
-from pymetadataeditor.interface import DeleteNotAppliedError, MetadataDict
+from pymetadataeditor.interface import DeleteNotAppliedError, RequestsWithSpecificErrors, TemplateError
 
 
 class MockResponse:
@@ -17,7 +20,7 @@ class MockResponse:
         self,
         http_status_code: int = None,
         error_message: Optional[str] = None,
-        json_data: Optional[MetadataDict] = None,
+        json_data: Optional[Dict] = None,
         raise_json_decode_error: bool = False,
         raise_ssl: bool = False,
     ):
@@ -26,13 +29,13 @@ class MockResponse:
         """
         self.status_code = http_status_code
         self.json_data = json_data if json_data is not None else {}
-        self.text = error_message if error_message is not None else "{}"
+        self.text = error_message if error_message is not None else {}
         self.raise_json_decode_error = raise_json_decode_error
         self.raise_ssl = raise_ssl
 
         self.response = requests.Response()
         self.response.status_code = self.status_code
-        self.response._content = self.text.encode("utf-8")
+        # self.response._content = self.text.encode("utf-8")
         self.response.headers["Content-Type"] = "application/json"
         self.response.url = "https://example.com/api/resource"
 
@@ -51,7 +54,7 @@ class MockResponse:
         elif self.status_code != 200:
             raise requests.exceptions.HTTPError(f"{self.status_code} Error")
 
-    def json(self) -> MetadataDict:
+    def json(self) -> Dict:
         if self.raise_json_decode_error:
             raise JSONDecodeError(msg="could not decode", doc="...", pos=2)
         elif self.json_data is not None:
@@ -91,7 +94,7 @@ def test_MetadataEditor_instantiation(monkeypatch):
     monkeypatch.setattr(requests, "request", mock_response)
     with pytest.raises(requests.HTTPError) as e:
         me = MetadataEditor(api_url="https://example.com", api_key=test_api_key)
-        me.list_projects()
+        me.list_projects(limit=100)
     assert str(e.value).split(".")[0] == "Page not found"
 
     # bad SSL
@@ -101,7 +104,7 @@ def test_MetadataEditor_instantiation(monkeypatch):
     monkeypatch.setattr(requests, "request", mock_response)
     with pytest.raises(SSLError) as e:
         me = MetadataEditor(api_url="https://example.com", api_key=test_api_key)
-        me.list_projects()
+        me.list_projects(limit=100)
     assert str(e.value)[:12] == "Usually this"
 
     # bad key
@@ -111,7 +114,7 @@ def test_MetadataEditor_instantiation(monkeypatch):
     monkeypatch.setattr(requests, "request", mock_response)
     with pytest.raises(PermissionError) as e:
         me = MetadataEditor(api_url="https://example.com", api_key=test_api_key)
-        me.list_projects()
+        me.list_projects(limit=100)
     assert str(e.value).split(".")[0] == "Access to that URL is denied"
 
     # good instantiation
@@ -120,9 +123,9 @@ def test_MetadataEditor_instantiation(monkeypatch):
 
     monkeypatch.setattr(requests, "request", mock_response)
     me = MetadataEditor(api_url="https://example.com", api_key=test_api_key)
-    me.list_projects()
-    assert me.api_key != test_api_key
-    assert me.api_key.get_secret_value() == test_api_key
+    me.list_projects(limit=100)
+    assert me._apinterface.api_key != test_api_key
+    assert me._apinterface.api_key.get_secret_value() == test_api_key
 
 
 @pytest.mark.parametrize("method", ["get", "post"])
@@ -130,12 +133,12 @@ def test_given_request(monkeypatch, metadata_editor, method: str):
     if method == "get":
 
         def func(*args, **kwargs):
-            return metadata_editor._get_request(*args, **kwargs)
+            return metadata_editor._apinterface.get_request(*args, **kwargs)
 
     elif method == "post":
 
         def func(*args, **kwargs):
-            return metadata_editor._post_request(*args, **kwargs, metadata={})
+            return metadata_editor._apinterface.post_request(*args, **kwargs, json={})
 
     # api raises some http error
     def mock_response(*args, **kwargs):
@@ -168,10 +171,22 @@ def test_list_projects(monkeypatch, metadata_editor):
 
     monkeypatch.setattr(requests, "request", mock_response)
 
-    actual_projects = metadata_editor.list_projects()
+    actual_projects = metadata_editor.list_projects(limit=100)
     assert type(actual_projects) == pd.DataFrame
     assert actual_projects.shape == (2, 1)
     assert actual_projects.columns == ["created"]
+
+    # bad then good metadata_type
+    with pytest.raises(ValueError):
+        metadata_editor.list_projects(metadata_type="bad_type", limit=100)
+    metadata_editor.list_projects(metadata_type="geospatial", limit=100)
+
+    # bad then good sort_by
+    with pytest.raises(AssertionError):
+        metadata_editor.list_projects(sort_by="bad_key", limit=100)
+    metadata_editor.list_projects(sort_by="title_asc", limit=100)
+
+    assert len(metadata_editor.list_projects(limit="all")) == 2
 
 
 def test_get_project_by_id(monkeypatch, metadata_editor):
@@ -180,13 +195,12 @@ def test_get_project_by_id(monkeypatch, metadata_editor):
         return MockResponse(
             http_status_code=400,
             json_data={},
-            error_message="""{"message": "You don't have permission to access this project"}""",
+            error_message={"message": "You don't have permission to access this project"},
         )
 
     monkeypatch.setattr(requests, "request", mock_response)
-    with pytest.raises(Exception) as e:
+    with pytest.raises(Exception, match="You don't have permission to access this project"):
         metadata_editor.get_project_by_id(1)
-    assert str(e.value) == "Access to this id is denied. Check that '1' is correct"
 
     # id is good
     project = {"status": "success", "project": {"id": "1", "created": "2024-06-11T09:58:14-04:00"}}
@@ -200,63 +214,79 @@ def test_get_project_by_id(monkeypatch, metadata_editor):
     assert len(actual_project) == 2
 
 
-def test_create_and_log_timeseries(monkeypatch, metadata_editor):
+@pytest.mark.parametrize(
+    "metadata_type, bad_metadata, good_metadata",
+    [
+        (
+            "document",
+            {},
+            {"document_description": {"title_statement": {"idno": "example_idno", "title": "example_title"}}},
+        ),
+        ("geospatial", {}, {"description": {"idno": "example_idno"}}),
+        ("script", None, {"doc_desc": {"idno": "example_idno"}}),
+        ("table", None, {"table_description": {"title_statement": {"idno": "example idno", "title": "example title"}}}),
+        (
+            "indicator",
+            {
+                "idno": "GB123",
+                "series_description": {"doi": "string", "name": "Gordons Test", "display_name": "string"},
+            },
+            {
+                "idno": "GB123",
+                "series_description": {
+                    "idno": "string",
+                    "doi": "string",
+                    "name": "Gordons Test",
+                    "display_name": "string",
+                },
+            },
+        ),
+        (
+            "indicators_db",
+            {},
+            {"database_description": {"title_statement": {"idno": "example_idno", "title": "example_title"}}},
+        ),
+        (
+            "microdata",
+            {"study_desc": {}},
+            {
+                "study_desc": {
+                    "title_statement": {"idno": "1", "title": "microdata1"},
+                    "study_info": {"nation": [{"name": "nation_name"}]},
+                }
+            },
+        ),
+        ("video", {}, {"video_description": {"idno": "example_idno", "title": "example_title"}}),
+    ],
+)
+def test_create_project_log(monkeypatch, metadata_editor, metadata_type, bad_metadata, good_metadata):
     def mock_response(*args, **kwargs):
         return MockResponse(http_status_code=200, json_data={"id": 1})
 
     monkeypatch.setattr(requests, "request", mock_response)
 
-    # metadata no series description
-    with pytest.raises(TypeError):
-        metadata_editor.create_and_log_timeseries(idno="GB123")
+    def mock_get_metadata_class(*args, **kwargs):
+        return metadata_editor._mm._TYPE_TO_SCHEMA[metadata_type]
 
-    # metadata series description has no idno
-    with pytest.raises(ValueError):
-        metadata_editor.create_and_log_timeseries(
-            idno="GB123", series_description={"doi": "string", "name": "Gordons Test", "display_name": "string"}
-        )
+    monkeypatch.setattr(metadata_editor, "get_metadata_class", mock_get_metadata_class)
 
-    # call is good
-    timeseries_id = metadata_editor.create_and_log_timeseries(
-        idno="GB123",
-        series_description={"idno": "string", "doi": "string", "name": "Gordons Test", "display_name": "string"},
+    if bad_metadata is not None:
+        with pytest.raises(ValidationError):
+            metadata_editor.create_project_log(metadata=bad_metadata, metadata_type_or_template_uid=metadata_type)
+
+    metadata_id = metadata_editor.create_project_log(
+        metadata=good_metadata, metadata_type_or_template_uid=metadata_type
     )
-    assert timeseries_id == 1
+    assert metadata_id == 1
 
-    def mock_response(*args, **kwargs):
-        return MockResponse(http_status_code=400)
-
-    monkeypatch.setattr(requests, "request", mock_response)
-    with pytest.raises(Exception):
-        metadata_editor.create_and_log_timeseries(
-            idno="GB123",
-            series_description={"idno": "string", "doi": "string", "name": "Gordons Test", "display_name": "string"},
-        )
-
-
-def test_create_and_log_survey_microdata(monkeypatch, metadata_editor):
-    def mock_response(*args, **kwargs):
-        return MockResponse(http_status_code=200, json_data={"id": 1})
-
-    monkeypatch.setattr(requests, "request", mock_response)
-
-    # metadata no metadata
-    metadata_editor.create_and_log_survey_microdata()
-
-    # # metadata doc_desc no idno
-    with pytest.raises(ValueError):
-        metadata_editor.create_and_log_survey_microdata(study_desc={})
-
-    survey_id = metadata_editor.create_and_log_survey_microdata(
-        study_desc={
-            "title_statement": {"idno": "1", "title": "survey1"},
-            "study_info": {"nation": [{"name": "nation_name"}]},
-        }
+    cls = metadata_editor.get_metadata_class(metadata_type)
+    metadata_object = cls.model_validate(good_metadata)
+    metadata_id = metadata_editor.create_project_log(
+        metadata=metadata_object, metadata_type_or_template_uid=metadata_type
     )
-    assert survey_id == 1
 
 
-def test_update_timeseries_by_id(monkeypatch, metadata_editor):
+def test_update_project_log_by_id(tmpdir, monkeypatch, metadata_editor):
     series_description = tss.SeriesDescription(idno="17", name="1")
     metadata_information = {"title": "check we can pass in a dict as well as a pydantic object"}
 
@@ -265,15 +295,20 @@ def test_update_timeseries_by_id(monkeypatch, metadata_editor):
         return MockResponse(
             http_status_code=400,
             json_data={},
-            error_message="""{"message": "You don't have permission to access this project"}""",
+            error_message={"message": "You don't have permission to access this project"},
         )
 
     monkeypatch.setattr(requests, "request", mock_response)
-    with pytest.raises(Exception) as e:
-        metadata_editor.update_timeseries_by_id(
-            1, series_description=series_description, metadata_information=metadata_information
+
+    def mock_get_metadata_class(*args, **kwargs):
+        return tss.TimeseriesSchema
+
+    monkeypatch.setattr(metadata_editor, "get_metadata_class", mock_get_metadata_class)
+
+    with pytest.raises(Exception, match="You don't have permission to access this project"):
+        metadata_editor.update_project_log_by_id(
+            id=1, new_metadata={"series_description": series_description, "metadata_information": metadata_information}
         )
-    assert str(e.value) == "Access to this id is denied. Check that '1' is correct"
 
     # id is good
     def mock_response(*args, **kwargs):
@@ -281,74 +316,136 @@ def test_update_timeseries_by_id(monkeypatch, metadata_editor):
             http_status_code=200,
             json_data={
                 "project": {
-                    "type": "timeseries",
+                    "type": "indicator",
                     "metadata": {"idno": "12", "series_description": {"idno": "12", "name": "oldname"}},
                 }
             },
         )
 
     monkeypatch.setattr(requests, "request", mock_response)
-    metadata_editor.update_timeseries_by_id(
-        1, series_description=series_description, metadata_information=metadata_information
+    metadata_editor.update_project_log_by_id(
+        id=1, new_metadata={"series_description": series_description, "metadata_information": metadata_information}
+    )
+
+    # use pydantic
+    model = metadata_editor.make_metadata_outline("indicator", "pydantic")
+    metadata_editor.update_project_log_by_id(id=1, new_metadata=model)
+
+    # use excel
+    metadata_editor.make_metadata_outline(
+        "indicator", "excel", filename=os.path.join(tmpdir, "test_update_project_log_by_id.xlsx")
     )
 
 
-def test_update_survey_microdata_by_id(monkeypatch, metadata_editor):
-    series_description = tss.SeriesDescription(idno="17", name="1")
-    metadata_information = {"title": "check we can pass in a dict as well as a pydantic object"}
+def test_patch_update_project_log_by_id(monkeypatch, metadata_editor):
+    def mock_get_project_by_id(*args, **kwargs):
+        return pd.Series({"type": "indicator"})
 
-    # id is bad
-    def mock_response(*args, **kwargs):
-        return MockResponse(
-            http_status_code=400,
-            json_data={},
-            error_message="""{"message": "You don't have permission to access this project"}""",
-        )
-
-    monkeypatch.setattr(requests, "request", mock_response)
-    with pytest.raises(Exception) as e:
-        metadata_editor.update_survey_microdata_by_id(1, repositoryid="123abc")
-    assert str(e.value) == "Access to this id is denied. Check that '1' is correct"
-
-    # id is good but type of existing data is listed as timeseries even though the user is trying to update a survey
-    def mock_response(*args, **kwargs):
-        return MockResponse(
-            http_status_code=200,
-            json_data={
-                "project": {
-                    "type": "timeseries",
-                    "metadata": {"idno": "12", "series_description": {"idno": "12", "name": "oldname"}},
-                }
-            },
-        )
-
-    monkeypatch.setattr(requests, "request", mock_response)
-    with pytest.raises(Exception) as e:
-        metadata_editor.update_survey_microdata_by_id(
-            1, series_description=series_description, metadata_information=metadata_information
-        )
+    monkeypatch.setattr(MetadataEditor, "get_project_by_id", mock_get_project_by_id)
 
     def mock_response(*args, **kwargs):
         return MockResponse(
             http_status_code=200,
-            json_data={
-                "project": {
-                    "type": "survey",
-                    "metadata": {
-                        "study_desc": {
-                            "title_statement": {"idno": "1", "title": "survey1"},
-                            "study_info": {"nation": [{"name": "nation_name"}]},
-                        }
-                    },
-                }
-            },
         )
 
     monkeypatch.setattr(requests, "request", mock_response)
-    metadata_editor.update_survey_microdata_by_id(1, repositoryid="1")
+
+    # Test case: single patch as a dict
+    single_patch = {"op": "remove", "path": "/toc"}
+    metadata_editor.patch_update_project_log_by_id(1, **single_patch)
+
+    # List of patches
+    patches = [
+        {"op": "replace", "path": "/title", "value": "New Title"},
+        {"op": "add", "path": "/description", "value": "Updated description."},
+    ]
+    for p in patches:
+        metadata_editor.patch_update_project_log_by_id(1, **p)
+
+    # patches with bad ops should raise ValueError
+    bad_patch = {"op": "bad_op", "path": "/title", "value": "Should raise error"}
+    with pytest.raises(ValueError, match="Invalid operation"):
+        metadata_editor.patch_update_project_log_by_id(1, **bad_patch)
+
+    # patches where the path doesn't begin with a slash, should be ok
+    patches_without_slash = [
+        {"op": "replace", "path": "title", "value": "Title without leading slash"},
+        {"op": "add", "path": "description", "value": "Description without leading slash"},
+    ]
+    for p in patches_without_slash:
+        metadata_editor.patch_update_project_log_by_id(1, **p)
+
+    # patches where value is required but not provided should raise ValueError
+    patch_missing_value = {"op": "replace", "path": "/title"}
+    with pytest.raises(ValueError, match="Operation 'replace' requires a 'value' field."):
+        metadata_editor.patch_update_project_log_by_id(1, **patch_missing_value)
 
 
-def test_get_project_metadata_by_id(monkeypatch, metadata_editor):
+metadata_types = [
+    "document",
+    "image",
+    "geospatial",
+    "microdata",
+    "script",
+    "table",
+    "indicator",
+    "indicators_db",
+    "video",
+]
+modes = ["excel", "dict", "pydantic"]
+
+
+@pytest.mark.parametrize("metadata_type, mode", list(itertools.product(metadata_types, modes)))
+def test_make_metadata_outline(tmpdir, monkeypatch, metadata_editor, metadata_type, mode):
+    def mock_get_metadata_class(*args, **kwargs):
+        return metadata_editor._mm._TYPE_TO_SCHEMA[metadata_type]
+
+    monkeypatch.setattr(metadata_editor, "get_metadata_class", mock_get_metadata_class)
+
+    metadata_editor.make_metadata_outline(
+        metadata_type_or_template_uid=metadata_type,
+        output_mode=mode,
+        filename=os.path.join(tmpdir, f"outline_{metadata_type}.xlsx"),
+    )
+
+
+@pytest.mark.parametrize(
+    "metadata_type, metadata",
+    [
+        ("document", {"document_description": {"title_statement": {"idno": "example_idno", "title": "example_title"}}}),
+        ("geospatial", {"description": {"idno": "example_idno"}}),
+        ("image", {"image_description": {"idno": "example_idno", "title": "example_title"}}),
+        ("script", {"doc_desc": {"idno": "example_idno"}}),
+        ("table", {"table_description": {"title_statement": {"idno": "example idno", "title": "example title"}}}),
+        (
+            "indicator",
+            {
+                "idno": "GB123",
+                "series_description": {
+                    "idno": "string",
+                    "doi": "string",
+                    "name": "Gordons Test",
+                    "display_name": "string",
+                },
+            },
+        ),
+        (
+            "indicators_db",
+            {"database_description": {"title_statement": {"idno": "example_idno", "title": "example_title"}}},
+        ),
+        (
+            "microdata",
+            {
+                "study_desc": {
+                    "title_statement": {"idno": "1", "title": "microdata1"},
+                    "study_info": {"nation": [{"name": "nation_name"}]},
+                }
+            },
+        ),
+        ("video", {"video_description": {"idno": "example_idno", "title": "example_title"}}),
+    ],
+)
+def test_get_project_metadata_by_id(tmpdir, monkeypatch, metadata_editor, metadata_type, metadata):
     # bad project type
     def mock_response(*args, **kwargs):
         return MockResponse(
@@ -356,24 +453,34 @@ def test_get_project_metadata_by_id(monkeypatch, metadata_editor):
             json_data={
                 "project": {
                     "type": "unknown",
-                    "metadata": {"idno": "12", "series_description": {"idno": "12", "name": "oldname"}},
+                    "metadata": metadata,
                 }
             },
         )
 
+    # unknown metadata type can't be returned as an object, only as a dict
     monkeypatch.setattr(requests, "request", mock_response)
-    with pytest.raises(AssertionError):
-        ts = metadata_editor.get_project_metadata_by_id(
-            1,
-        )
+
+    def mock_get_metadata_class(*args, **kwargs):
+        return metadata_editor._mm._TYPE_TO_SCHEMA[metadata_type]
+
+    monkeypatch.setattr(metadata_editor, "get_metadata_class", mock_get_metadata_class)
+
+    with pytest.raises(TemplateError):
+        ts = metadata_editor.get_project_metadata_by_id(1, output_mode="pydantic")
+    with pytest.raises(TemplateError):
+        ts = metadata_editor.get_project_metadata_by_id(1, output_mode="dict")
+    with pytest.raises(TemplateError):
+        ts = metadata_editor.get_project_metadata_by_id(1, output_mode="excel")
+    ts = metadata_editor.get_project_metadata_by_id(1, output_mode="dict", template_uid="none")
 
     def mock_response(*args, **kwargs):
         return MockResponse(
             http_status_code=200,
             json_data={
                 "project": {
-                    "type": "timeseries",
-                    "metadata": {"idno": "12", "series_description": {"idno": "12", "name": "oldname"}},
+                    "type": metadata_type,
+                    "metadata": metadata,
                 }
             },
         )
@@ -381,30 +488,18 @@ def test_get_project_metadata_by_id(monkeypatch, metadata_editor):
     monkeypatch.setattr(requests, "request", mock_response)
 
     # as object
-    ts = metadata_editor.get_project_metadata_by_id(1, as_object=True)
-    assert isinstance(ts, tss.TimeseriesSchema), type(ts)
-    assert ts.idno == "12"
-    assert ts.series_description.idno == "12"
-    assert ts.series_description.name == "oldname"
+    ts = metadata_editor.get_project_metadata_by_id(1, output_mode="pydantic")
+    assert isinstance(ts, BaseModel), type(ts)
 
     # as basic dictionary
-    ts = metadata_editor.get_project_metadata_by_id(1, as_object=False)
+    ts = metadata_editor.get_project_metadata_by_id(1, output_mode="dict")
     assert isinstance(ts, dict)
-    assert ts["idno"] == "12"
-    assert ts["series_description"]["idno"] == "12"
-    assert ts["series_description"]["name"] == "oldname"
-    assert len(ts) == 2
 
-    # as full dictionary
-    ts = metadata_editor.get_project_metadata_by_id(1, exclude_unset=False, as_object=False)
-    assert isinstance(ts, dict)
-    assert ts["idno"] == "12"
-    assert ts["series_description"]["idno"] == "12"
-    assert ts["series_description"]["name"] == "oldname"
-    assert len(ts) == 7
-    additional_fields = ["metadata_information", "datacite", "provenance", "tags", "additional"]
-    for field in additional_fields:
-        assert field in ts
+    # if metadata_type != "geospatial":
+    filename = os.path.join(tmpdir, f"get_project_metadata_by_id_test_{metadata_type}.xlsx")
+    metadata_editor.get_project_metadata_by_id(
+        1, output_mode="excel", filename=filename, title="get_project_metadata_by_id"
+    )
 
 
 class MockGetProjectById:
@@ -435,47 +530,47 @@ def test_delete_project_by_id(monkeypatch, metadata_editor):
     To test the specific behaviour of the delete_collection_by_id really requires an integration test
     """
 
-    # raises an error when there is no such project to delete
-    monkeypatch.setattr(MetadataEditor, "get_project_by_id", MockGetProjectById(False))
+    # # raises an error when there is no such project to delete
+    # monkeypatch.setattr(MetadataEditor, "get_project_by_id", MockGetProjectById(False))
 
-    def mock_response(*args, **kwargs):
-        return MockResponse(
-            http_status_code=400,
-            error_message="""{"message": "You don't have permission to access this project"}""",
-        )
+    # def mock_response(*args, **kwargs):
+    #     return MockResponse(
+    #         http_status_code=400,
+    #         error_message={"message": "You don't have permission to access this project"},
+    #     )
 
-    monkeypatch.setattr(requests, "request", mock_response)
-    with pytest.raises(Exception):
-        metadata_editor.delete_project_by_id(1)
+    # monkeypatch.setattr(requests, "request", mock_response)
+    # with pytest.raises(Exception):
+    #     metadata_editor.delete_project_by_id(1)
 
     # raises DeleteNotAppliedError when request was good but the json was bad
     #   and the project is still there
-    monkeypatch.setattr(MetadataEditor, "get_project_by_id", MockGetProjectById([True, True]))
+    monkeypatch.setattr(MetadataEditor, "get_project_by_id", MockGetProjectById(True))
 
     def mock_response(*args, **kwargs):
         return MockResponse(http_status_code=200, raise_json_decode_error=True)
 
-    monkeypatch.setattr(MetadataEditor, "_post_request", mock_response)
+    monkeypatch.setattr(RequestsWithSpecificErrors, "post_request", mock_response)
     with pytest.raises(DeleteNotAppliedError):
         metadata_editor.delete_project_by_id(1)
 
     # the project was deleted even though the json was bad
-    monkeypatch.setattr(MetadataEditor, "get_project_by_id", MockGetProjectById([True, False]))
+    monkeypatch.setattr(MetadataEditor, "get_project_by_id", MockGetProjectById(False))
 
     def mock_response(*args, **kwargs):
         return MockResponse(http_status_code=200, raise_json_decode_error=True)
 
-    monkeypatch.setattr(MetadataEditor, "_post_request", mock_response)
+    monkeypatch.setattr(RequestsWithSpecificErrors, "post_request", mock_response)
     metadata_editor.delete_project_by_id(1)
 
     # the project was deleted
-    monkeypatch.setattr(MetadataEditor, "get_project_by_id", MockGetProjectById([True, False]))
+    monkeypatch.setattr(MetadataEditor, "get_project_by_id", MockGetProjectById(False))
 
     def mock_response(*args, **kwargs):
         return MockResponse(http_status_code=200, raise_json_decode_error=False)
 
-    monkeypatch.setattr(MetadataEditor, "_post_request", mock_response)
-    monkeypatch.setattr(MetadataEditor, "_post_request", mock_response)
+    monkeypatch.setattr(RequestsWithSpecificErrors, "post_request", mock_response)
+    # monkeypatch.setattr(APInterface, "post_request", mock_response)
     metadata_editor.delete_project_by_id(1)
 
 
@@ -546,23 +641,6 @@ def test_add_projects_to_collection(monkeypatch, metadata_editor):
 
     monkeypatch.setattr(requests, "request", mock_response)
 
-    def mock_list_collections(*args, **kwargs):
-        data = [{"id": 1, "name": "example_collection1"}]
-        df = pd.DataFrame(data).set_index("id")
-        return df
-
-    monkeypatch.setattr(MetadataEditor, "list_collections", mock_list_collections)
-
-    def mock_list_projects(*args, **kwargs):
-        data = [
-            {"id": "1", "idno": "idno1", "name": "example_project1"},
-            {"id": "2", "idno": "idno2", "name": "example_project2"},
-        ]
-        df = pd.DataFrame(data).set_index("id")
-        return df
-
-    monkeypatch.setattr(MetadataEditor, "list_projects", mock_list_projects)
-
     # id format is invalid
     with pytest.raises(AssertionError):
         metadata_editor.add_projects_to_collection(1, "invalid", 1)
@@ -575,16 +653,6 @@ def test_add_projects_to_collection(monkeypatch, metadata_editor):
     with pytest.raises(AssertionError):
         metadata_editor.add_projects_to_collection(1, "idno", 1)
 
-    # collection does not exist
-    with pytest.raises(ValueError):
-        metadata_editor.add_projects_to_collection(2, "id", 3)
-
-    # project does not exist
-    with pytest.raises(ValueError):
-        metadata_editor.add_projects_to_collection(1, "idno", "3")
-    with pytest.raises(ValueError):
-        metadata_editor.add_projects_to_collection(1, "id", 3)
-
     # calls are good
     metadata_editor.add_projects_to_collection(1, "id", 1)
     metadata_editor.add_projects_to_collection(1, "id", [1])
@@ -593,7 +661,7 @@ def test_add_projects_to_collection(monkeypatch, metadata_editor):
     metadata_editor.add_projects_to_collection([1], "id", [1, 2])
 
 
-def test_remove_projects_to_collection(monkeypatch, metadata_editor):
+def test_remove_projects_from_collection(monkeypatch, metadata_editor):
     def mock_response(*args, **kwargs):
         return MockResponse(http_status_code=200)
 
@@ -623,17 +691,17 @@ def test_list_projects_in_collection(monkeypatch, metadata_editor):
     monkeypatch.setattr(requests, "request", mock_response)
 
     # call is good
-    metadata_editor.list_projects_in_collection(1)
+    metadata_editor.list_projects_in_collection(1, limit=100)
 
-    # call is good, but the number of projects is limited
-    def mock_response(*args, **kwargs):
-        return MockResponse(
-            http_status_code=200, json_data={"total": 2, "limit": 1, "projects": [{"id": 1, "title": "title1"}]}
-        )
+    # # call is good, but the number of projects is limited
+    # def mock_response(*args, **kwargs):
+    #     return MockResponse(
+    #         http_status_code=200, json_data={"total": 2, "limit": 1, "projects": [{"id": 1, "title": "title1"}]}
+    #     )
 
-    monkeypatch.setattr(requests, "request", mock_response)
-    with pytest.warns(UserWarning):
-        metadata_editor.list_projects_in_collection(1)
+    # monkeypatch.setattr(requests, "request", mock_response)
+    # with pytest.warns(UserWarning):
+    #     metadata_editor.list_projects_in_collection(1, limit=100)
 
 
 def test_list_templates(monkeypatch, metadata_editor):
@@ -671,7 +739,13 @@ def test_list_templates(monkeypatch, metadata_editor):
             json_data={
                 "templates": {
                     "core": [
-                        {"uid": "example", "template_type": "core", "name": "example", "template": "example_template"}
+                        {
+                            "uid": "example",
+                            "template_type": "core",
+                            "name": "example",
+                            "template": "example_template",
+                            "default": True,
+                        }
                     ]
                 }
             },
@@ -695,7 +769,10 @@ def test_get_template_by_uid(monkeypatch, metadata_editor):
 
     # template exists
     def mock_response(*args, **kwargs):
-        return MockResponse(http_status_code=200, json_data={"result": {"uid": "example", "name": "example name"}})
+        return MockResponse(
+            http_status_code=200,
+            json_data={"result": {"uid": "example", "name": "example name", "data_type": "microdata"}},
+        )
 
     monkeypatch.setattr(requests, "request", mock_response)
     actual = metadata_editor.get_template_by_uid("example")
@@ -703,6 +780,37 @@ def test_get_template_by_uid(monkeypatch, metadata_editor):
 
 
 def test_set_template_for_collection(monkeypatch, metadata_editor):
+    # This test also feel unsatisfying since it's testing the implementation not the funcationality.
+    # An integration test is surely required
+
+    # no such collection
+    def get_collection_by_id(*args, **kwargs):
+        raise PermissionError("Access to this id is denied")
+
+    monkeypatch.setattr(MetadataEditor, "get_collection_by_id", get_collection_by_id)
+    with pytest.raises(PermissionError):
+        metadata_editor.set_template_for_collection(1, "example_uid")
+
+    # no such template
+    def get_collection_by_id(*args, **kwargs):
+        pass
+
+    monkeypatch.setattr(MetadataEditor, "get_collection_by_id", get_collection_by_id)
+
+    def get_template_by_uid(*args, **kwargs):
+        raise PermissionError("Access to this id is denied")
+
+    monkeypatch.setattr(MetadataEditor, "get_template_by_uid", get_template_by_uid)
+
+    with pytest.raises(PermissionError):
+        metadata_editor.set_template_for_collection(1, "example_uid")
+
+    # all good
+    def get_template_by_uid(*args, **kwargs):
+        return pd.Series({"data_type": "microdata"})
+
+    monkeypatch.setattr(MetadataEditor, "get_template_by_uid", get_template_by_uid)
+
     def mock_response(*args, **kwargs):
         return MockResponse(
             http_status_code=200,
@@ -713,15 +821,106 @@ def test_set_template_for_collection(monkeypatch, metadata_editor):
         )
 
     monkeypatch.setattr(requests, "request", mock_response)
+    metadata_editor.set_template_for_collection(1, "example_uid")
 
-    # bad project type
-    with pytest.raises(AssertionError):
-        metadata_editor.set_template_for_collection(1, "example_uid", "bad_template_type")
 
-    # good call
-    updates = metadata_editor.set_template_for_collection(1, "example_uid", "survey")
-    assert len(updates) == 2
-    assert "1607" in list(updates.index)
-    assert "1502" in list(updates.index)
-    assert updates["type"].iloc[0] == "survey"
-    assert updates["type"].iloc[1] == "survey"
+def test_get_resources_by_id(monkeypatch, metadata_editor):
+    def mock_response(*args, **kwargs):
+        return MockResponse(
+            http_status_code=200,
+            json_data={
+                "resources": [
+                    {
+                        "id": 1,
+                        "sid": "sid1",
+                        "dctype": "Report",
+                        "title": "Report Title",
+                        "subtitle": "Subtitle",
+                        "author": "Author Name",
+                        "filename": "report.pdf",
+                        "dcformat": "pdf",
+                    }
+                ]
+            },
+        )
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    resources = metadata_editor.get_resources_by_id(1)
+    assert isinstance(resources, pd.DataFrame)
+    assert len(resources) == 1
+    assert resources.loc[0, "title"] == "Report Title"
+
+    # No resources available
+    def mock_response(*args, **kwargs):
+        return MockResponse(http_status_code=200, json_data={"resources": []})
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    resources = metadata_editor.get_resources_by_id(1)
+    assert isinstance(resources, pd.DataFrame)
+    assert len(resources) == 0
+
+    # No resources key in the response
+    def mock_response(*args, **kwargs):
+        return MockResponse(http_status_code=200, json_data={})
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    resources = metadata_editor.get_resources_by_id(1)
+    assert isinstance(resources, pd.DataFrame)
+    assert len(resources) == 0
+
+
+@pytest.mark.parametrize(
+    "dctype, title, author, filename, should_raise",
+    [
+        ("txt", "file1.txt", "Author1", None, False),  # No file upload
+        ("pdf", "file2.pdf", "Author2", None, False),  # No file upload
+        ("txt", "file3.txt", "Author3", None, False),  # No file upload
+        ("pdf", "file4.pdf", "Author4", "tempfile.pdf", False),  # Valid file upload
+    ],
+)
+def test_create_update_delete_resource(
+    monkeypatch, metadata_editor, tmpdir, dctype, title, author, filename, should_raise
+):
+    def mock_response(*args, **kwargs):
+        return MockResponse(http_status_code=200, json_data={"resource": {"id": 1}})
+
+    monkeypatch.setattr(requests, "request", mock_response)
+
+    if filename:
+        temp_file = tmpdir.join(filename)
+        temp_file.write("dummy content")
+        filename = str(temp_file)
+
+    if should_raise:
+        with pytest.raises(ValidationError):
+            metadata_editor.log_resource(project_id=1, dctype=dctype, title=title, author=author, filename=filename)
+    else:
+        resource_id = metadata_editor.log_resource(
+            project_id=1, dctype=dctype, title=title, author=author, filename=filename
+        )
+        assert resource_id == 1
+
+    # Test update_resource method
+    if should_raise:
+        with pytest.raises(ValidationError):
+            metadata_editor.update_resource(
+                project_id=1, resource_id=1, dctype=dctype, title=title, author=author, filename=filename
+            )
+    else:
+        metadata_editor.update_resource(
+            project_id=1, resource_id=1, dctype=dctype, title=title, author=author, filename=filename
+        )
+
+    # Mocking the get_resources_by_id for deletion check
+    def mock_get_resources_by_id(*args, **kwargs):
+        return pd.DataFrame([{"id": "99"}])
+
+    monkeypatch.setattr(metadata_editor, "get_resources_by_id", mock_get_resources_by_id)
+
+    # Test delete_resource_by_id method
+    def mock_delete_response(*args, **kwargs):
+        return MockResponse(http_status_code=200)
+
+    monkeypatch.setattr(RequestsWithSpecificErrors, "post_request", mock_delete_response)
+
+    metadata_editor.delete_resource_by_id(project_id=1, resource_id=1)

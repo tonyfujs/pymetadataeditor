@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "pymetadataeditor"
-version = "0.1.1"
-description = "Metadata editor client for python"
+version = "0.1.2"
+description = "Metadata Editor client for python"
 authors = ["Gordon Blackadder <gblackadder@worldbank.org>"]
 readme = "README.md"
 license = "MIT"
@@ -21,17 +21,21 @@ metadataschemas = "^0.1.1"
 pytest = "^8.2.2"
 ipykernel = "^6.29.4"
 pre-commit = "^3.7.1"
-isort = "^5.13.2"
-ruff = "^0.4.8"
-black = "^24.4.2"
+ruff = "^0.9.3"
 detect-secrets = "^1.5.0"
-nbformat = "^5.10.4"
-nbconvert = "^7.16.4"
+lazydocs = "^0.4.8"
 
 
 [tool.ruff]
 line-length = 120
 fix = true
+
+[tool.ruff.lint]
+extend-select = ["I","E","F","D"]
+ignore = ["D203","D204","D213","D215","D400","D401","D404","D406","D407","D408","D409","D413"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 [tool.isort]
 line_length = 120

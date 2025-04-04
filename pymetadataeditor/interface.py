@@ -1,6 +1,7 @@
 """The interface between pyMetadataEditor and the Metadata Editor API."""
 
 import warnings
+from io import BufferedReader
 from json import JSONDecodeError
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -134,7 +135,7 @@ class MetadataEditor:
 
         Args:
             api_url (str): the URL typically looks like 'https://<name_of_your_metadata_database>.org/index.php/api'
-            api_key (str): typically this is created through the web interface of the metadata system
+            api_key (str): typically this is created through the web interface of the metadata system.
             allow_http (bool): whether to allow calls to the metadata system when the URL begins "http" instead of the
                 more secure "https". Defaults to False.
             verify_ssl (bool): Although it is good practice for API requests to verify SSL, some systems do not allow
@@ -228,6 +229,13 @@ class MetadataEditor:
             projects = pd.DataFrame.from_dict(projects).set_index("id")
         except KeyError:  # is this the best way to cope with times when there are no projects?
             return pd.DataFrame(columns=["id", "created"]).set_index("id")
+
+        try:
+            new_index = projects.index.astype(int)
+        except ValueError:
+            pass
+        else:
+            projects.index = new_index
         return projects
 
     def get_project_by_id(self, id: int) -> pd.Series:
@@ -246,6 +254,45 @@ class MetadataEditor:
         get_project_template = "/editor/{}"
         response = self._apinterface.get_request(get_project_template, id=id)
         return pd.Series(response["project"])
+
+    ####################################################################################################################
+    # Generic API requests
+    ####################################################################################################################
+
+    def generic_api_request(
+        self,
+        method: str,
+        endpoint: str,
+        params: Optional[Dict] = None,
+        data: Optional[Dict] = None,
+        json: Optional[Dict] = None,
+        files: Optional[Dict[str, BufferedReader]] = None,
+    ) -> Dict:
+        """Make a generic API request to the Metadata Editor API.
+
+        It's generally better to use the specific functions such as list_projects, create_project_log etc. but this
+        function is provided for flexibility and to allow for future changes in the API.
+
+        Args:
+            method (str): Either 'POST' or 'GET'
+            endpoint (str): The path appended to the API_URL to which a GET or POST request is sent.
+            params (optional dict): additional parameters to send with a GET request.
+            data (optional dict): The data to send with a POST request.
+            json (optional dict): The JSON data to send with a POST request.
+            files (optional dict[str, BufferedReader]): The files to send with a POST request in the form
+                ```{"filename": open(filename, "rb")}```.
+
+        Returns:
+            Dict: The response from the API as a dictionary.
+        """
+        return self._apinterface._request(
+            method=method,
+            pth=endpoint,
+            params=params,
+            data=data,
+            json=json,
+            files=files,
+        )
 
     ####################################################################################################################
     # METADATA Input and Output
@@ -1200,6 +1247,13 @@ class MetadataEditor:
                         return row["data_type"]
 
                 self._default_templates["data_type"] = self._default_templates.apply(standardize, axis=1)
+
+            try:
+                new_index = templates.index.astype(int)
+            except ValueError:
+                pass
+            else:
+                templates.index = new_index
             return templates
 
     def get_template_by_uid(self, uid: str) -> pd.Series:
@@ -1360,7 +1414,14 @@ class MetadataEditor:
         response = self._apinterface.get_request("collections")
         if "collections" not in response or len(response["collections"]) == 0:
             return pd.DataFrame([], columns=["id", "title", "created"]).set_index("id")
-        return pd.DataFrame(response["collections"]).set_index("id")
+        df = pd.DataFrame(response["collections"]).set_index("id")
+        try:
+            new_index = df.index.astype(int)
+        except ValueError:
+            pass
+        else:
+            df.index = new_index
+        return df
 
     def get_collection_by_id(self, id: int) -> pd.Series:
         """Get information about a collection like title, description, created date.
@@ -1477,7 +1538,15 @@ class MetadataEditor:
         ret = self._apinterface.get_request("editor?collection={}", id=collection, params=params)
         if len(ret["projects"]) == 0:
             return pd.DataFrame([], columns=["id", "type", "idno", "title"]).set_index("id")
-        return pd.DataFrame(ret["projects"]).set_index("id")
+        df = pd.DataFrame(ret["projects"]).set_index("id")
+
+        try:
+            new_index = df.index.astype(int)
+        except ValueError:
+            pass
+        else:
+            df.index = new_index
+        return df
 
     def add_projects_to_collection(
         self, collection: Union[int, List[int]], id_format: str, projects: Union[int, List[int], str, List[str]]
@@ -1608,7 +1677,14 @@ class MetadataEditor:
         """
         response = self._apinterface.get_request("resources/{}", id=id)
         if "resources" in response and len(response["resources"]) > 0:
-            return pd.DataFrame(response["resources"])
+            df = pd.DataFrame(response["resources"])
+            try:
+                new_index = df.index.astype(int)
+            except ValueError:
+                pass
+            else:
+                df.index = new_index
+            return df
         else:
             return pd.DataFrame(columns=["id", "sid", "dctype", "title", "subtitle", "author", "filename", "dcformat"])
 

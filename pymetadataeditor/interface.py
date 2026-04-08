@@ -1,5 +1,6 @@
 """The interface between pyMetadataEditor and the Metadata Editor API."""
 
+import logging
 import warnings
 from io import BufferedReader
 from json import JSONDecodeError
@@ -33,6 +34,8 @@ from pymetadataeditor.templates import pydantic_from_template
 from .utils import remove_empty_from_dict, validate_json_patches
 
 __all__ = ["MetadataEditor", "DeleteNotAppliedError", "TemplateError"]
+
+logger = logging.getLogger(__name__)
 
 DICT_MODES = ["dict", "dictionary"]
 PYDANTIC_MODES = ["pydantic", "model", "basemodel", "object"]
@@ -96,7 +99,7 @@ class MetadataEditor:
 
     You can save metadata to an Excel file. Or use OpenAI to draft metadata from files or web pages.
 
-    First obtain an API key and pase it into a file called '.env' in the root of your project. The contents of the
+    First obtain an API key and paste it into a file called '.env' in the root of your project. The contents of the
         file should look like this:
 
         `METADATA_API_URL=https://<name_of_your_metadata_database>.org/index.php/api`
@@ -194,7 +197,8 @@ class MetadataEditor:
             pd.DataFrame: Information about the projects
         """
         if isinstance(limit, str):
-            assert limit.lower() == "all", f"Expected limit to be 'All' or a positive integer but got '{limit}'"
+            if limit.lower() != "all":
+                raise ValueError(f"Expected limit to be 'All' or a positive integer but got '{limit}'")
             new_offset = offset
             new_limit = 500
             dfs = []
@@ -221,7 +225,8 @@ class MetadataEditor:
         if sort_by is not None:
             sort_by = sort_by.lower()
             valid_sort_by = ["title_asc", "title_desc", "updated_asc", "updated_desc"]
-            assert sort_by in valid_sort_by, f"{sort_by} not valid, must be one of {valid_sort_by}"
+            if sort_by not in valid_sort_by:
+                raise ValueError(f"{sort_by} not valid, must be one of {valid_sort_by}")
             params["sort_by"] = sort_by
         response = self._apinterface.get_request(pth=list_projects_get_path, params=params)
         try:
@@ -364,9 +369,8 @@ class MetadataEditor:
         Returns:
             Union[BaseModel, Dict, str]: The output metadata.
         """
-        assert output_mode in DICT_MODES + EXCEL_MODES + PYDANTIC_MODES, (
-            f"mode should be 'pydantic', 'dict' or 'excel' but found '{output_mode}'"
-        )
+        if output_mode not in DICT_MODES + EXCEL_MODES + PYDANTIC_MODES:
+            raise ValueError(f"mode should be 'pydantic', 'dict' or 'excel' but found '{output_mode}'")
         if output_mode in PYDANTIC_MODES:
             return metadata_object
         elif output_mode in DICT_MODES:
@@ -606,9 +610,8 @@ class MetadataEditor:
                 filename is returned.
         """
         output_mode = output_mode.lower().strip()
-        assert output_mode in DICT_MODES + EXCEL_MODES + PYDANTIC_MODES, (
-            f"mode should be 'pydantic', 'dict' or 'excel' but found '{output_mode}'"
-        )
+        if output_mode not in DICT_MODES + EXCEL_MODES + PYDANTIC_MODES:
+            raise ValueError(f"mode should be 'pydantic', 'dict' or 'excel' but found '{output_mode}'")
 
         template_uid = template_uid.lower().strip() if template_uid is not None else None
         if template_uid == "none" and output_mode not in DICT_MODES:
@@ -657,8 +660,8 @@ class MetadataEditor:
             ####   No - put the user in control - raise the error and tell them how to choose a new template.
 
         if debug:
-            print(f"\nskeleton_object = {skeleton_object}\n")
-            print(f"\nproject_metadata = {project['metadata']}\n")
+            logger.debug("\nskeleton_object = %s\n", skeleton_object)
+            logger.debug("\nproject_metadata = %s\n", project["metadata"])
         combined_dict = merge_dicts(
             skeleton_object,
             remove_empty_from_dict(project["metadata"]),
@@ -666,7 +669,7 @@ class MetadataEditor:
         )
         combined_dict = standardize_keys_in_dict(combined_dict)
         if debug:
-            print(f"combined_dict = {combined_dict}\n")
+            logger.debug("combined_dict = %s\n", combined_dict)
         try:
             metadata_object = klass.model_validate(standardize_keys_in_dict(combined_dict), strict=False)
         except ValidationError as e:
@@ -843,11 +846,11 @@ class MetadataEditor:
                     f" {max_tokens}, truncating the content and proceeding."
                 )
             else:
-                print(f"Reading {doc}, running token count is {num_tokens}")
+                logger.info("Reading %s, running token count is %d", doc, num_tokens)
         messages += user_message
 
         endpoint_name = llm_base_url if llm_base_url is not None else "OpenAI"
-        print(f"Sending to {endpoint_name}, this may take a few minutes...")
+        logger.info("Sending to %s, this may take a few minutes...", endpoint_name)
         try:
             completion = client.beta.chat.completions.parse(
                 model=llm_model_name,
@@ -1456,9 +1459,10 @@ class MetadataEditor:
         Returns:
             Union[BaseModel, Dict]: The metadata object or dictionary.
         """
-        assert output_mode not in EXCEL_MODES, (
-            f"read_metadata_from_excel output_mode should be 'pydantic' or 'dict' but found '{output_mode}'"
-        )
+        if output_mode in EXCEL_MODES:
+            raise ValueError(
+                f"read_metadata_from_excel output_mode should be 'pydantic' or 'dict' but found '{output_mode}'"
+            )
         object = self._process_metadata_input(filename)[0]
         return self._process_metadata_output(object, output_mode, simplify=exclude_unset)
 
@@ -1511,7 +1515,8 @@ class MetadataEditor:
         Returns:
             (int): The id of the newly created collection
         """
-        assert title != "", "The collection must have a title but an empty string was passed"
+        if title == "":
+            raise ValueError("The collection must have a title but an empty string was passed")
         ret = self._apinterface.post_request("collections", json={"title": title, "description": description})
         return ret["collection"]
 
@@ -1527,7 +1532,8 @@ class MetadataEditor:
             Assertion Error: if both title and description are None, since we must update one or the other.
         """
         # Is it clear this updates title/description of the collection and not the data in the collection?
-        assert title is not None or description is not None, "can update title or description or both, but not neither"
+        if title is None and description is None:
+            raise ValueError("can update title or description or both, but not neither")
         metadata = {}
         if title is not None:
             metadata["title"] = title
@@ -1591,7 +1597,8 @@ class MetadataEditor:
             pd.DataFrame: Information on the projects in the collection, such as id, idno, title and type.
         """
         if isinstance(limit, str):
-            assert limit.lower() == "all", f"Expected limit to be 'all' or a positive integer but got '{limit}'"
+            if limit.lower() != "all":
+                raise ValueError(f"Expected limit to be 'all' or a positive integer but got '{limit}'")
             new_offset = offset
             new_limit = 500
             dfs = []
@@ -1614,7 +1621,8 @@ class MetadataEditor:
         if sort_by is not None:
             sort_by = sort_by.lower()
             valid_sort_by = ["title_asc", "title_desc", "updated_asc", "updated_desc"]
-            assert sort_by in valid_sort_by, f"{sort_by} not valid, must be one of {valid_sort_by}"
+            if sort_by not in valid_sort_by:
+                raise ValueError(f"{sort_by} not valid, must be one of {valid_sort_by}")
             params["sort_by"] = sort_by
         ret = self._apinterface.get_request("editor?collection={}", id=collection, params=params)
         if len(ret["projects"]) == 0:
@@ -1656,7 +1664,8 @@ class MetadataEditor:
         me.add_projects_to_collection(collection=[1, 2], id_format='idno', projects=['A101', 'A102'])
         ```
         """
-        assert id_format.lower() in ["id", "idno"], f"id_format must be either 'id' or 'idno' but got '{id_format}'"
+        if id_format.lower() not in ["id", "idno"]:
+            raise ValueError(f"id_format must be either 'id' or 'idno' but got '{id_format}'")
         if not isinstance(collection, Iterable) or isinstance(collection, str):
             collection = [collection]
 
@@ -1664,10 +1673,12 @@ class MetadataEditor:
             projects = [projects]
         if id_format.lower() == "id":
             for proj in projects:
-                assert isinstance(proj, int), f"When passing ids the projects must be ints, but found: {proj}"
+                if not isinstance(proj, int):
+                    raise ValueError(f"When passing ids the projects must be ints, but found: {proj}")
         else:
             for proj in projects:
-                assert isinstance(proj, str), f"While passing idnos the projects must be strs but found: {proj}"
+                if not isinstance(proj, str):
+                    raise ValueError(f"While passing idnos the projects must be strs but found: {proj}")
         self._apinterface.post_request(
             "collections/add_projects",
             json={"collections": collection, "id_format": id_format, "projects": projects},
@@ -1712,15 +1723,18 @@ class MetadataEditor:
         me.remove_projects_from_collection(collection=[1, 2], id_format='idno', projects=['A101', 'A102'])
         ```
         """
-        assert id_format.lower() in ["id", "idno"], f"id_format must be either 'id' or 'idno' but got '{id_format}'"
+        if id_format.lower() not in ["id", "idno"]:
+            raise ValueError(f"id_format must be either 'id' or 'idno' but got '{id_format}'")
         if not isinstance(projects, Iterable) or isinstance(projects, str):
             projects = [projects]
         if id_format.lower() == "id":
             for proj in projects:
-                assert isinstance(proj, int), f"When passing ids the projects must be ints, but found: {proj}"
+                if not isinstance(proj, int):
+                    raise ValueError(f"When passing ids the projects must be ints, but found: {proj}")
         else:
             for proj in projects:
-                assert isinstance(proj, str), f"While passing idnos the projects must be strs but found: {proj}"
+                if not isinstance(proj, str):
+                    raise ValueError(f"While passing idnos the projects must be strs but found: {proj}")
 
         self._apinterface.post_request(
             "collections/remove_projects",
@@ -1913,7 +1927,7 @@ class MetadataEditor:
         """If the collection exists then deletes it and check it was deleted.
 
         Args:
-            id (int): the id of the colection.
+            id (int): the id of the collection.
 
         Raises:
             DeleteNotAppliedError: This can be the result of system admins blocking data deletion

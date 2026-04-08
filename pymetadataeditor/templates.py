@@ -89,7 +89,7 @@ def get_child_field_info_from_dot_annotated_name(name, parent_schema):
 
 def define_simple_element(
     item, parent_schema, element_type=str, apply_rules: bool = True
-) -> Dict[str : Tuple[Type[BaseModel]], Field]:
+) -> Dict[str, Tuple[Type[BaseModel], Field]]:
     assert (
         isinstance(item, dict)
         and "type" in item
@@ -398,7 +398,7 @@ def create_model_for_template(
 
 def get_children_of_props(
     props: List[Dict[str, str]], parent_schema: Type[BaseModel], apply_rules: bool = True
-) -> Dict[str : Tuple[Type[BaseModel]], Field]:
+) -> Dict[str, Tuple[Type[BaseModel], Field]]:
     children = {}
     for prop in props:
         if "prop_key" not in prop:
@@ -436,7 +436,7 @@ def make_array_element_name(key: str) -> str:
         return f"{key.capitalize()}Item"
 
 
-def define_array_element(item, parent_schema, apply_rules: bool = True) -> Dict[str : Tuple[Type[BaseModel]], Field]:
+def define_array_element(item, parent_schema, apply_rules: bool = True) -> Dict[str, Tuple[Type[BaseModel], Field]]:
     assert "type" in item and (item["type"] == "array" or item["type"] == "nested_array"), (
         f"expected array item but got {item}"
     )
@@ -459,7 +459,7 @@ def define_array_element(item, parent_schema, apply_rules: bool = True) -> Dict[
 
 def define_simple_array_element(
     item: dict, parent_schema: Type[BaseModel], apply_rules: bool = True
-) -> Dict[str : Tuple[Type[BaseModel]], Field]:
+) -> Dict[str, Tuple[Type[BaseModel], Field]]:
     assert isinstance(item, dict) and "type" in item and item["type"] == "simple_array", (
         f"expected simple_array item, got {item}"
     )
@@ -523,7 +523,7 @@ def dot_to_hierarchy(d):
 
 def define_group_of_elements(
     items: List[dict], parent_schema: Type[BaseModel], apply_rules: bool = True
-) -> Dict[str : Tuple[Type[BaseModel]], Field]:
+) -> Dict[str, Tuple[Type[BaseModel], Field]]:
     elements = {}
     for item in items:
         if "is_custom" in item and item["is_custom"] is True:
@@ -604,13 +604,10 @@ def append_variables_and_data_files(model_elements, parent_schema, apply_rules: 
 
         if not apply_rules:
             if is_optional_list(annotation):
-                print("is optional list")
                 annotation = Optional[List[strip_model_rules(get_args(get_args(annotation)[0])[0])]]
             elif is_list_annotation(annotation):
-                print("is list")
                 annotation = List[strip_model_rules(get_args(annotation)[0])]
             elif is_optional_annotation(annotation):
-                print("is optional")
                 annotation = Optional[strip_model_rules(get_args(annotation)[0])]
         model_elements[v] = (annotation, field_info)
     return model_elements

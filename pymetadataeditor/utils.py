@@ -1,3 +1,5 @@
+"""Shared utility functions for pymetadataeditor."""
+
 from typing import Annotated, Any, Dict, List, Optional, Type, Union, get_args, get_origin
 
 from metadataschemas.utils.utils import is_list_annotation, is_optional_annotation, is_optional_list
@@ -5,8 +7,7 @@ from pydantic import BaseModel, Field
 
 
 def validate_json_patches(patches):
-    """
-    Validates a list of JSON patches according to the JSON Patch specification.
+    """Validates a list of JSON patches according to the JSON Patch specification.
 
     Args:
         patches (list): A list of JSON patch dictionaries.
@@ -49,8 +50,10 @@ def validate_json_patches(patches):
 
 
 def remove_empty_from_dict(old_dict: Dict) -> Dict:
-    """Helper function for removing entries from dictionaries that look like:
-    [{'name': ''}]
+    """Remove empty entries from a dictionary.
+
+    Removes entries that are empty strings, empty dicts, empty lists, or None.
+    Processes nested dicts and lists recursively.
     """
     new_dict = {}
     for k, v in old_dict.items():
@@ -73,6 +76,7 @@ def remove_empty_from_dict(old_dict: Dict) -> Dict:
 
 
 def remove_empty_from_list(v):
+    """Remove empty entries from a list, recursing into nested dicts and lists."""
     new_list = []
     for elem in v:
         if elem is None:
@@ -152,9 +156,9 @@ def remove_empty_from_list(v):
 
 
 def strip_constraints_from_annotated(annotation: Any) -> Any:
-    """
-    Strip constraints from Annotated types, Optional, List, and combinations,
-    while preserving the base type.
+    """Strip constraints from Annotated types, Optional, List, and combinations.
+
+    Preserves the base type.
     """
     # # Handle Annotated types, e.g., Annotated[str, constr(min_length=1)]
     # if get_origin(annotation) is Annotated:
@@ -194,9 +198,10 @@ def strip_constraints_from_annotated(annotation: Any) -> Any:
 
 
 def strip_model_rules(original_model: Type[BaseModel]) -> Type[BaseModel]:
-    """
-    Create a copy of a Pydantic model class (and its nested models) with validation rules stripped,
-    but retaining titles and descriptions. Handles Annotated types like StringConstraints.
+    """Create a copy of a Pydantic model class with validation rules stripped.
+
+    Processes the model and all nested models recursively, retaining titles and descriptions.
+    Handles Annotated types like StringConstraints.
     """
     stripped_fields = {}
     annotations = {}

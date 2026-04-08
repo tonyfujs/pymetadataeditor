@@ -28,6 +28,25 @@ Per-module deep dives (referenced from `skill.md`):
 | [docs/modules/llm_helpers.md](docs/modules/llm_helpers.md) | `pymetadataeditor/llm_helpers.py` | LLM call orchestration, file conversion, validation logic |
 | [docs/modules/utils.md](docs/modules/utils.md) | `pymetadataeditor/utils.py` | JSON Patch validation, empty-value cleaning, constraint stripping |
 
+Schema reference — for any work touching metadata schemas (new metadata type, schema validation, Excel round-trips, pydantic model generation, debugging field types), consult the dedicated schema skill. It documents the sibling [`tonyfujs/metadata-schemas`](https://github.com/tonyfujs/metadata-schemas) repo that supplies every `*Schema` class used by this package:
+
+- **[docs/metadata_schemas/skill.md](docs/metadata_schemas/skill.md)** — Overview of the `metadataschemas` package: supported types, public API (`MetadataManager`, `SchemaBaseModel`, shared utilities), where pymetadataeditor already integrates, versioning workflow, things to never do, and pointers to per-schema reference files.
+
+Per-schema reference files (one per supported metadata type — top-level fields, required fields, common pitfalls, instantiation examples):
+
+| Schema | Reference |
+|---|---|
+| `document` | [docs/metadata_schemas/schemas/document.md](docs/metadata_schemas/schemas/document.md) |
+| `geospatial` | [docs/metadata_schemas/schemas/geospatial.md](docs/metadata_schemas/schemas/geospatial.md) |
+| `image` | [docs/metadata_schemas/schemas/image.md](docs/metadata_schemas/schemas/image.md) |
+| `indicator` | [docs/metadata_schemas/schemas/indicator.md](docs/metadata_schemas/schemas/indicator.md) |
+| `indicators_db` | [docs/metadata_schemas/schemas/indicators_db.md](docs/metadata_schemas/schemas/indicators_db.md) |
+| `microdata` | [docs/metadata_schemas/schemas/microdata.md](docs/metadata_schemas/schemas/microdata.md) |
+| `resource` | [docs/metadata_schemas/schemas/resource.md](docs/metadata_schemas/schemas/resource.md) |
+| `script` | [docs/metadata_schemas/schemas/script.md](docs/metadata_schemas/schemas/script.md) |
+| `table` | [docs/metadata_schemas/schemas/table.md](docs/metadata_schemas/schemas/table.md) |
+| `video` | [docs/metadata_schemas/schemas/video.md](docs/metadata_schemas/schemas/video.md) |
+
 Auto-generated API reference and user-facing docs:
 
 | Doc | Description |

@@ -240,27 +240,34 @@ excel_path = me.get_project_metadata_by_id(123, "excel", filename="project_123.x
 
 ---
 
-#### `save_metadata_to_excel(metadata, filename) -> str`
+#### `save_metadata_to_excel(metadata_model, metadata_type_or_template_uid, filename, title) -> str`
 
 ```python
 def save_metadata_to_excel(
     self,
-    metadata: Union[BaseModel, Dict],
+    metadata_model: BaseModel | dict | str,
+    metadata_type_or_template_uid: Optional[str] = None,
     filename: Optional[str] = None,
+    title: Optional[str] = None,
 ) -> str
 ```
 
-Exports a metadata object (Pydantic model or dict) to an Excel file. Returns the filename.
+Exports a metadata object (Pydantic model, dict, or path to an existing Excel file) to an Excel file. Returns the filename. When passing a dict, `metadata_type_or_template_uid` is required to identify the schema.
 
 ---
 
-#### `read_metadata_from_excel(filename) -> BaseModel`
+#### `read_metadata_from_excel(filename, output_mode, exclude_unset) -> Union[BaseModel, Dict]`
 
 ```python
-def read_metadata_from_excel(self, filename: str) -> BaseModel
+def read_metadata_from_excel(
+    self,
+    filename: str,
+    output_mode: str = "pydantic",
+    exclude_unset: bool = True,
+) -> Union[BaseModel, Dict]
 ```
 
-Reads metadata from an Excel file (previously created by `save_metadata_to_excel` or `make_metadata_outline`) and returns a Pydantic model object.
+Reads metadata from an Excel file (previously created by `save_metadata_to_excel` or `make_metadata_outline`). Returns a Pydantic model by default; pass `output_mode="dict"` for a dictionary. When `output_mode="dict"`, `exclude_unset=True` omits fields with null or empty values.
 
 ---
 
@@ -377,13 +384,22 @@ Returns a Series with the details of a specific template identified by its UID.
 
 ---
 
-#### `change_mode_or_template(id, template_uid)`
+#### `change_mode_or_template(metadata, output_mode, ...) -> Union[BaseModel, Dict, str]`
 
 ```python
-def change_mode_or_template(self, id: int, template_uid: str)
+def change_mode_or_template(
+    self,
+    metadata: Union[BaseModel, Dict, str],
+    output_mode: str,
+    output_template_uid: Optional[str] = None,
+    input_template_uid: Optional[str] = None,
+    filename: Optional[str] = None,
+    title: Optional[str] = None,
+    simplify: Optional[bool] = None,
+) -> Union[BaseModel, Dict, str]
 ```
 
-Reassigns a different template to an existing project. The new template must be compatible with the project's metadata type.
+Converts a metadata object between output modes (`"pydantic"`, `"dict"`, `"excel"`) and/or between templates. `output_template_uid` specifies the target template; if omitted the existing template is preserved. `input_template_uid` is required when `metadata` is a raw dictionary. `filename` and `title` apply when `output_mode="excel"`.
 
 ---
 
@@ -524,6 +540,16 @@ def set_template_for_collection(self, collection_id: int, template_uid: str)
 ```
 
 Assigns a template to all projects in a collection.
+
+---
+
+#### `delete_collection_by_id(id)`
+
+```python
+def delete_collection_by_id(self, id: int)
+```
+
+Deletes the collection with the given `id` and verifies deletion. Raises `DeleteNotAppliedError` if the system blocks the deletion (e.g. due to admin restrictions).
 
 ---
 

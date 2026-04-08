@@ -1,5 +1,6 @@
 """Helper functions for the LLM Metadata Editor when working with Pydantic models and LLM outputs."""
 
+import logging
 from datetime import datetime
 from typing import Any, List, get_args
 
@@ -16,6 +17,8 @@ from pydantic import BaseModel, ValidationError
 
 # from tqdm import tqdm
 from tqdm import tqdm
+
+logger = logging.getLogger(__name__)
 
 
 def _prepend_draft_drop_non_str(d: Any, prefix: str) -> dict | list | str | None:
@@ -126,7 +129,7 @@ def _iterated_validated_update_to_outline(model_def: type[BaseModel], updates: d
         except ValidationError as e:
             # If validation fails, leave the original value
             if verbose:
-                print(f"Skipping {key}({annotation})={candidate_value} because of {e}\n")
+                logger.debug("Skipping %s(%s)=%s because of %s\n", key, annotation, candidate_value, e)
             original_model[key] = original_value
         # print(original_model)
 

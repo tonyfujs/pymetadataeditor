@@ -8,7 +8,7 @@ pyMetadataEditor allows you to list, create, update and delete projects, manage 
 
 You can save metadata to an Excel file. Or use OpenAI to draft metadata from files or web pages. 
 
-First obtain an API key and pase it into a file called '.env' in the root of your project. The contents of the  file should look like this: 
+First obtain an API key and paste it into a file called '.env' in the root of your project. The contents of the  file should look like this: 
 
  `METADATA_API_URL=https://<name_of_your_metadata_database>.org/index.php/api` 
 

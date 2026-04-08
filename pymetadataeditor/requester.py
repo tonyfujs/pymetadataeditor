@@ -104,7 +104,7 @@ class RequestsWithSpecificErrors(BaseModel):
             raise SSLError(
                 f"Usually this means the admin of {self.api_url} has not verified an SSL certificate.\n"
                 f"You can bypass the requirement by setting MetadataEditor.verify_ssl=False.\n{e}"
-            ) from None
+            ) from e
         except HTTPError as e:
             if response is None or response.status_code == 404:
                 error_msg = (

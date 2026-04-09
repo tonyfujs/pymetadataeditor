@@ -260,19 +260,19 @@ The existing `RequestsWithSpecificErrors` helper in `pymetadataeditor/requester.
 | `patch_admin_metadata` | `admin-metadata/data_patch/` | POST | `{project_id, template_uid, patches}` |
 | `delete_admin_metadata` | `admin-metadata/data_remove/` | POST | `{project_id, template_uid}` |
 
-**Open verification item during implementation:** confirm that `RequestsWithSpecificErrors` accepts f-string-interpolated path prefixes alongside the `id=` slot. If not, the implementer must either (a) extend `RequestsWithSpecificErrors` to support multi-segment interpolation, or (b) build the full path as a string in `interface.py` and pass it without the `id=` kwarg. Option (b) is preferred to avoid widening an internal API in this round. The plan-writing phase will select the exact approach after reading `requester.py`.
+**Confirmed during review:** `RequestsWithSpecificErrors._request` supports only a single `{}` slot filled via the `id=` keyword argument. For `get_admin_metadata`, the implementation pre-interpolates `project_id` into the path string in `interface.py` (e.g. `pth = f"admin-metadata/data/{project_id}/" + "{}"`) and passes `id=template_uid` through the existing helper. No changes to `requester.py` are required in this round.
 
 ### 4.4 Validation, empty-value cleaning, and error handling
 
 | Concern | Approach |
 |---|---|
 | Stripping empty/None values from the POST body | `upsert_admin_metadata` calls `remove_empty_from_dict(metadata)` from `pymetadataeditor/utils.py` before sending, matching `create_project_log`. |
-| JSON Patch op validation | `patch_admin_metadata` passes `patches` through `validate_json_patches()` from `pymetadataeditor/utils.py` — the same helper `patch_update_project_log_by_id` uses. Path auto-`/` prefix normalisation happens inside that helper. |
+| JSON Patch op validation | `patch_admin_metadata` passes `patches` through `validate_json_patches()` from `pymetadataeditor/utils.py` — the same helper `patch_update_project_log_by_id` uses. **Implementation note:** during planning, verify whether path `/` normalisation lives inside `validate_json_patches()` or inside the caller (`patch_update_project_log_by_id`). Whichever layer owns it, `patch_admin_metadata` must reproduce it consistently — do not silently drop the behaviour. |
 | `template_uid` not empty | `upsert_admin_metadata` raises `ValueError("template_uid must be a non-empty string")` before sending. |
 | `metadata` must be a dict | `upsert_admin_metadata` raises `ValueError` if `not isinstance(metadata, dict)`. Pydantic models / Excel paths are **not** accepted in this round (deferred). |
 | Delete confirmation | `delete_admin_metadata` follows the pattern of `delete_resource_by_id`: after the POST it calls `get_admin_metadata(project_id, template_uid)` and expects an error. If the record still exists it raises `DeleteNotAppliedError`. It does **not** reuse `_delete_by_id` because the delete endpoint shape is `POST /data_remove/` with a body, not `.../delete/{id}`. |
 | HTTP errors (4xx/5xx) | Propagated from `self._apinterface` unchanged. The existing error-translation layer in `requester.py` handles 403 → `PermissionError`, 404 → `HTTPError`/`ValueError`, SSL errors, etc. |
-| "Not found" on `get_admin_metadata` | Catches the underlying 404 and re-raises as `ValueError(f"No admin metadata found for project_id={project_id}, template_uid={template_uid}")`. Matches the UX of `get_project_by_id`-style lookups. |
+| "Not found" on `get_admin_metadata` | The `requester.py` layer already translates 404s into `requests.HTTPError`. `get_admin_metadata` catches `HTTPError` (not a raw 404) and re-raises as `ValueError(f"No admin metadata found for project_id={project_id}, template_uid={template_uid}")`. Matches the UX of `get_project_by_id`-style lookups. |
 | "Not found" on `get_admin_metadata_template_by_uid` | Re-raised as `TemplateError`, matching the existing `get_template_by_uid` convention. |
 
 ### 4.5 Pagination semantics for `list_admin_metadata`
@@ -291,7 +291,7 @@ The existing `RequestsWithSpecificErrors` helper in `pymetadataeditor/requester.
 
 - Add a new section-marker comment block (`# ADMIN METADATA`) after the existing `# TEMPLATES` block.
 - Add the 7 new public methods with full Google-style docstrings.
-- Remove the commented-out stub of `log_project_admin_metadata` at lines 1084-1113 — it is superseded by this design.
+- **Standalone cleanup step (call out separately in the plan):** remove the commented-out stub of `log_project_admin_metadata` at lines 1084-1113 — it is superseded by this design. Worth flagging as its own commit / step so diff reviewers are not surprised.
 - No changes to existing public methods.
 
 ### 5.2 `pymetadataeditor/utils.py`
@@ -347,6 +347,7 @@ All tests use the existing `monkeypatch` + `MockResponse` pattern. No live HTTP.
 | `test_list_admin_metadata_no_filters` | Fetches all pages when `limit="All"` (mock returns 2 pages, second page short). |
 | `test_list_admin_metadata_with_filters` | `project_id`, `template_uid` (str), `date_from`, `date_to` correctly appear in the query params. |
 | `test_list_admin_metadata_template_uid_list_joined_with_commas` | `template_uid=["a","b"]` → `?template=a,b`. |
+| `test_list_admin_metadata_passes_dates_verbatim` | Malformed date strings (e.g. `date_from="not-a-date"`) are forwarded to the API unchanged — locks in the "no client-side date validation" contract from §4.5. |
 | `test_list_admin_metadata_empty_result` | Empty result → empty DataFrame (not `None`). |
 | `test_get_admin_metadata_success` | Returns dict as-is. |
 | `test_get_admin_metadata_with_idno_string_project_id` | `project_id="MY_IDNO"` passed through verbatim into the path. |

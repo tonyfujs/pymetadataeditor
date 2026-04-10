@@ -1,0 +1,2873 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Python client library for the Metadata Editor API">
+      
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Admin Metadata CRUD — Design Spec - pyMetadataEditor</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="light-blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#admin-metadata-crud-design-spec" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="pyMetadataEditor" class="md-header__button md-logo" aria-label="pyMetadataEditor" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            pyMetadataEditor
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Admin Metadata CRUD — Design Spec
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="light-blue"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tonyfujs/pymetadataeditor" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tonyfujs/pymetadataeditor
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../getting_started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../user_guide/01_browsing_projects/" class="md-tabs__link">
+          
+  
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../how_to/move_projects_between_collections/" class="md-tabs__link">
+          
+  
+  
+  How-To Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../reference/api/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../reference/output_modes/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../developer/architecture/" class="md-tabs__link">
+          
+  
+  
+  Developer Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="pyMetadataEditor" class="md-nav__button md-logo" aria-label="pyMetadataEditor" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    pyMetadataEditor
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tonyfujs/pymetadataeditor" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tonyfujs/pymetadataeditor
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting_started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user_guide/01_browsing_projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Browsing & Discovering Projects
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user_guide/02_schemas_and_templates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schemas & Templates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user_guide/03_creating_metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Creating New Metadata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user_guide/04_retrieving_metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Retrieving Existing Metadata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user_guide/05_updating_metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Updating Metadata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user_guide/06_working_with_formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Working with Formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user_guide/07_ai_powered_generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI-Powered Metadata Generation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user_guide/08_managing_collections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Managing Collections
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user_guide/09_managing_resources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Managing Resources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user_guide/10_deleting_data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deleting Data
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../user_guide/11_advanced/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-To Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    How-To Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../how_to/move_projects_between_collections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Move Projects Between Collections
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../how_to/batch_upload_from_excel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Batch Upload from Excel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../how_to/instance_to_instance_migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Instance-to-Instance Migration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/output_modes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Output Modes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/metadata_types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/error_handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_4" id="__nav_6_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schema Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Schema Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/schemas/document/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Document
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/schemas/geospatial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Geospatial
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/schemas/image/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Image
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/schemas/indicator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Indicator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/schemas/indicators_db/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Indicators DB
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/schemas/microdata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Microdata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/schemas/resource/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resource
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/schemas/script/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Script
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/schemas/table/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Table
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../reference/schemas/video/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Video
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../developer/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Module Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../developer/modules/interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    interface.py
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../developer/modules/requester/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    requester.py
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../developer/modules/templates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    templates.py
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../developer/modules/llm_helpers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    llm_helpers.py
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../developer/modules/utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    utils.py
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-context-motivation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Context &amp; motivation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Scope
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Scope">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-in-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 In scope
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-out-of-scope-for-this-round" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Out of scope for this round
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Non-goals
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-admin-metadata-api-surface-ground-truth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Admin metadata API surface (ground truth)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Design
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-method-signatures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Method signatures
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-typing-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Typing notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-endpoint-path-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Endpoint path mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-validation-empty-value-cleaning-and-error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Validation, empty-value cleaning, and error handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-pagination-semantics-for-list_admin_metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 Pagination semantics for list_admin_metadata
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-changes-by-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Changes by file
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Changes by file">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-pymetadataeditorinterfacepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 pymetadataeditor/interface.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-pymetadataeditorutilspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 pymetadataeditor/utils.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-pymetadataeditorrequesterpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 pymetadataeditor/requester.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-pymetadataeditortemplatespy-pymetadataeditorllm_helperspy-pymetadataeditor__init__py" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 pymetadataeditor/templates.py, pymetadataeditor/llm_helpers.py, pymetadataeditor/__init__.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-teststest_interfacepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 tests/test_interface.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#56-testsintegration_testpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.6 tests/integration_test.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#57-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.7 Documentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#58-pyprojecttoml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.8 pyproject.toml
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-test-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Test plan
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Test plan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-unit-tests-teststest_interfacepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Unit tests — tests/test_interface.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-integration-test-testsintegration_testpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Integration test — tests/integration_test.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-what-the-tests-dont-cover" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 What the tests don't cover
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-relationship-to-other-work" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Relationship to other work
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Relationship to other work">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-data360-sibling-package-future-separate-spec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Data360 sibling package (future, separate spec)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-future-rounds-in-pymetadataeditor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Future rounds in pymetadataeditor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-things-this-spec-explicitly-does-not-promise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Things this spec explicitly does not promise
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-risks-open-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Risks &amp; open questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-rollout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Rollout
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="admin-metadata-crud-design-spec">Admin Metadata CRUD — Design Spec</h1>
+<p><strong>Date:</strong> 2026-04-09
+<strong>Package:</strong> <code>pymetadataeditor</code>
+<strong>Target version:</strong> <code>0.4.0</code>
+<strong>Status:</strong> Draft — pending review</p>
+<hr />
+<h2 id="1-context-motivation">1. Context &amp; motivation</h2>
+<p><code>pymetadataeditor</code> is a Python client library for the <a href="https://github.com/mah0001/metadata-editor">Metadata Editor</a> REST API. It is intended to be a <strong>general-purpose</strong> client — clean of any organisation- or workflow-specific logic — usable by any institution running a Metadata Editor instance.</p>
+<p>A gap analysis of <a href="../../../publishing.py"><code>docs/publishing.py</code></a> (a Data360 publishing workflow script) against the current <code>pymetadataeditor</code> public surface identified <strong>administrative metadata</strong> as the most urgent missing capability. Admin metadata is an entirely separate concern from project metadata: it has its own template namespace, its own CRUD endpoints, and is keyed by <code>(project_id, template_uid)</code> pairs rather than by numeric project ID alone.</p>
+<p>Today the only way to work with admin metadata through <code>pymetadataeditor</code> is <code>generic_api_request()</code> — i.e. callers must hand-craft URLs and bodies, completely bypassing the class's validation, error handling, and type conventions. A commented-out stub of <code>log_project_admin_metadata</code> already exists in <a href="../../../pymetadataeditor/interface.py#L1084-L1113"><code>pymetadataeditor/interface.py:1084-1113</code></a>, indicating that earlier work began in this direction but was abandoned.</p>
+<p>This spec defines a minimal, dict-only CRUD surface for admin metadata that:</p>
+<ul>
+<li>Uses the same HTTP layer, error types, and conventions as the rest of <code>MetadataEditor</code></li>
+<li>Stays <strong>general-purpose</strong> — no Data360/World Bank/SDMX concerns leak in</li>
+<li>Ships as round 1 of a broader package of gaps identified in <a href="../../../publishing.py"><code>docs/publishing.py</code></a></li>
+<li>Defers Pydantic/Excel support, admin-template Pydantic class generation, and edit history to a round 2</li>
+</ul>
+<p>Out of scope (deferred from the initial gap analysis):</p>
+<ul>
+<li>PDF export, by-idno lookups, attribute-filtered listing, bulk parallel export, <code>exclude_private_fields</code> flag, <code>list_projects_in_collection</code> type filter — all Bucket 2 items for later rounds.</li>
+<li>All Bucket 3 items (SDMX parsing, Data360 payload shaping, DDH triggers). These belong in a future sibling package; see §7.</li>
+</ul>
+<hr />
+<h2 id="2-scope">2. Scope</h2>
+<h3 id="21-in-scope">2.1 In scope</h3>
+<p>Seven new public methods on <code>pymetadataeditor.interface.MetadataEditor</code>:</p>
+<ol>
+<li><code>list_admin_metadata_templates()</code></li>
+<li><code>get_admin_metadata_template_by_uid(uid)</code></li>
+<li><code>list_admin_metadata(...)</code> — query with filters and pagination</li>
+<li><code>get_admin_metadata(project_id, template_uid)</code></li>
+<li><code>upsert_admin_metadata(project_id, template_uid, metadata)</code></li>
+<li><code>patch_admin_metadata(project_id, template_uid, patches)</code> — multi-op JSON Patch</li>
+<li><code>delete_admin_metadata(project_id, template_uid)</code></li>
+</ol>
+<p>All seven return/accept <code>dict</code>, <code>pd.DataFrame</code>, or <code>pd.Series</code>. No <code>output_mode</code> parameter, no Pydantic, no Excel.</p>
+<h3 id="22-out-of-scope-for-this-round">2.2 Out of scope for this round</h3>
+<ul>
+<li><code>output_mode="pydantic" | "excel"</code> on any admin-metadata method.</li>
+<li><code>get_admin_metadata_class(uid)</code> / <code>make_admin_metadata_outline(uid, ...)</code>. No Pydantic class generation from admin templates. No admin template caching on <code>self._templates</code>.</li>
+<li><code>get_admin_metadata_edit_history()</code> (the endpoint <code>/admin-metadata/edit_history/{projectId}/{templateUid}</code> exists but is not exposed in this round).</li>
+<li>No changes to <code>list_templates()</code> — admin templates remain in their own discovery namespace.</li>
+<li>No changes to <code>patch_update_project_log_by_id()</code>. The project-side patch remains single-op. A future round may generalise it to multi-op to match <code>patch_admin_metadata</code> — explicitly noted as a follow-up.</li>
+<li>No convenience helpers for response shaping (e.g. the <code>clean_admin_metadata()</code> helper in <code>publishing.py</code> that flattens the list response into <code>{template_uid: metadata}</code> — that belongs in a downstream Data360 package, not in a general-purpose client).</li>
+</ul>
+<h3 id="23-non-goals">2.3 Non-goals</h3>
+<ul>
+<li>This spec does <strong>not</strong> introduce a Data360/SDMX/World Bank sibling package. A sibling package for those workflow-specific helpers has been agreed strategically (see §7) but its design is a separate spec.</li>
+</ul>
+<hr />
+<h2 id="3-admin-metadata-api-surface-ground-truth">3. Admin metadata API surface (ground truth)</h2>
+<p>Sourced from <a href="../../../metadata-editor-api.yaml"><code>docs/metadata-editor-api.yaml</code></a> (the Metadata Editor OpenAPI spec).</p>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Verb</th>
+<th>Purpose</th>
+<th>Body / params</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/admin-metadata/templates</code></td>
+<td>GET</td>
+<td>List admin templates</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>/admin-metadata/templates/{templateUid}</code></td>
+<td>GET</td>
+<td>Get one admin template</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>/admin-metadata/data_query</code></td>
+<td>GET</td>
+<td>Query records</td>
+<td><code>project_id?</code>, <code>template?</code> (comma-separated), <code>date_from?</code> (YYYY-MM-DD), <code>date_to?</code>, <code>limit?</code> (default 50), <code>offset?</code> (default 0)</td>
+</tr>
+<tr>
+<td><code>/admin-metadata/data/{projectId}/{templateUid}</code></td>
+<td>GET</td>
+<td>Read one record</td>
+<td><code>projectId</code> accepts <strong>ID or IDNO</strong></td>
+</tr>
+<tr>
+<td><code>/admin-metadata/data/</code></td>
+<td>POST</td>
+<td><strong>Upsert</strong> (add/update)</td>
+<td><code>{project_id, template_uid, metadata}</code></td>
+</tr>
+<tr>
+<td><code>/admin-metadata/data_patch/</code></td>
+<td>POST</td>
+<td><strong>Multi-op</strong> JSON Patch</td>
+<td><code>{project_id, template_uid, patches[]}</code></td>
+</tr>
+<tr>
+<td><code>/admin-metadata/data_remove/</code></td>
+<td>POST</td>
+<td>Delete</td>
+<td><code>{project_id, template_uid}</code></td>
+</tr>
+<tr>
+<td><code>/admin-metadata/edit_history/{projectId}/{templateUid}</code></td>
+<td>GET</td>
+<td>Edit history</td>
+<td><em>(out of scope)</em></td>
+</tr>
+</tbody>
+</table>
+<p>Three properties shape the design:</p>
+<ol>
+<li><strong>Admin metadata is keyed by <code>(project_id, template_uid)</code> pairs.</strong> A single project can have multiple admin-metadata records — one per template. Every method except <code>list_admin_metadata</code> and the two template-discovery methods takes both keys.</li>
+<li><strong>Admin templates live in their own namespace.</strong> <code>/admin-metadata/templates</code> is disjoint from <code>/templates</code>. <code>list_templates()</code> today does not surface admin templates, and this spec does not change that.</li>
+<li><strong><code>POST /admin-metadata/data/</code> is upsert, not insert.</strong> There is no separate create vs update endpoint. Method naming reflects this: <code>upsert_admin_metadata</code>, not <code>create_admin_metadata</code> / <code>update_admin_metadata</code>.</li>
+</ol>
+<p>The patch endpoint natively supports a <code>patches[]</code> array of JSON Patch operations (RFC 6902) in a single request — unlike the project-side <code>/editor/patch/...</code> endpoint as it is currently exposed. <code>patch_admin_metadata</code> takes advantage of this.</p>
+<hr />
+<h2 id="4-design">4. Design</h2>
+<h3 id="41-method-signatures">4.1 Method signatures</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># ─── Admin metadata templates (discovery) ───────────────────────────────────</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">list_admin_metadata_templates</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieves all administrative metadata templates.</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="sd">        pd.DataFrame: DataFrame of admin metadata templates. Empty DataFrame</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="sd">            (with the expected columns) if none are found.</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_admin_metadata_template_by_uid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieves a single administrative metadata template by UID.</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="sd">        uid (str): Admin metadata template UID.</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="sd">        pd.Series: The template record.</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="sd">        TemplateError: If the UID is not found.</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="c1"># ─── Admin metadata data (CRUD) ─────────────────────────────────────────────</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="k">def</span><span class="w"> </span><span class="nf">list_admin_metadata</span><span class="p">(</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>    <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>    <span class="n">project_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>    <span class="n">template_uid</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>    <span class="n">date_from</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>   <span class="c1"># &quot;YYYY-MM-DD&quot;</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>    <span class="n">date_to</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>     <span class="c1"># &quot;YYYY-MM-DD&quot;</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>    <span class="n">limit</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;All&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>    <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Query administrative metadata records across projects and templates.</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a><span class="sd">    Paginates internally in batches of 500 when `limit=&quot;All&quot;` (same convention</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a><span class="sd">    as `list_projects`).</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a><span class="sd">        project_id: Filter by a single project ID or IDNO.</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a><span class="sd">        template_uid: Filter by one template UID, or a list of UIDs</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a><span class="sd">            (list values are joined with commas before being sent to the API).</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a><span class="sd">        date_from: Inclusive lower bound on the `changed` field (YYYY-MM-DD).</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a><span class="sd">        date_to: Inclusive upper bound on the `changed` field (YYYY-MM-DD).</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a><span class="sd">        limit: Max records to return, or &quot;All&quot; to fetch every page.</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a><span class="sd">        offset: Starting offset. Ignored when `limit=&quot;All&quot;`.</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a><span class="sd">        pd.DataFrame: One row per (project, template_uid) record. Empty</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a><span class="sd">            DataFrame if none match.</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_admin_metadata</span><span class="p">(</span>
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>    <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>    <span class="n">project_id</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>    <span class="n">template_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieves a single administrative metadata record.</span>
+<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>
+<a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-62" name="__codelineno-0-62" href="#__codelineno-0-62"></a><span class="sd">        project_id: Project ID (int) or IDNO (str). Passed through verbatim</span>
+<a id="__codelineno-0-63" name="__codelineno-0-63" href="#__codelineno-0-63"></a><span class="sd">            — the endpoint accepts either.</span>
+<a id="__codelineno-0-64" name="__codelineno-0-64" href="#__codelineno-0-64"></a><span class="sd">        template_uid: Admin metadata template UID.</span>
+<a id="__codelineno-0-65" name="__codelineno-0-65" href="#__codelineno-0-65"></a>
+<a id="__codelineno-0-66" name="__codelineno-0-66" href="#__codelineno-0-66"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-67" name="__codelineno-0-67" href="#__codelineno-0-67"></a><span class="sd">        Dict: The admin metadata record as returned by the API.</span>
+<a id="__codelineno-0-68" name="__codelineno-0-68" href="#__codelineno-0-68"></a>
+<a id="__codelineno-0-69" name="__codelineno-0-69" href="#__codelineno-0-69"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-70" name="__codelineno-0-70" href="#__codelineno-0-70"></a><span class="sd">        ValueError: If the record does not exist for this (project, template) pair.</span>
+<a id="__codelineno-0-71" name="__codelineno-0-71" href="#__codelineno-0-71"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-72" name="__codelineno-0-72" href="#__codelineno-0-72"></a>
+<a id="__codelineno-0-73" name="__codelineno-0-73" href="#__codelineno-0-73"></a><span class="k">def</span><span class="w"> </span><span class="nf">upsert_admin_metadata</span><span class="p">(</span>
+<a id="__codelineno-0-74" name="__codelineno-0-74" href="#__codelineno-0-74"></a>    <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-75" name="__codelineno-0-75" href="#__codelineno-0-75"></a>    <span class="n">project_id</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+<a id="__codelineno-0-76" name="__codelineno-0-76" href="#__codelineno-0-76"></a>    <span class="n">template_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-0-77" name="__codelineno-0-77" href="#__codelineno-0-77"></a>    <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span>
+<a id="__codelineno-0-78" name="__codelineno-0-78" href="#__codelineno-0-78"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<a id="__codelineno-0-79" name="__codelineno-0-79" href="#__codelineno-0-79"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates or updates (upserts) an administrative metadata record.</span>
+<a id="__codelineno-0-80" name="__codelineno-0-80" href="#__codelineno-0-80"></a>
+<a id="__codelineno-0-81" name="__codelineno-0-81" href="#__codelineno-0-81"></a><span class="sd">    The Metadata Editor API uses a single upsert endpoint — there is no</span>
+<a id="__codelineno-0-82" name="__codelineno-0-82" href="#__codelineno-0-82"></a><span class="sd">    separate create vs update. If a record already exists for the</span>
+<a id="__codelineno-0-83" name="__codelineno-0-83" href="#__codelineno-0-83"></a><span class="sd">    (project_id, template_uid) pair, it is overwritten; otherwise a new one</span>
+<a id="__codelineno-0-84" name="__codelineno-0-84" href="#__codelineno-0-84"></a><span class="sd">    is created.</span>
+<a id="__codelineno-0-85" name="__codelineno-0-85" href="#__codelineno-0-85"></a>
+<a id="__codelineno-0-86" name="__codelineno-0-86" href="#__codelineno-0-86"></a><span class="sd">    Empty values in `metadata` are stripped before the request is sent via</span>
+<a id="__codelineno-0-87" name="__codelineno-0-87" href="#__codelineno-0-87"></a><span class="sd">    `remove_empty_from_dict`, matching the convention used by</span>
+<a id="__codelineno-0-88" name="__codelineno-0-88" href="#__codelineno-0-88"></a><span class="sd">    `create_project_log` and `update_project_log_by_id`.</span>
+<a id="__codelineno-0-89" name="__codelineno-0-89" href="#__codelineno-0-89"></a>
+<a id="__codelineno-0-90" name="__codelineno-0-90" href="#__codelineno-0-90"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-91" name="__codelineno-0-91" href="#__codelineno-0-91"></a><span class="sd">        project_id: Project ID or IDNO.</span>
+<a id="__codelineno-0-92" name="__codelineno-0-92" href="#__codelineno-0-92"></a><span class="sd">        template_uid: Admin metadata template UID.</span>
+<a id="__codelineno-0-93" name="__codelineno-0-93" href="#__codelineno-0-93"></a><span class="sd">        metadata: Admin metadata payload as a dict.</span>
+<a id="__codelineno-0-94" name="__codelineno-0-94" href="#__codelineno-0-94"></a>
+<a id="__codelineno-0-95" name="__codelineno-0-95" href="#__codelineno-0-95"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-96" name="__codelineno-0-96" href="#__codelineno-0-96"></a><span class="sd">        Dict: The server response.</span>
+<a id="__codelineno-0-97" name="__codelineno-0-97" href="#__codelineno-0-97"></a>
+<a id="__codelineno-0-98" name="__codelineno-0-98" href="#__codelineno-0-98"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-99" name="__codelineno-0-99" href="#__codelineno-0-99"></a><span class="sd">        ValueError: If `metadata` is not a dict, or if `template_uid` is empty.</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100" href="#__codelineno-0-100"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-101" name="__codelineno-0-101" href="#__codelineno-0-101"></a>
+<a id="__codelineno-0-102" name="__codelineno-0-102" href="#__codelineno-0-102"></a><span class="k">def</span><span class="w"> </span><span class="nf">patch_admin_metadata</span><span class="p">(</span>
+<a id="__codelineno-0-103" name="__codelineno-0-103" href="#__codelineno-0-103"></a>    <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-104" name="__codelineno-0-104" href="#__codelineno-0-104"></a>    <span class="n">project_id</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+<a id="__codelineno-0-105" name="__codelineno-0-105" href="#__codelineno-0-105"></a>    <span class="n">template_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106" href="#__codelineno-0-106"></a>    <span class="n">patches</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span>
+<a id="__codelineno-0-107" name="__codelineno-0-107" href="#__codelineno-0-107"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<a id="__codelineno-0-108" name="__codelineno-0-108" href="#__codelineno-0-108"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Applies JSON Patch (RFC 6902) operations to an admin metadata record.</span>
+<a id="__codelineno-0-109" name="__codelineno-0-109" href="#__codelineno-0-109"></a>
+<a id="__codelineno-0-110" name="__codelineno-0-110" href="#__codelineno-0-110"></a><span class="sd">    Unlike `patch_update_project_log_by_id`, this method accepts a list of</span>
+<a id="__codelineno-0-111" name="__codelineno-0-111" href="#__codelineno-0-111"></a><span class="sd">    patch operations and applies them atomically — the underlying admin</span>
+<a id="__codelineno-0-112" name="__codelineno-0-112" href="#__codelineno-0-112"></a><span class="sd">    metadata patch endpoint natively supports multi-op patches.</span>
+<a id="__codelineno-0-113" name="__codelineno-0-113" href="#__codelineno-0-113"></a>
+<a id="__codelineno-0-114" name="__codelineno-0-114" href="#__codelineno-0-114"></a><span class="sd">    Each patch operation is a dict with `op`, `path`, and optionally `value`</span>
+<a id="__codelineno-0-115" name="__codelineno-0-115" href="#__codelineno-0-115"></a><span class="sd">    and `from` keys. Paths that do not start with `/` are auto-corrected</span>
+<a id="__codelineno-0-116" name="__codelineno-0-116" href="#__codelineno-0-116"></a><span class="sd">    (matching `patch_update_project_log_by_id`).</span>
+<a id="__codelineno-0-117" name="__codelineno-0-117" href="#__codelineno-0-117"></a>
+<a id="__codelineno-0-118" name="__codelineno-0-118" href="#__codelineno-0-118"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-119" name="__codelineno-0-119" href="#__codelineno-0-119"></a><span class="sd">        project_id: Project ID or IDNO.</span>
+<a id="__codelineno-0-120" name="__codelineno-0-120" href="#__codelineno-0-120"></a><span class="sd">        template_uid: Admin metadata template UID.</span>
+<a id="__codelineno-0-121" name="__codelineno-0-121" href="#__codelineno-0-121"></a><span class="sd">        patches: List of JSON Patch operations, e.g.</span>
+<a id="__codelineno-0-122" name="__codelineno-0-122" href="#__codelineno-0-122"></a><span class="sd">            `[{&quot;op&quot;: &quot;replace&quot;, &quot;path&quot;: &quot;/foo&quot;, &quot;value&quot;: &quot;bar&quot;}, ...]`.</span>
+<a id="__codelineno-0-123" name="__codelineno-0-123" href="#__codelineno-0-123"></a>
+<a id="__codelineno-0-124" name="__codelineno-0-124" href="#__codelineno-0-124"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-125" name="__codelineno-0-125" href="#__codelineno-0-125"></a><span class="sd">        Dict: The server response.</span>
+<a id="__codelineno-0-126" name="__codelineno-0-126" href="#__codelineno-0-126"></a>
+<a id="__codelineno-0-127" name="__codelineno-0-127" href="#__codelineno-0-127"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-128" name="__codelineno-0-128" href="#__codelineno-0-128"></a><span class="sd">        ValueError: If `patches` is empty, or any op is not a valid RFC 6902</span>
+<a id="__codelineno-0-129" name="__codelineno-0-129" href="#__codelineno-0-129"></a><span class="sd">            verb (`add`, `remove`, `replace`, `move`, `copy`, `test`), or</span>
+<a id="__codelineno-0-130" name="__codelineno-0-130" href="#__codelineno-0-130"></a><span class="sd">            required fields are missing for the given op. Validation is</span>
+<a id="__codelineno-0-131" name="__codelineno-0-131" href="#__codelineno-0-131"></a><span class="sd">            delegated to the existing `validate_json_patches()` helper.</span>
+<a id="__codelineno-0-132" name="__codelineno-0-132" href="#__codelineno-0-132"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-133" name="__codelineno-0-133" href="#__codelineno-0-133"></a>
+<a id="__codelineno-0-134" name="__codelineno-0-134" href="#__codelineno-0-134"></a><span class="k">def</span><span class="w"> </span><span class="nf">delete_admin_metadata</span><span class="p">(</span>
+<a id="__codelineno-0-135" name="__codelineno-0-135" href="#__codelineno-0-135"></a>    <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-0-136" name="__codelineno-0-136" href="#__codelineno-0-136"></a>    <span class="n">project_id</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+<a id="__codelineno-0-137" name="__codelineno-0-137" href="#__codelineno-0-137"></a>    <span class="n">template_uid</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-0-138" name="__codelineno-0-138" href="#__codelineno-0-138"></a><span class="p">):</span>
+<a id="__codelineno-0-139" name="__codelineno-0-139" href="#__codelineno-0-139"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Deletes an administrative metadata record.</span>
+<a id="__codelineno-0-140" name="__codelineno-0-140" href="#__codelineno-0-140"></a>
+<a id="__codelineno-0-141" name="__codelineno-0-141" href="#__codelineno-0-141"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-142" name="__codelineno-0-142" href="#__codelineno-0-142"></a><span class="sd">        project_id: Project ID or IDNO.</span>
+<a id="__codelineno-0-143" name="__codelineno-0-143" href="#__codelineno-0-143"></a><span class="sd">        template_uid: Admin metadata template UID.</span>
+<a id="__codelineno-0-144" name="__codelineno-0-144" href="#__codelineno-0-144"></a>
+<a id="__codelineno-0-145" name="__codelineno-0-145" href="#__codelineno-0-145"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-0-146" name="__codelineno-0-146" href="#__codelineno-0-146"></a><span class="sd">        DeleteNotAppliedError: If the API does not confirm the delete</span>
+<a id="__codelineno-0-147" name="__codelineno-0-147" href="#__codelineno-0-147"></a><span class="sd">            (i.e. a subsequent `get_admin_metadata` call still succeeds).</span>
+<a id="__codelineno-0-148" name="__codelineno-0-148" href="#__codelineno-0-148"></a><span class="sd">    &quot;&quot;&quot;</span>
+</code></pre></div>
+<h3 id="42-typing-notes">4.2 Typing notes</h3>
+<ul>
+<li><code>project_id: Union[int, str]</code> in every signature where it appears. The API's <code>{projectId}</code> path slot and <code>project_id</code> JSON body field both accept numeric IDs and string IDNOs; <code>pymetadataeditor</code> passes the value through verbatim without attempting client-side resolution. This intentionally sidesteps the broader "by-idno helpers" question that was left out of scope in §2.2.</li>
+<li><code>template_uid: str</code> — always a string, always required (except in the filter position on <code>list_admin_metadata</code>).</li>
+<li><code>patches: List[Dict]</code> — raw JSON Patch op dicts. We deliberately do <strong>not</strong> introduce a wrapper type. This matches the style of the rest of the package, keeps the signature close to the API, and allows a future round to generalise <code>patch_update_project_log_by_id</code> to multi-op with the same shape.</li>
+</ul>
+<h3 id="43-endpoint-path-mapping">4.3 Endpoint path mapping</h3>
+<p>The existing <code>RequestsWithSpecificErrors</code> helper in <code>pymetadataeditor/requester.py</code> takes a path template with a single <code>{}</code> placeholder for interpolation via the <code>id=</code> keyword argument. For paths with multiple dynamic segments, f-string interpolation is used directly.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th><code>pth</code> argument to <code>_apinterface</code></th>
+<th>HTTP verb</th>
+<th>Body</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>list_admin_metadata_templates</code></td>
+<td><code>admin-metadata/templates</code></td>
+<td>GET</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>get_admin_metadata_template_by_uid</code></td>
+<td><code>admin-metadata/templates/{}</code> (via <code>id=uid</code>)</td>
+<td>GET</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>list_admin_metadata</code></td>
+<td><code>admin-metadata/data_query</code></td>
+<td>GET</td>
+<td>— (query params passed as <code>params=</code>)</td>
+</tr>
+<tr>
+<td><code>get_admin_metadata</code></td>
+<td><code>f"admin-metadata/data/{project_id}/"</code> + <code>{}</code> (via <code>id=template_uid</code>)</td>
+<td>GET</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>upsert_admin_metadata</code></td>
+<td><code>admin-metadata/data/</code></td>
+<td>POST</td>
+<td><code>{project_id, template_uid, metadata}</code></td>
+</tr>
+<tr>
+<td><code>patch_admin_metadata</code></td>
+<td><code>admin-metadata/data_patch/</code></td>
+<td>POST</td>
+<td><code>{project_id, template_uid, patches}</code></td>
+</tr>
+<tr>
+<td><code>delete_admin_metadata</code></td>
+<td><code>admin-metadata/data_remove/</code></td>
+<td>POST</td>
+<td><code>{project_id, template_uid}</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Confirmed during review:</strong> <code>RequestsWithSpecificErrors._request</code> supports only a single <code>{}</code> slot filled via the <code>id=</code> keyword argument. For <code>get_admin_metadata</code>, the implementation pre-interpolates <code>project_id</code> into the path string in <code>interface.py</code> (e.g. <code>pth = f"admin-metadata/data/{project_id}/" + "{}"</code>) and passes <code>id=template_uid</code> through the existing helper. No changes to <code>requester.py</code> are required in this round.</p>
+<h3 id="44-validation-empty-value-cleaning-and-error-handling">4.4 Validation, empty-value cleaning, and error handling</h3>
+<table>
+<thead>
+<tr>
+<th>Concern</th>
+<th>Approach</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stripping empty/None values from the POST body</td>
+<td><code>upsert_admin_metadata</code> calls <code>remove_empty_from_dict(metadata)</code> from <code>pymetadataeditor/utils.py</code> before sending, matching <code>create_project_log</code>.</td>
+</tr>
+<tr>
+<td>JSON Patch op validation</td>
+<td><code>patch_admin_metadata</code> passes <code>patches</code> through <code>validate_json_patches()</code> from <code>pymetadataeditor/utils.py</code> — the same helper <code>patch_update_project_log_by_id</code> uses. <strong>Implementation note:</strong> during planning, verify whether path <code>/</code> normalisation lives inside <code>validate_json_patches()</code> or inside the caller (<code>patch_update_project_log_by_id</code>). Whichever layer owns it, <code>patch_admin_metadata</code> must reproduce it consistently — do not silently drop the behaviour.</td>
+</tr>
+<tr>
+<td><code>template_uid</code> not empty</td>
+<td><code>upsert_admin_metadata</code> raises <code>ValueError("template_uid must be a non-empty string")</code> before sending.</td>
+</tr>
+<tr>
+<td><code>metadata</code> must be a dict</td>
+<td><code>upsert_admin_metadata</code> raises <code>ValueError</code> if <code>not isinstance(metadata, dict)</code>. Pydantic models / Excel paths are <strong>not</strong> accepted in this round (deferred).</td>
+</tr>
+<tr>
+<td>Delete confirmation</td>
+<td><code>delete_admin_metadata</code> follows the pattern of <code>delete_resource_by_id</code>: after the POST it calls <code>get_admin_metadata(project_id, template_uid)</code> and expects an error. If the record still exists it raises <code>DeleteNotAppliedError</code>. It does <strong>not</strong> reuse <code>_delete_by_id</code> because the delete endpoint shape is <code>POST /data_remove/</code> with a body, not <code>.../delete/{id}</code>.</td>
+</tr>
+<tr>
+<td>HTTP errors (4xx/5xx)</td>
+<td>Propagated from <code>self._apinterface</code> unchanged. The existing error-translation layer in <code>requester.py</code> handles 403 → <code>PermissionError</code>, 404 → <code>HTTPError</code>/<code>ValueError</code>, SSL errors, etc.</td>
+</tr>
+<tr>
+<td>"Not found" on <code>get_admin_metadata</code></td>
+<td>The <code>requester.py</code> layer already translates 404s into <code>requests.HTTPError</code>. <code>get_admin_metadata</code> catches <code>HTTPError</code> (not a raw 404) and re-raises as <code>ValueError(f"No admin metadata found for project_id={project_id}, template_uid={template_uid}")</code>. Matches the UX of <code>get_project_by_id</code>-style lookups.</td>
+</tr>
+<tr>
+<td>"Not found" on <code>get_admin_metadata_template_by_uid</code></td>
+<td>Re-raised as <code>TemplateError</code>, matching the existing <code>get_template_by_uid</code> convention.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="45-pagination-semantics-for-list_admin_metadata">4.5 Pagination semantics for <code>list_admin_metadata</code></h3>
+<ul>
+<li><code>limit="All"</code> (default): fetch in batches of 500, stopping when the returned page has fewer rows than the batch size, or when the API's reported <code>total</code> is exhausted. This mirrors <code>list_projects</code>.</li>
+<li><code>limit=&lt;int&gt;</code>: single page, honours <code>offset</code>. Returns at most <code>limit</code> rows.</li>
+<li>Empty result → empty <code>DataFrame</code> (not <code>None</code>).</li>
+<li><code>template_uid=["a", "b"]</code> → the query parameter sent is <code>template=a,b</code>. Single-string values are passed through as-is.</li>
+<li>No client-side date validation — <code>date_from</code> / <code>date_to</code> are passed through as strings. The server rejects malformed dates with a 400 which propagates.</li>
+</ul>
+<hr />
+<h2 id="5-changes-by-file">5. Changes by file</h2>
+<h3 id="51-pymetadataeditorinterfacepy">5.1 <code>pymetadataeditor/interface.py</code></h3>
+<ul>
+<li>Add a new section-marker comment block (<code># ADMIN METADATA</code>) after the existing <code># TEMPLATES</code> block.</li>
+<li>Add the 7 new public methods with full Google-style docstrings.</li>
+<li><strong>Standalone cleanup step (call out separately in the plan):</strong> remove the commented-out stub of <code>log_project_admin_metadata</code> at lines 1084-1113 — it is superseded by this design. Worth flagging as its own commit / step so diff reviewers are not surprised.</li>
+<li>No changes to existing public methods.</li>
+</ul>
+<h3 id="52-pymetadataeditorutilspy">5.2 <code>pymetadataeditor/utils.py</code></h3>
+<ul>
+<li>No changes. <code>validate_json_patches()</code> and <code>remove_empty_from_dict()</code> are reused as-is.</li>
+</ul>
+<h3 id="53-pymetadataeditorrequesterpy">5.3 <code>pymetadataeditor/requester.py</code></h3>
+<ul>
+<li>No changes <strong>expected</strong>. If the verification item in §4.3 reveals that multi-segment path interpolation is impossible through the current helper, the implementer builds the path in <code>interface.py</code> without widening <code>requester.py</code> (option (b) above).</li>
+</ul>
+<h3 id="54-pymetadataeditortemplatespy-pymetadataeditorllm_helperspy-pymetadataeditor__init__py">5.4 <code>pymetadataeditor/templates.py</code>, <code>pymetadataeditor/llm_helpers.py</code>, <code>pymetadataeditor/__init__.py</code></h3>
+<ul>
+<li>No changes. No new exports — the 7 methods are accessed via <code>MetadataEditor</code>, which is already exported.</li>
+</ul>
+<h3 id="55-teststest_interfacepy">5.5 <code>tests/test_interface.py</code></h3>
+<ul>
+<li>Add a new <code># ADMIN METADATA</code> section.</li>
+<li>Add ~20 test functions covering the methods. Detailed list in §6.1.</li>
+<li>Reuses the existing <code>MockResponse</code>, <code>metadata_editor</code> fixture, and <code>itertools.chain</code>-based mocking for multi-call scenarios (delete + post-delete checker).</li>
+</ul>
+<h3 id="56-testsintegration_testpy">5.6 <code>tests/integration_test.py</code></h3>
+<ul>
+<li>Add one <code>test_admin_metadata_lifecycle</code> end-to-end test, guarded by the existing <code>API_KEY</code> / <code>API_URL</code> env vars. Detailed in §6.2.</li>
+</ul>
+<h3 id="57-documentation">5.7 Documentation</h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../../../skill/"><code>docs/skill.md</code></a></td>
+<td>Add an <strong>"Admin Metadata"</strong> capability group under "Key Capabilities" listing the 7 methods. Add one new short entry in "Common Workflows" (upsert → get → patch → delete).</td>
+</tr>
+<tr>
+<td><a href="../../../modules/interface/"><code>docs/modules/interface.md</code></a></td>
+<td>Add an <strong>"Admin Metadata"</strong> method-reference section with the same depth as existing sections (signature + args table + example).</td>
+</tr>
+<tr>
+<td><a href="../../API_Reference.md"><code>docs/API_Reference.md</code></a></td>
+<td>Regenerated via <code>python make_docs.py</code> — not hand-edited.</td>
+</tr>
+<tr>
+<td><a href="../../../CLAUDE.md"><code>CLAUDE.md</code></a></td>
+<td>Add a short note under "Architecture &amp; Key Conventions": <em>"Admin metadata is a separate namespace with its own template registry (<code>/admin-metadata/templates</code>) and its own CRUD endpoints. It is not hooked into <code>list_templates()</code> or <code>self._templates</code>. Multi-op JSON Patch is supported on admin metadata but not (yet) on project metadata."</em></td>
+</tr>
+<tr>
+<td><code>CHANGELOG.md</code></td>
+<td>If a changelog file exists, add a <code>## [0.4.0]</code> entry. Do <strong>not</strong> create one if it does not exist — out of scope.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="58-pyprojecttoml">5.8 <code>pyproject.toml</code></h3>
+<ul>
+<li>Version bump: <code>0.3.2</code> → <code>0.4.0</code>. This is a minor bump because the change is purely additive (no breaking changes to existing methods, no signature changes).</li>
+</ul>
+<hr />
+<h2 id="6-test-plan">6. Test plan</h2>
+<h3 id="61-unit-tests-teststest_interfacepy">6.1 Unit tests — <code>tests/test_interface.py</code></h3>
+<p>All tests use the existing <code>monkeypatch</code> + <code>MockResponse</code> pattern. No live HTTP. Added under a new <code># ADMIN METADATA</code> section marker.</p>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>What it verifies</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_list_admin_metadata_templates_empty</code></td>
+<td>Empty API response → empty DataFrame with expected columns.</td>
+</tr>
+<tr>
+<td><code>test_list_admin_metadata_templates_populated</code></td>
+<td>Populated response → one DataFrame row per template.</td>
+</tr>
+<tr>
+<td><code>test_get_admin_metadata_template_by_uid_success</code></td>
+<td>Happy path returns <code>pd.Series</code>.</td>
+</tr>
+<tr>
+<td><code>test_get_admin_metadata_template_by_uid_not_found</code></td>
+<td>404 → <code>TemplateError</code>.</td>
+</tr>
+<tr>
+<td><code>test_list_admin_metadata_no_filters</code></td>
+<td>Fetches all pages when <code>limit="All"</code> (mock returns 2 pages, second page short).</td>
+</tr>
+<tr>
+<td><code>test_list_admin_metadata_with_filters</code></td>
+<td><code>project_id</code>, <code>template_uid</code> (str), <code>date_from</code>, <code>date_to</code> correctly appear in the query params.</td>
+</tr>
+<tr>
+<td><code>test_list_admin_metadata_template_uid_list_joined_with_commas</code></td>
+<td><code>template_uid=["a","b"]</code> → <code>?template=a,b</code>.</td>
+</tr>
+<tr>
+<td><code>test_list_admin_metadata_passes_dates_verbatim</code></td>
+<td>Malformed date strings (e.g. <code>date_from="not-a-date"</code>) are forwarded to the API unchanged — locks in the "no client-side date validation" contract from §4.5.</td>
+</tr>
+<tr>
+<td><code>test_list_admin_metadata_empty_result</code></td>
+<td>Empty result → empty DataFrame (not <code>None</code>).</td>
+</tr>
+<tr>
+<td><code>test_get_admin_metadata_success</code></td>
+<td>Returns dict as-is.</td>
+</tr>
+<tr>
+<td><code>test_get_admin_metadata_with_idno_string_project_id</code></td>
+<td><code>project_id="MY_IDNO"</code> passed through verbatim into the path.</td>
+</tr>
+<tr>
+<td><code>test_get_admin_metadata_not_found</code></td>
+<td>404 → <code>ValueError</code>.</td>
+</tr>
+<tr>
+<td><code>test_upsert_admin_metadata_success</code></td>
+<td>POST body is <code>{project_id, template_uid, metadata}</code> exactly.</td>
+</tr>
+<tr>
+<td><code>test_upsert_admin_metadata_strips_empty_values</code></td>
+<td>Nested empty strings / None values removed before send.</td>
+</tr>
+<tr>
+<td><code>test_upsert_admin_metadata_rejects_non_dict</code></td>
+<td><code>metadata="foo"</code> → <code>ValueError</code>.</td>
+</tr>
+<tr>
+<td><code>test_upsert_admin_metadata_rejects_empty_template_uid</code></td>
+<td><code>template_uid=""</code> → <code>ValueError</code>.</td>
+</tr>
+<tr>
+<td><code>test_patch_admin_metadata_multi_op_success</code></td>
+<td>Multi-op list lands in the body untouched apart from path normalisation.</td>
+</tr>
+<tr>
+<td><code>test_patch_admin_metadata_normalises_paths</code></td>
+<td><code>path="foo/bar"</code> → <code>/foo/bar</code>.</td>
+</tr>
+<tr>
+<td><code>test_patch_admin_metadata_rejects_empty_list</code></td>
+<td><code>patches=[]</code> → <code>ValueError</code>.</td>
+</tr>
+<tr>
+<td><code>test_patch_admin_metadata_rejects_invalid_op</code></td>
+<td><code>op="upsert"</code> → <code>ValueError</code> via <code>validate_json_patches</code>.</td>
+</tr>
+<tr>
+<td><code>test_delete_admin_metadata_success</code></td>
+<td>POST to <code>data_remove/</code>, checker sees 404 → no exception.</td>
+</tr>
+<tr>
+<td><code>test_delete_admin_metadata_not_applied</code></td>
+<td>Checker still finds the record → <code>DeleteNotAppliedError</code>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Mocking strategy for multi-call tests (<code>test_delete_admin_metadata_*</code>):</strong> the existing test file already imports <code>itertools</code> for <code>itertools.chain</code> to queue multiple sequential <code>MockResponse</code> objects — same pattern is reused here.</p>
+<h3 id="62-integration-test-testsintegration_testpy">6.2 Integration test — <code>tests/integration_test.py</code></h3>
+<p>One end-to-end lifecycle test, guarded by the existing <code>API_KEY</code> / <code>API_URL</code> env var requirement. If no admin templates are available on the test instance the test is skipped with a clear message.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_admin_metadata_lifecycle</span><span class="p">(</span><span class="n">live_me</span><span class="p">,</span> <span class="n">temp_project</span><span class="p">):</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="c1"># 1. list_admin_metadata_templates — assert at least one template exists</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="c1"># 2. upsert_admin_metadata against (temp_project.id, first_template.uid)</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="c1"># 3. get_admin_metadata — assert round-trip payload matches</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="c1"># 4. patch_admin_metadata — one replace op on a single field</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="c1"># 5. get_admin_metadata again — assert the patched field is updated</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="c1"># 6. list_admin_metadata(project_id=temp_project.id) — assert the record is present</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="c1"># 7. delete_admin_metadata — then get_admin_metadata must raise</span>
+</code></pre></div>
+<h3 id="63-what-the-tests-dont-cover">6.3 What the tests don't cover</h3>
+<ul>
+<li>PDF generation, bulk export — out of scope.</li>
+<li>Admin-metadata Pydantic class generation — out of scope.</li>
+<li><code>get_admin_metadata_edit_history</code> — out of scope.</li>
+<li>Live behaviour against older Metadata Editor versions that predate the admin metadata endpoints — out of scope; the package targets the current documented API.</li>
+</ul>
+<hr />
+<h2 id="7-relationship-to-other-work">7. Relationship to other work</h2>
+<h3 id="71-data360-sibling-package-future-separate-spec">7.1 Data360 sibling package (future, separate spec)</h3>
+<p>Strategic decision: the Data360-specific helpers in <a href="../../../publishing.py"><code>docs/publishing.py</code></a> (SDMX schema parsing, indicator/database metadata summary building, Data360 payload shaping, <code>create_edit_metadata_project_indicator/database</code>, <code>trigger_update</code> DDH integration) will move into a <strong>new sibling package</strong> — tentatively <code>wb-data360-publishing</code> — that depends on <code>pymetadataeditor</code>. That package is out of scope for this spec and will be designed separately.</p>
+<p>Implication for the current design: the admin-metadata API must be <strong>ergonomic enough to use directly</strong> from the sibling package without workaround helpers. In particular:</p>
+<ul>
+<li><code>upsert_admin_metadata(project_id, template_uid, metadata)</code> replaces <code>add_data360_admin_metadata</code> cleanly.</li>
+<li><code>list_admin_metadata(project_id=..., template_uid=...)</code> + <code>get_admin_metadata(...)</code> replaces the bespoke pagination + filtering in <code>export_admin_metadata_*</code>.</li>
+<li>The <code>clean_admin_metadata()</code> response-flattening helper stays in the sibling package — it is Data360-specific response shaping, not a general concern.</li>
+</ul>
+<h3 id="72-future-rounds-in-pymetadataeditor">7.2 Future rounds in <code>pymetadataeditor</code></h3>
+<p>Identified in the gap analysis, explicitly deferred:</p>
+<ul>
+<li><strong>Round 2a</strong> — Pydantic/Excel parity for admin metadata: <code>get_admin_metadata_class</code>, <code>make_admin_metadata_outline</code>, <code>output_mode</code> on get/upsert.</li>
+<li><strong>Round 2b</strong> — PDF export primitive: <code>get_project_pdf_by_id(id) -&gt; bytes</code>.</li>
+<li><strong>Round 2c</strong> — By-IDNO lookups: choice deferred between <code>id_format</code> param, parallel <code>*_by_idno</code> methods, or <code>resolve_idno_to_id</code> helper.</li>
+<li><strong>Round 2d</strong> — <code>list_projects_in_collection(metadata_type=...)</code> filter.</li>
+<li><strong>Round 2e</strong> — Filter projects by a custom attribute (generalisation of <code>get_meta_by_dataset_db</code>).</li>
+<li><strong>Round 3</strong> — Generalise <code>patch_update_project_log_by_id</code> to accept <code>List[Dict]</code> multi-op patches, mirroring <code>patch_admin_metadata</code>.</li>
+</ul>
+<h3 id="73-things-this-spec-explicitly-does-not-promise">7.3 Things this spec explicitly does <strong>not</strong> promise</h3>
+<ul>
+<li>Backwards-compatibility shims for <code>publishing.py</code> — callers must update to the new methods; no alias layer.</li>
+<li>A <code>create_admin_metadata</code> / <code>update_admin_metadata</code> split. The underlying endpoint is one upsert and the public API reflects that.</li>
+<li>Any convenience around the <code>{status, data: [...]}</code> envelope the API returns for admin metadata. <code>get_admin_metadata</code> returns the body as-is. Response shaping is the caller's responsibility.</li>
+</ul>
+<hr />
+<h2 id="8-risks-open-questions">8. Risks &amp; open questions</h2>
+<table>
+<thead>
+<tr>
+<th>Risk / question</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>RequestsWithSpecificErrors</code> may not support multi-segment path interpolation for <code>GET /admin-metadata/data/{projectId}/{templateUid}</code>.</td>
+<td>Verified during plan-writing by reading <code>requester.py</code>. If unsupported, build the path string directly in <code>interface.py</code> (see §4.3, option (b)). No widening of <code>requester.py</code> in this round.</td>
+</tr>
+<tr>
+<td>The OpenAPI spec documents a response for <code>list_admin_metadata_templates</code> but does not pin a schema (<code>"200": description only</code>). Unknown exact column names.</td>
+<td><code>list_admin_metadata_templates</code> will handle whatever columns the API returns and normalise into a DataFrame. Tests use a representative mocked shape; integration test verifies against a real instance.</td>
+</tr>
+<tr>
+<td><code>get_admin_metadata</code> may return the record wrapped in a list (<code>data: [{...}]</code>) rather than a bare object, consistent with the publishing.py observations.</td>
+<td><code>get_admin_metadata</code> documentation says "returns the admin metadata record as returned by the API" — intentionally unopinionated. If real-world testing shows the wrapped-list shape, that is what gets returned. Response shaping is explicitly a caller responsibility (§7.3). The integration test will lock in the real shape.</td>
+</tr>
+<tr>
+<td><code>list_admin_metadata</code> pagination semantics are inferred from <code>list_projects</code>. The API's <code>data_query</code> endpoint may or may not return a <code>total</code> field.</td>
+<td>Pagination logic uses page-length (<code>len(page) &lt; 500</code> → stop) as the primary termination signal, with <code>total</code> as a secondary check if present. Matches the defensive strategy already used in <code>list_projects</code>.</td>
+</tr>
+<tr>
+<td>Integration test requires admin templates to exist on the target instance.</td>
+<td>Test is skipped with a clear message if <code>list_admin_metadata_templates()</code> returns an empty DataFrame.</td>
+</tr>
+<tr>
+<td>Deleting admin metadata on a project the user no longer has read access to will leave the <code>delete_admin_metadata</code> checker unable to confirm.</td>
+<td>The checker treats a "not found" response as success (delete confirmed). A permissions change mid-call would manifest as a 403 from the checker, which propagates — the delete itself may still have succeeded. This is an existing quirk of the <code>_delete_by_id</code> pattern and is not introduced by this spec.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="9-rollout">9. Rollout</h2>
+<ol>
+<li>Implement the 7 methods + unit tests.</li>
+<li>Regenerate <a href="../../API_Reference.md"><code>docs/API_Reference.md</code></a> via <code>python make_docs.py</code>.</li>
+<li>Update <a href="../../../skill/"><code>docs/skill.md</code></a>, <a href="../../../modules/interface/"><code>docs/modules/interface.md</code></a>, <a href="../../../CLAUDE.md"><code>CLAUDE.md</code></a>.</li>
+<li>Bump version to <code>0.4.0</code> in <a href="../../../pyproject.toml"><code>pyproject.toml</code></a>.</li>
+<li>Run the full unit test suite + ruff + pre-commit locally.</li>
+<li>If a live test instance is available, run the integration lifecycle test.</li>
+<li>PR to <code>main</code> with a clear changelog in the PR description.</li>
+<li>Tag <code>v0.4.0</code> after merge.</li>
+</ol>
+<p>No migration steps are required for existing users — the change is purely additive.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

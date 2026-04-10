@@ -1,0 +1,2640 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Python client library for the Metadata Editor API">
+      
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Metadata Schemas — Skill Reference - pyMetadataEditor</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="light-blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#metadata-schemas-skill-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="pyMetadataEditor" class="md-header__button md-logo" aria-label="pyMetadataEditor" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            pyMetadataEditor
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Metadata Schemas — Skill Reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="light-blue"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/tonyfujs/pymetadataeditor" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tonyfujs/pymetadataeditor
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../getting_started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user_guide/01_browsing_projects/" class="md-tabs__link">
+          
+  
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../how_to/move_projects_between_collections/" class="md-tabs__link">
+          
+  
+  
+  How-To Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../reference/api/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/output_modes/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../developer/architecture/" class="md-tabs__link">
+          
+  
+  
+  Developer Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="pyMetadataEditor" class="md-nav__button md-logo" aria-label="pyMetadataEditor" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    pyMetadataEditor
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/tonyfujs/pymetadataeditor" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    tonyfujs/pymetadataeditor
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting_started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user_guide/01_browsing_projects/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Browsing & Discovering Projects
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user_guide/02_schemas_and_templates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schemas & Templates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user_guide/03_creating_metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Creating New Metadata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user_guide/04_retrieving_metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Retrieving Existing Metadata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user_guide/05_updating_metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Updating Metadata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user_guide/06_working_with_formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Working with Formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user_guide/07_ai_powered_generation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI-Powered Metadata Generation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user_guide/08_managing_collections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Managing Collections
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user_guide/09_managing_resources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Managing Resources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user_guide/10_deleting_data/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deleting Data
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user_guide/11_advanced/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-To Guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    How-To Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/move_projects_between_collections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Move Projects Between Collections
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/batch_upload_from_excel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Batch Upload from Excel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/instance_to_instance_migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Instance-to-Instance Migration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/output_modes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Output Modes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/metadata_types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/error_handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_4" id="__nav_6_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schema Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Schema Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/schemas/document/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Document
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/schemas/geospatial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Geospatial
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/schemas/image/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Image
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/schemas/indicator/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Indicator
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/schemas/indicators_db/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Indicators DB
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/schemas/microdata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Microdata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/schemas/resource/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resource
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/schemas/script/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Script
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/schemas/table/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Table
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/schemas/video/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Video
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_7_2" id="__nav_7_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_7_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Module Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/modules/interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    interface.py
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/modules/requester/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    requester.py
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/modules/templates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    templates.py
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/modules/llm_helpers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    llm_helpers.py
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/modules/utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    utils.py
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-this-skill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to use this skill
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-metadataschemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is metadataschemas?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#repository-map-for-tonyfujsmetadata-schemas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Repository map for tonyfujs/metadata-schemas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#public-api-the-agent-must-know" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public API the agent must know
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Public API the agent must know">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#metadataschemasmetadata_managermetadatamanager" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        metadataschemas.metadata_manager.MetadataManager
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metadataschemasutilsschema_base_modelschemabasemodel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        metadataschemas.utils.schema_base_model.SchemaBaseModel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metadataschemasutilsutils-reusable-utilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        metadataschemas.utils.utils — reusable utilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metadataschemasutilsquick_startmake_skeletonschema-debugfalse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        metadataschemas.utils.quick_start.make_skeleton(schema, debug=False)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supported-metadata-types-master-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported metadata types — master table
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Supported metadata types — master table">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#name-aliases-handled-by-standardize_metadata_name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Name aliases handled by standardize_metadata_name()
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-pymetadataeditor-already-integrates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where pymetadataeditor already integrates
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Where pymetadataeditor already integrates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pymetadataeditorinterfacepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pymetadataeditor/interface.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pymetadataeditortemplatespy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pymetadataeditor/templates.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pymetadataeditorllm_helperspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pymetadataeditor/llm_helpers.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pymetadataeditorutilspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pymetadataeditor/utils.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-task-recipes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common task recipes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common task recipes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resolve-a-user-supplied-name-to-its-pydantic-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resolve a user-supplied name to its pydantic class
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-a-blank-metadata-object-for-any-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create a blank metadata object for any type
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validate-a-raw-dict-against-a-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validate a raw dict against a schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#read-or-write-excel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read or write Excel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fetch-the-source-json-schema-for-inspection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fetch the source JSON schema for inspection
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#versioning-and-regeneration-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Versioning and regeneration workflow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#things-to-never-do" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Things to never do
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#per-schema-reference-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-schema reference files
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="metadata-schemas-skill-reference">Metadata Schemas — Skill Reference</h1>
+<p>This is the dedicated skill file for working with the <code>metadataschemas</code> package
+inside <code>pymetadataeditor</code>. It documents the sibling source repo
+<a href="https://github.com/tonyfujs/metadata-schemas"><code>tonyfujs/metadata-schemas</code></a>, the
+public API surface that <code>pymetadataeditor</code> already integrates with, and the
+per-schema reference files an agent should consult before writing schema-aware
+code.</p>
+<p>The general agent skill for <code>pymetadataeditor</code> lives at
+<a href="../../skill/"><code>docs/skill.md</code></a>. Read that first for the package context, then
+come here when the task touches metadata schemas.</p>
+<hr />
+<h2 id="when-to-use-this-skill">When to use this skill</h2>
+<p>Consult this file before doing any of the following:</p>
+<ul>
+<li>Adding a new public method to <code>MetadataEditor</code> that returns, validates, or
+  transforms a metadata object</li>
+<li>Supporting a new metadata type end-to-end</li>
+<li>Fixing a bug in <code>templates.py</code>, <code>llm_helpers.py</code>, or schema-touching parts
+  of <code>interface.py</code></li>
+<li>Debugging Excel read/write round-trips</li>
+<li>Writing tests that instantiate any <code>*Schema</code> model</li>
+<li>Investigating why a field is missing or has the wrong type after a refactor</li>
+</ul>
+<p>If the task only touches HTTP, auth, project listing, or pure utility code with
+no <code>metadataschemas</code> import, this skill is not needed.</p>
+<hr />
+<h2 id="what-is-metadataschemas">What is <code>metadataschemas</code>?</h2>
+<p><code>metadataschemas</code> is a PyPI package
+(<a href="https://github.com/tonyfujs/metadata-schemas">source</a>, maintained by the
+World Bank) that provides:</p>
+<ol>
+<li><strong>Canonical JSON Schema definitions</strong> for 10 supported metadata types in the
+   <code>schemas/</code> directory of the source repo</li>
+<li><strong>Auto-generated Pydantic v2 models</strong> in <code>pydantic_schemas/&lt;type&gt;_schema.py</code>,
+   regenerated from the JSON via <code>generate_pydantic_schemas.py</code></li>
+<li><strong>A <code>MetadataManager</code> class</strong> that wraps schema discovery, skeleton
+   creation, and Excel I/O</li>
+<li><strong>Shared utilities</strong> in <code>metadataschemas.utils.utils</code> that
+   <code>pymetadataeditor</code> imports and reuses (annotation introspection, dict
+   merging, key standardization)</li>
+<li><strong>Excel templates</strong> in <code>excel_sheets/</code> for each metadata type</li>
+</ol>
+<p><code>pymetadataeditor</code> declares it as a dependency in <code>pyproject.toml</code>
+(<code>metadataschemas = "^0.1.3"</code>) and imports from it in <strong>every source file</strong> of
+the package. Live docs for the schemas themselves:
+<a href="https://worldbank.github.io/metadata-schemas/">https://worldbank.github.io/metadata-schemas/</a>.</p>
+<hr />
+<h2 id="repository-map-for-tonyfujsmetadata-schemas">Repository map for <code>tonyfujs/metadata-schemas</code></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>metadata-schemas/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── schemas/                          # Canonical JSON Schema files (source of truth)
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│   ├── document-schema.json
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│   ├── geospatial-schema.json
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│   ├── image-schema.json
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│   ├── microdata-schema.json
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│   ├── timeseries-schema.json        # → &quot;indicator&quot;
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│   ├── timeseries-db-schema.json     # → &quot;indicators_db&quot;
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│   ├── resource-schema.json
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   ├── script-schema.json
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   ├── table-schema.json
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   ├── video-schema.json
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   ├── ddi-schema.json               # Sub-schema referenced by microdata
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   ├── datacite-schema.json          # Sub-schema referenced by indicator
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   ├── provenance-schema.json        # Shared provenance fields
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   ├── variable-schema.json          # Shared variable fields
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│   ├── variable-group-schema.json
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│   ├── series-schema.json
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│   ├── datafile-schema.json
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│   ├── dcmi-schema.json
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>│   ├── iptc-pmd-schema.json          # Shared image metadata
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│   └── iptc-phovidmdshared-schema.json
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>│
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>├── pydantic_schemas/                 # Auto-generated Pydantic v2 models
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>│   ├── __init__.py                   # (empty)
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>│   ├── metadata_manager.py           # MetadataManager class
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>│   ├── document_schema.py
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>│   ├── geospatial_schema.py
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>│   ├── image_schema.py
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>│   ├── indicator_schema.py
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>│   ├── indicators_db_schema.py
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>│   ├── microdata_schema.py
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>│   ├── resource_schema.py
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>│   ├── script_schema.py
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>│   ├── table_schema.py
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>│   ├── video_schema.py
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>│   ├── generators/
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>│   │   ├── generate_pydantic_schemas.py   # JSON → Pydantic
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>│   │   └── generate_excel_files.py        # Pydantic → Excel
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>│   └── utils/
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>│       ├── schema_base_model.py      # SchemaBaseModel base class
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>│       ├── utils.py                  # Shared annotation/dict helpers
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>│       ├── quick_start.py            # make_skeleton()
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>│       ├── excel_to_pydantic.py
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>│       └── pydantic_to_excel.py
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>│
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>├── excel_sheets/                     # Pre-formatted Excel templates
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>│   └── &lt;Type&gt;_metadata.xlsx
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>│
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>└── json_to_python_config.yaml        # name → JSON file → Python module → class
+</code></pre></div>
+<p>The <code>pip install metadataschemas</code> package ships only the contents of
+<code>pydantic_schemas/</code>. The raw JSON files in <code>schemas/</code> are not bundled — fetch
+them from the source repo when you need to inspect them.</p>
+<hr />
+<h2 id="public-api-the-agent-must-know">Public API the agent must know</h2>
+<h3 id="metadataschemasmetadata_managermetadatamanager"><code>metadataschemas.metadata_manager.MetadataManager</code></h3>
+<p>The main entry point. Already used by <code>pymetadataeditor/interface.py</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">metadataschemas.metadata_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">MetadataManager</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">mm</span> <span class="o">=</span> <span class="n">MetadataManager</span><span class="p">()</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Method / property</th>
+<th>Returns</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>metadata_type_names</code></td>
+<td><code>list[str]</code></td>
+<td>The 10 canonical names (see table below)</td>
+</tr>
+<tr>
+<td><code>metadata_class_from_name(name)</code></td>
+<td><code>type[BaseModel]</code></td>
+<td>Pydantic class for a name; calls <code>standardize_metadata_name</code> first</td>
+</tr>
+<tr>
+<td><code>standardize_metadata_name(name)</code></td>
+<td><code>str</code></td>
+<td>Canonical name; handles aliases (<code>survey</code> → <code>microdata</code>, <code>timeseries</code> → <code>indicator</code>, <code>timeseries_db</code>/<code>indicator_db</code> → <code>indicators_db</code>)</td>
+</tr>
+<tr>
+<td><code>create_metadata_outline(name_or_class, debug=False)</code></td>
+<td><code>BaseModel</code></td>
+<td>Skeleton instance with all fields set to defaults / <code>None</code>; thin wrapper over <code>make_skeleton</code></td>
+</tr>
+<tr>
+<td><code>write_metadata_outline_to_excel(name, filename=None, ...)</code></td>
+<td><code>str</code></td>
+<td>Writes a blank Excel template for the given type</td>
+</tr>
+<tr>
+<td><code>save_metadata_to_excel(metadata_object, filename=None, ...)</code></td>
+<td><code>str</code></td>
+<td>Serialises a populated metadata object to Excel</td>
+</tr>
+<tr>
+<td><code>read_metadata_from_excel(filename, ...)</code></td>
+<td><code>BaseModel</code></td>
+<td>Reads an Excel file back into a Pydantic instance</td>
+</tr>
+</tbody>
+</table>
+<h3 id="metadataschemasutilsschema_base_modelschemabasemodel"><code>metadataschemas.utils.schema_base_model.SchemaBaseModel</code></h3>
+<p>Base class that every generated <code>*Schema</code> model inherits from. It provides
+<code>pretty_print()</code>, populates <code>model_config = ConfigDict(populate_by_name=True,
+extra="forbid", validate_assignment=True)</code>, and other Pydantic v2 niceties.
+<strong>Any new model that mimics a generated schema must subclass this</strong> so that
+field aliasing and validation behave consistently.</p>
+<h3 id="metadataschemasutilsutils-reusable-utilities"><code>metadataschemas.utils.utils</code> — reusable utilities</h3>
+<p>These already power <code>pymetadataeditor</code>. <strong>Always import them — never
+reimplement them.</strong></p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>merge_dicts(a, b)</code></td>
+<td>Deep-merge two dicts; <code>b</code> wins on conflicts</td>
+</tr>
+<tr>
+<td><code>standardize_keys_in_dict(d)</code></td>
+<td>Normalises keys (lowercase, replace separators)</td>
+</tr>
+<tr>
+<td><code>is_optional_annotation(t)</code></td>
+<td><code>True</code> if <code>t</code> is <code>Optional[X]</code> / <code>Union[X, None]</code></td>
+</tr>
+<tr>
+<td><code>is_list_annotation(t)</code></td>
+<td><code>True</code> if <code>t</code> is <code>list[X]</code></td>
+</tr>
+<tr>
+<td><code>is_optional_list(t)</code></td>
+<td><code>True</code> if <code>t</code> is <code>Optional[list[X]]</code></td>
+</tr>
+<tr>
+<td><code>get_subtype_of_optional_or_list(t)</code></td>
+<td>Returns the inner type <code>X</code></td>
+</tr>
+<tr>
+<td><code>subset_pydantic_model_type(model, fields)</code></td>
+<td>Builds a new model containing only the named fields</td>
+</tr>
+</tbody>
+</table>
+<h3 id="metadataschemasutilsquick_startmake_skeletonschema-debugfalse"><code>metadataschemas.utils.quick_start.make_skeleton(schema, debug=False)</code></h3>
+<p>Creates an instantiated Pydantic model with all fields populated to defaults
+(typically <code>None</code> or empty list). <code>MetadataManager.create_metadata_outline()</code>
+delegates to this. <code>pymetadataeditor/llm_helpers.py</code> uses it directly.</p>
+<hr />
+<h2 id="supported-metadata-types-master-table">Supported metadata types — master table</h2>
+<p>Source of truth: <code>metadata-schemas/json_to_python_config.yaml</code>. All schemas are
+currently at version <code>0.1.0</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Canonical name</th>
+<th>API alias</th>
+<th>Pydantic class</th>
+<th>JSON schema</th>
+<th>Reference file</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>document</code></td>
+<td><code>document</code></td>
+<td><code>document_schema.ScriptSchemaDraft</code></td>
+<td><code>schemas/document-schema.json</code></td>
+<td><a href="../schemas/document/">schemas/document.md</a></td>
+</tr>
+<tr>
+<td><code>geospatial</code></td>
+<td><code>geospatial</code></td>
+<td><code>geospatial_schema.GeospatialSchema</code></td>
+<td><code>schemas/geospatial-schema.json</code></td>
+<td><a href="../schemas/geospatial/">schemas/geospatial.md</a></td>
+</tr>
+<tr>
+<td><code>image</code></td>
+<td><code>image</code></td>
+<td><code>image_schema.ImageDataTypeSchema</code></td>
+<td><code>schemas/image-schema.json</code></td>
+<td><a href="../schemas/image/">schemas/image.md</a></td>
+</tr>
+<tr>
+<td><code>indicator</code></td>
+<td><code>timeseries</code></td>
+<td><code>indicator_schema.TimeseriesSchema</code></td>
+<td><code>schemas/timeseries-schema.json</code></td>
+<td><a href="../schemas/indicator/">schemas/indicator.md</a></td>
+</tr>
+<tr>
+<td><code>indicators_db</code></td>
+<td><code>timeseries_db</code></td>
+<td><code>indicators_db_schema.TimeseriesDatabaseSchema</code></td>
+<td><code>schemas/timeseries-db-schema.json</code></td>
+<td><a href="../schemas/indicators_db/">schemas/indicators_db.md</a></td>
+</tr>
+<tr>
+<td><code>microdata</code></td>
+<td><code>survey</code></td>
+<td><code>microdata_schema.MicrodataSchema</code></td>
+<td><code>schemas/microdata-schema.json</code></td>
+<td><a href="../schemas/microdata/">schemas/microdata.md</a></td>
+</tr>
+<tr>
+<td><code>resource</code></td>
+<td><code>resource</code></td>
+<td><code>resource_schema.Model</code></td>
+<td><code>schemas/resource-schema.json</code></td>
+<td><a href="../schemas/resource/">schemas/resource.md</a></td>
+</tr>
+<tr>
+<td><code>script</code></td>
+<td><code>script</code></td>
+<td><code>script_schema.ResearchProjectSchemaDraft</code></td>
+<td><code>schemas/script-schema.json</code></td>
+<td><a href="../schemas/script/">schemas/script.md</a></td>
+</tr>
+<tr>
+<td><code>table</code></td>
+<td><code>table</code></td>
+<td><code>table_schema.Model</code></td>
+<td><code>schemas/table-schema.json</code></td>
+<td><a href="../schemas/table/">schemas/table.md</a></td>
+</tr>
+<tr>
+<td><code>video</code></td>
+<td><code>video</code></td>
+<td><code>video_schema.Model</code></td>
+<td><code>schemas/video-schema.json</code></td>
+<td><a href="../schemas/video/">schemas/video.md</a></td>
+</tr>
+</tbody>
+</table>
+<h3 id="name-aliases-handled-by-standardize_metadata_name">Name aliases handled by <code>standardize_metadata_name()</code></h3>
+<table>
+<thead>
+<tr>
+<th>Input</th>
+<th>Canonical</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>survey</code>, <code>survey_microdata</code></td>
+<td><code>microdata</code></td>
+</tr>
+<tr>
+<td><code>timeseries</code></td>
+<td><code>indicator</code></td>
+</tr>
+<tr>
+<td><code>timeseries_db</code>, <code>indicator_db</code></td>
+<td><code>indicators_db</code></td>
+</tr>
+</tbody>
+</table>
+<p>Always normalise user-supplied names through <code>MetadataManager.standardize_metadata_name</code>
+before using them as keys or building API paths.</p>
+<hr />
+<h2 id="where-pymetadataeditor-already-integrates">Where pymetadataeditor already integrates</h2>
+<p>A literal inventory so an agent can grep locally instead of re-reading source.</p>
+<h3 id="pymetadataeditorinterfacepy"><code>pymetadataeditor/interface.py</code></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">metadataschemas.metadata_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">MetadataManager</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">metadataschemas.utils.schema_base_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">SchemaBaseModel</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">metadataschemas.utils.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">merge_dicts</span><span class="p">,</span> <span class="n">standardize_keys_in_dict</span>
+</code></pre></div>
+<p><code>MetadataEditor</code> uses <code>MetadataManager</code> to resolve metadata types and create
+outlines, and <code>SchemaBaseModel</code> as a type hint for any function that accepts a
+schema instance.</p>
+<h3 id="pymetadataeditortemplatespy"><code>pymetadataeditor/templates.py</code></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">metadataschemas.utils.schema_base_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">SchemaBaseModel</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">metadataschemas.utils.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">get_subtype_of_optional_or_list</span><span class="p">,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">is_list_annotation</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">is_optional_annotation</span><span class="p">,</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">is_optional_list</span><span class="p">,</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">merge_dicts</span><span class="p">,</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">standardize_keys_in_dict</span><span class="p">,</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="p">)</span>
+</code></pre></div>
+<p>Templates extend the base schemas dynamically. The annotation utilities are
+used to walk Pydantic field types and rebuild them with adjusted required
+status.</p>
+<h3 id="pymetadataeditorllm_helperspy"><code>pymetadataeditor/llm_helpers.py</code></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">metadataschemas.utils.quick_start</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_skeleton</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">metadataschemas.utils.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">get_subtype_of_optional_or_list</span><span class="p">,</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">is_list_annotation</span><span class="p">,</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">is_optional_annotation</span><span class="p">,</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">is_optional_list</span><span class="p">,</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">subset_pydantic_model_type</span><span class="p">,</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="p">)</span>
+</code></pre></div>
+<p>LLM helpers use <code>make_skeleton</code> to seed an empty pydantic object that the LLM
+will populate field-by-field, and <code>subset_pydantic_model_type</code> to ask the LLM
+about a subset of fields at a time.</p>
+<h3 id="pymetadataeditorutilspy"><code>pymetadataeditor/utils.py</code></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">metadataschemas.utils.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">is_list_annotation</span><span class="p">,</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">is_optional_annotation</span><span class="p">,</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">is_optional_list</span><span class="p">,</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="p">)</span>
+</code></pre></div>
+<p>Used by <code>strip_model_rules()</code> to recurse over a model's field types when
+removing validation constraints for LLM structured output.</p>
+<hr />
+<h2 id="common-task-recipes">Common task recipes</h2>
+<h3 id="resolve-a-user-supplied-name-to-its-pydantic-class">Resolve a user-supplied name to its pydantic class</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">metadataschemas.metadata_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">MetadataManager</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">mm</span> <span class="o">=</span> <span class="n">MetadataManager</span><span class="p">()</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">canonical</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">standardize_metadata_name</span><span class="p">(</span><span class="n">user_input</span><span class="p">)</span>   <span class="c1"># &quot;survey&quot; → &quot;microdata&quot;</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="n">schema_cls</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">metadata_class_from_name</span><span class="p">(</span><span class="n">canonical</span><span class="p">)</span>     <span class="c1"># MicrodataSchema</span>
+</code></pre></div>
+<h3 id="create-a-blank-metadata-object-for-any-type">Create a blank metadata object for any type</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">mm</span> <span class="o">=</span> <span class="n">MetadataManager</span><span class="p">()</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">obj</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">create_metadata_outline</span><span class="p">(</span><span class="s2">&quot;indicator&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">obj</span><span class="o">.</span><span class="n">series_description</span><span class="o">.</span><span class="n">idno</span> <span class="o">=</span> <span class="s2">&quot;GDP_PC_001&quot;</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">obj</span><span class="o">.</span><span class="n">series_description</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;GDP per capita&quot;</span>
+</code></pre></div>
+<h3 id="validate-a-raw-dict-against-a-schema">Validate a raw dict against a schema</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">metadataschemas.metadata_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">MetadataManager</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">ValidationError</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">mm</span> <span class="o">=</span> <span class="n">MetadataManager</span><span class="p">()</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="n">schema_cls</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">metadata_class_from_name</span><span class="p">(</span><span class="s2">&quot;geospatial&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="n">obj</span> <span class="o">=</span> <span class="n">schema_cls</span><span class="o">.</span><span class="n">model_validate</span><span class="p">(</span><span class="n">raw_dict</span><span class="p">)</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="k">except</span> <span class="n">ValidationError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>    <span class="c1"># Handle field-level errors</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>    <span class="o">...</span>
+</code></pre></div>
+<h3 id="read-or-write-excel">Read or write Excel</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">mm</span> <span class="o">=</span> <span class="n">MetadataManager</span><span class="p">()</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="c1"># Blank template</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">blank_path</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">write_metadata_outline_to_excel</span><span class="p">(</span><span class="s2">&quot;microdata&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;blank.xlsx&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="c1"># Populated object → Excel</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="n">populated_path</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">save_metadata_to_excel</span><span class="p">(</span><span class="n">microdata_obj</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;filled.xlsx&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="c1"># Excel → Pydantic</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="n">loaded</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">read_metadata_from_excel</span><span class="p">(</span><span class="s2">&quot;filled.xlsx&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="fetch-the-source-json-schema-for-inspection">Fetch the source JSON schema for inspection</h3>
+<p>When you need the raw JSON (e.g. to look up enum values, descriptions, or
+nested structure not exposed by the pydantic class), fetch it from the source
+repo:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># From a Claude Code session with GitHub MCP access:</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">mcp__github__get_file_contents</span><span class="p">(</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    <span class="n">owner</span><span class="o">=</span><span class="s2">&quot;tonyfujs&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="n">repo</span><span class="o">=</span><span class="s2">&quot;metadata-schemas&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span class="n">path</span><span class="o">=</span><span class="s2">&quot;schemas/timeseries-schema.json&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span class="n">ref</span><span class="o">=</span><span class="s2">&quot;main&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="p">)</span>
+</code></pre></div>
+<p>Or via raw URL:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>https://raw.githubusercontent.com/tonyfujs/metadata-schemas/main/schemas/timeseries-schema.json
+</code></pre></div>
+<hr />
+<h2 id="versioning-and-regeneration-workflow">Versioning and regeneration workflow</h2>
+<p>The schemas are versioned independently of <code>pymetadataeditor</code>. From
+<code>metadata-schemas/README.md</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Bump</th>
+<th>Triggered by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Major</strong></td>
+<td>Breaking field type changes (e.g. string → array), or a new mandatory field, or an optional field becoming mandatory</td>
+</tr>
+<tr>
+<td><strong>Minor</strong></td>
+<td>Field removed, or a new optional field added</td>
+</tr>
+<tr>
+<td><strong>Patch</strong></td>
+<td>Coercible type changes (e.g. int → string)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Update procedure</strong> (run inside <code>tonyfujs/metadata-schemas</code>, on a feature
+branch):</p>
+<ol>
+<li>Edit the JSON file in <code>schemas/</code></li>
+<li>Bump <code>version</code> in <code>pyproject.toml</code></li>
+<li>Bump the per-schema <code>version</code> in <code>json_to_python_config.yaml</code></li>
+<li>Regenerate pydantic models:
+   <code>python pydantic_schemas/generators/generate_pydantic_schemas.py</code></li>
+<li>Regenerate Excel templates:
+   <code>python -m pydantic_schemas.generators.generate_excel_files</code></li>
+<li>Cut a release; bump <code>metadataschemas</code> in <code>pymetadataeditor/pyproject.toml</code></li>
+</ol>
+<p><strong>Rule for agents:</strong> Never edit the generated <code>pydantic_schemas/*_schema.py</code>
+files directly — they get overwritten on the next regeneration. Edit the JSON
+schema and regenerate.</p>
+<hr />
+<h2 id="things-to-never-do">Things to never do</h2>
+<ul>
+<li><strong>Don't bundle JSON schema files inside <code>pymetadataeditor/</code>.</strong> They live in
+  the sibling repo and are pulled in via the <code>metadataschemas</code> PyPI package.</li>
+<li><strong>Don't reimplement annotation introspection</strong> (<code>is_optional_annotation</code>,
+  <code>is_list_annotation</code>, <code>is_optional_list</code>, <code>get_subtype_of_optional_or_list</code>,
+  <code>merge_dicts</code>, <code>standardize_keys_in_dict</code>). They are already exported from
+  <code>metadataschemas.utils.utils</code>.</li>
+<li><strong>Don't hardcode the list of metadata types.</strong> Delegate to
+  <code>MetadataManager().metadata_type_names</code>.</li>
+<li><strong>Don't use <code>survey</code>, <code>timeseries</code>, or <code>timeseries_db</code> as canonical names</strong>
+  in new code. Always normalise via <code>MetadataManager.standardize_metadata_name</code>.</li>
+<li><strong>Don't edit the generated pydantic files in <code>metadataschemas</code>.</strong> Edit the
+  JSON schema and regenerate.</li>
+<li><strong>Don't subclass <code>BaseModel</code> directly for schema-shaped data.</strong> Subclass
+  <code>metadataschemas.utils.schema_base_model.SchemaBaseModel</code> so that field
+  aliasing, <code>extra="forbid"</code>, and <code>validate_assignment=True</code> apply.</li>
+</ul>
+<hr />
+<h2 id="per-schema-reference-files">Per-schema reference files</h2>
+<p>Each supported metadata type has a dedicated reference file with its top-level
+fields, required fields, common pitfalls, and instantiation example:</p>
+<ul>
+<li><a href="../schemas/document/">schemas/document.md</a></li>
+<li><a href="../schemas/geospatial/">schemas/geospatial.md</a></li>
+<li><a href="../schemas/image/">schemas/image.md</a></li>
+<li><a href="../schemas/indicator/">schemas/indicator.md</a></li>
+<li><a href="../schemas/indicators_db/">schemas/indicators_db.md</a></li>
+<li><a href="../schemas/microdata/">schemas/microdata.md</a></li>
+<li><a href="../schemas/resource/">schemas/resource.md</a></li>
+<li><a href="../schemas/script/">schemas/script.md</a></li>
+<li><a href="../schemas/table/">schemas/table.md</a></li>
+<li><a href="../schemas/video/">schemas/video.md</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

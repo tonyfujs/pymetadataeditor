@@ -1,0 +1,87 @@
+site_name: pyMetadataEditor
+site_description: Python client library for the Metadata Editor API
+repo_url: https://github.com/tonyfujs/pymetadataeditor
+repo_name: tonyfujs/pymetadataeditor
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+  palette:
+    - scheme: default
+      primary: blue
+      accent: light blue
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: false
+            show_root_heading: true
+            show_root_full_path: false
+            members_order: source
+            separate_signature: true
+            show_signature_annotations: true
+            unwrap_annotated: true
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - tables
+
+nav:
+  - Home: index.md
+  - Getting Started: getting_started.md
+  - User Guide:
+      - Browsing & Discovering Projects: user_guide/01_browsing_projects.md
+      - Schemas & Templates: user_guide/02_schemas_and_templates.md
+      - Creating New Metadata: user_guide/03_creating_metadata.md
+      - Retrieving Existing Metadata: user_guide/04_retrieving_metadata.md
+      - Updating Metadata: user_guide/05_updating_metadata.md
+      - Working with Formats: user_guide/06_working_with_formats.md
+      - AI-Powered Metadata Generation: user_guide/07_ai_powered_generation.md
+      - Managing Collections: user_guide/08_managing_collections.md
+      - Managing Resources: user_guide/09_managing_resources.md
+      - Deleting Data: user_guide/10_deleting_data.md
+      - Advanced Usage: user_guide/11_advanced.md
+  - How-To Guides:
+      - Move Projects Between Collections: how_to/move_projects_between_collections.md
+      - Batch Upload from Excel: how_to/batch_upload_from_excel.md
+      - Instance-to-Instance Migration: how_to/instance_to_instance_migration.md
+  - API Reference: reference/api.md
+  - Reference:
+      - Output Modes: reference/output_modes.md
+      - Metadata Types: reference/metadata_types.md
+      - Error Handling: reference/error_handling.md
+      - Schema Reference:
+          - Document: reference/schemas/document.md
+          - Geospatial: reference/schemas/geospatial.md
+          - Image: reference/schemas/image.md
+          - Indicator: reference/schemas/indicator.md
+          - Indicators DB: reference/schemas/indicators_db.md
+          - Microdata: reference/schemas/microdata.md
+          - Resource: reference/schemas/resource.md
+          - Script: reference/schemas/script.md
+          - Table: reference/schemas/table.md
+          - Video: reference/schemas/video.md
+  - Developer Guide:
+      - Architecture: developer/architecture.md
+      - Module Reference:
+          - interface.py: developer/modules/interface.md
+          - requester.py: developer/modules/requester.md
+          - templates.py: developer/modules/templates.md
+          - llm_helpers.py: developer/modules/llm_helpers.md
+          - utils.py: developer/modules/utils.md

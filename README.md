@@ -1,6 +1,8 @@
 # pyMetadataEditor
 
-A tool connected to Metadata Editor for creating, editing and managing metadata for microdata, indicators, geospatial data, documents, scripts, images and videos.
+A Python client library for the [Metadata Editor](https://github.com/mah0001/metadata-editor) REST API. Create, edit, and manage metadata for microdata, indicators, geospatial data, documents, scripts, images, and videos — directly from Python.
+
+**[Full documentation](https://tonyfujs.github.io/pymetadataeditor/)**
 
 # How to use pyMetadataEditor
 

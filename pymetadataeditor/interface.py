@@ -1459,11 +1459,11 @@ class MetadataEditor:
 
     def list_admin_metadata(
         self,
-        limit: Union[int, str] = "All",
         project_id: Optional[Union[int, str]] = None,
         template_uid: Optional[Union[str, List[str]]] = None,
         date_from: Optional[str] = None,
         date_to: Optional[str] = None,
+        limit: Union[int, str] = "All",
         offset: int = 0,
     ) -> pd.DataFrame:
         """Lists admin metadata records, optionally filtered by project, template or date range.
@@ -1471,13 +1471,13 @@ class MetadataEditor:
         Supports automatic pagination when limit='All'.
 
         Args:
-            limit (int or str): Number of records to retrieve. Use 'All' to retrieve all records
-                via automatic pagination (batches of 500). Defaults to 'All'.
             project_id (optional int or str): Filter by project ID or IDNO.
             template_uid (optional str or list of str): Filter by template UID(s). If a list is
                 provided the values are joined with commas.
             date_from (optional str): Filter records updated on or after this date (forwarded as-is).
             date_to (optional str): Filter records updated on or before this date (forwarded as-is).
+            limit (int or str): Number of records to retrieve. Use 'All' to retrieve all records
+                via automatic pagination (batches of 500). Defaults to 'All'.
             offset (int): Number of records to skip for pagination. Default is 0.
 
         Returns:

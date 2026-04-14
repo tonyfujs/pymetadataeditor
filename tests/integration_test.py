@@ -9,7 +9,7 @@ from nbconvert.preprocessors import ExecutePreprocessor
 from pydantic import ValidationError
 
 from pymetadataeditor import MetadataEditor
-from pymetadataeditor.interface import TemplateError
+from pymetadataeditor.interface import DeleteNotAppliedError, TemplateError
 
 
 @pytest.fixture
@@ -884,6 +884,84 @@ def test_generic_api_request(metadata_editor):
     # Check if the response contains the expected keys
     assert "projects" in response, response
     assert len(response["projects"]) <= 10, response["projects"]
+
+
+def test_admin_metadata_lifecycle(metadata_editor):
+    """End-to-end lifecycle: list templates, upsert, get, patch, list, delete admin metadata."""
+    me = metadata_editor
+
+    # 1. List admin templates — need at least one to proceed
+    templates = me.list_admin_metadata_templates()
+    if templates.empty:
+        pytest.skip("No admin metadata templates available on this instance")
+    template_uid = templates.iloc[0]["uid"]
+    print(f"Using admin template: {template_uid}")
+
+    # 2. Get template details
+    template_detail = me.get_admin_metadata_template_by_uid(template_uid)
+    assert isinstance(template_detail, pd.Series)
+
+    # 3. Create a throwaway indicator project to attach admin metadata to
+    project_id = me.create_project_log(
+        {
+            "series_description": {
+                "idno": "ADMIN_META_INTEGRATION_TEST_TEMP",
+                "name": "Admin metadata lifecycle integration test (temporary)",
+            }
+        },
+        "indicator",
+    )
+    print(f"Created temporary project: {project_id}")
+
+    try:
+        # 4. Upsert admin metadata
+        upsert_result = me.upsert_admin_metadata(
+            project_id=project_id,
+            template_uid=template_uid,
+            metadata={"test_field": "test_value"},
+        )
+        assert isinstance(upsert_result, dict)
+        print(f"Upserted admin metadata: {upsert_result}")
+
+        # 5. Get it back
+        admin_meta = me.get_admin_metadata(project_id=project_id, template_uid=template_uid)
+        assert isinstance(admin_meta, dict)
+        print(f"Retrieved admin metadata: {admin_meta}")
+
+        # 6. Patch a field
+        patch_result = me.patch_admin_metadata(
+            project_id=project_id,
+            template_uid=template_uid,
+            patches=[{"op": "replace", "path": "/test_field", "value": "patched_value"}],
+        )
+        assert isinstance(patch_result, dict)
+        print(f"Patched admin metadata: {patch_result}")
+
+        # 7. Get again — verify it's still a dict (response shape is API-dependent)
+        admin_meta_after_patch = me.get_admin_metadata(project_id=project_id, template_uid=template_uid)
+        assert isinstance(admin_meta_after_patch, dict)
+
+        # 8. List with project_id filter
+        listed = me.list_admin_metadata(project_id=project_id)
+        assert isinstance(listed, pd.DataFrame)
+        assert len(listed) >= 1
+        print(f"Listed admin metadata ({len(listed)} records)")
+
+        # 9. Delete the admin metadata record
+        me.delete_admin_metadata(project_id=project_id, template_uid=template_uid)
+        print("Deleted admin metadata")
+
+        # 10. Verify get raises after delete
+        with pytest.raises(ValueError, match="No admin metadata found"):
+            me.get_admin_metadata(project_id=project_id, template_uid=template_uid)
+
+    finally:
+        # Clean up the throwaway project
+        try:
+            me.delete_project_by_id(project_id)
+            print(f"Cleaned up temporary project {project_id}")
+        except Exception as e:
+            print(f"Warning: failed to clean up project {project_id}: {e}")
 
 
 def test_execute_demo_notebook():

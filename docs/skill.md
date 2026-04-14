@@ -124,6 +124,15 @@ The `MetadataEditor` class is the single entry point for all operations. It dele
 - **Update resource** — update resource metadata
 - **Delete resource** — remove a file attachment
 
+### Admin Metadata
+- **List admin metadata templates** — discover available administrative metadata template UIDs
+- **Get admin metadata template** — retrieve a single admin template by UID
+- **List admin metadata** — query admin metadata records, filterable by project, template, date range
+- **Get admin metadata** — retrieve a single admin metadata record by (project_id, template_uid)
+- **Upsert admin metadata** — create or update an admin metadata record (dict only in this version)
+- **Patch admin metadata** — apply multi-op JSON Patch (RFC 6902) to an admin metadata record
+- **Delete admin metadata** — remove an admin metadata record
+
 ### Low-Level Access
 - **Generic API request** — direct GET/POST to the API for edge cases not covered by other methods
 
@@ -277,6 +286,38 @@ me.patch_update_project_log_by_id(
 
 # Remove a field
 me.patch_update_project_log_by_id(id=123, op="remove", path="/series_description/definition_short")
+```
+
+---
+
+### 7. Manage admin metadata for a project
+
+```python
+me = MetadataEditor(api_url=..., api_key=...)
+
+# Discover available admin templates
+templates = me.list_admin_metadata_templates()
+print(templates)
+
+# Attach admin metadata to a project
+me.upsert_admin_metadata(
+    project_id=123,
+    template_uid="my_admin_template",
+    metadata={"section": {"field": "value"}},
+)
+
+# Read it back
+admin_meta = me.get_admin_metadata(project_id=123, template_uid="my_admin_template")
+
+# Patch a single field
+me.patch_admin_metadata(
+    project_id=123,
+    template_uid="my_admin_template",
+    patches=[{"op": "replace", "path": "/section/field", "value": "updated"}],
+)
+
+# Delete
+me.delete_admin_metadata(project_id=123, template_uid="my_admin_template")
 ```
 
 ---

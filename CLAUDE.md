@@ -192,6 +192,10 @@ Always accept the user-facing names in public methods.
 
 Call `remove_empty_from_dict()` on any dict before POSTing to the API. `interface.py` does this internally — do not do it again in calling code.
 
+### Admin metadata
+
+Admin metadata is a separate namespace from project metadata, with its own template registry (`/admin-metadata/templates`) and its own CRUD endpoints. It is **not** hooked into `list_templates()` or `self._templates`. Multi-op JSON Patch is supported on admin metadata but not (yet) on project metadata. Admin metadata records are keyed by `(project_id, template_uid)` pairs — a single project can have multiple admin metadata records, one per template.
+
 ### JSON Patch
 
 `patch_update_project_log_by_id` applies a single RFC 6902 patch operation. Multi-patch is not exposed publicly (the API supports it but it is not yet surfaced). Paths are auto-corrected to start with `/`.

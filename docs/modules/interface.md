@@ -579,6 +579,113 @@ Deletes a resource from a project. Raises `DeleteNotAppliedError` if the delete 
 
 ---
 
+### Admin Metadata
+
+Admin metadata is a separate namespace from project metadata, with its own template registry and CRUD endpoints. Records are keyed by `(project_id, template_uid)` pairs — a single project can have multiple admin metadata records, one per template. Multi-op JSON Patch is supported.
+
+#### `list_admin_metadata_templates() -> pd.DataFrame`
+
+Returns a DataFrame of all available admin metadata templates (uid, name, and other template details).
+
+---
+
+#### `get_admin_metadata_template_by_uid(uid) -> pd.Series`
+
+```python
+def get_admin_metadata_template_by_uid(self, uid: str) -> pd.Series
+```
+
+Returns a Series with the details of a specific admin template identified by its UID.
+
+---
+
+#### `list_admin_metadata(project_id, template_uid, date_from, date_to, limit, offset) -> pd.DataFrame`
+
+```python
+def list_admin_metadata(
+    self,
+    project_id: Optional[int] = None,
+    template_uid: Optional[str] = None,
+    date_from: Optional[str] = None,   # ISO date string, e.g. "2024-01-01"
+    date_to: Optional[str] = None,
+    limit: Optional[int] = None,
+    offset: Optional[int] = None,
+) -> pd.DataFrame
+```
+
+Returns a DataFrame of admin metadata records, optionally filtered by project, template, or date range.
+
+---
+
+#### `get_admin_metadata(project_id, template_uid) -> Dict`
+
+```python
+def get_admin_metadata(self, project_id: int, template_uid: str) -> Dict
+```
+
+Retrieves a single admin metadata record identified by the `(project_id, template_uid)` pair.
+
+---
+
+#### `upsert_admin_metadata(project_id, template_uid, metadata) -> Dict`
+
+```python
+def upsert_admin_metadata(
+    self,
+    project_id: int,
+    template_uid: str,
+    metadata: Dict,
+) -> Dict
+```
+
+Creates or updates the admin metadata record for the given `(project_id, template_uid)` pair. Returns the API response as a dict.
+
+```python
+result = me.upsert_admin_metadata(
+    project_id=123,
+    template_uid="my_admin_template",
+    metadata={"section": {"field": "value"}},
+)
+```
+
+---
+
+#### `patch_admin_metadata(project_id, template_uid, patches) -> Dict`
+
+```python
+def patch_admin_metadata(
+    self,
+    project_id: int,
+    template_uid: str,
+    patches: List[Dict],   # List of RFC 6902 patch operations
+) -> Dict
+```
+
+Applies one or more [JSON Patch](https://jsonpatch.com/) (RFC 6902) operations to an admin metadata record. Unlike `patch_update_project_log_by_id`, this method supports multiple patch operations in a single call.
+
+```python
+result = me.patch_admin_metadata(
+    project_id=123,
+    template_uid="my_admin_template",
+    patches=[
+        {"op": "replace", "path": "/section/field", "value": "updated"},
+        {"op": "add", "path": "/section/new_field", "value": "new value"},
+    ],
+)
+```
+
+---
+
+#### `delete_admin_metadata(project_id, template_uid)`
+
+```python
+def delete_admin_metadata(self, project_id: int, template_uid: str)
+```
+
+Deletes the admin metadata record for the given `(project_id, template_uid)` pair. Raises `DeleteNotAppliedError` if the API does not confirm deletion.
+
+---
+
 ### Generic / Low-Level
 
 #### `generic_api_request(method, endpoint, params, data, json, files) -> Dict`

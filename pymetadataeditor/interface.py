@@ -1379,6 +1379,277 @@ class MetadataEditor:
         )
 
     ####################################################################################################################
+    # ADMIN METADATA
+    ####################################################################################################################
+
+    def list_admin_metadata_templates(self) -> pd.DataFrame:
+        """Retrieves all admin metadata templates available on this instance.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the admin metadata templates.
+                If none are found, an empty DataFrame is returned.
+
+        Example:
+        ```python
+        me = MetadataEditor(api_url=api_url, api_key=api_key)
+        templates_df = me.list_admin_metadata_templates()
+        print(templates_df[["uid", "name"]])
+        ```
+        """
+        response = self._apinterface.get_request("admin-metadata/templates")
+        templates = response.get("templates", [])
+        if not templates:
+            return pd.DataFrame()
+        return pd.DataFrame(templates)
+
+    def get_admin_metadata_template_by_uid(self, uid: str) -> pd.Series:
+        """Retrieves a single admin metadata template by its UID.
+
+        Args:
+            uid (str): The unique identifier of the admin metadata template.
+
+        Returns:
+            pd.Series: A pandas Series containing the template details.
+
+        Raises:
+            TemplateError: If the template with the given UID cannot be found or access is denied.
+
+        Example:
+        ```python
+        me = MetadataEditor(api_url=api_url, api_key=api_key)
+        template = me.get_admin_metadata_template_by_uid("tpl_1")
+        print(template["name"])
+        ```
+        """
+        try:
+            response = self._apinterface.get_request("admin-metadata/templates/{}", id=uid)
+        except (HTTPError, PermissionError) as e:
+            raise TemplateError(f"Admin metadata template '{uid}' not found.") from e
+        return pd.Series(response.get("template", response))
+
+    def get_admin_metadata(self, project_id: Union[int, str], template_uid: str) -> Dict:
+        """Retrieves admin metadata for a specific project and template.
+
+        Args:
+            project_id (int or str): The unique identifier of the project. Can be an integer ID or
+                a string IDNO.
+            template_uid (str): The UID of the admin metadata template.
+
+        Returns:
+            Dict: A dictionary containing the admin metadata for the project.
+
+        Raises:
+            ValueError: If no admin metadata is found for the given project_id and template_uid.
+
+        Example:
+        ```python
+        me = MetadataEditor(api_url=api_url, api_key=api_key)
+        admin_meta = me.get_admin_metadata(project_id=123, template_uid="tpl_1")
+        print(admin_meta["metadata"])
+        ```
+        """
+        pth = f"admin-metadata/data/{project_id}/" + "{}"
+        try:
+            response = self._apinterface.get_request(pth, id=template_uid)
+        except (HTTPError, PermissionError) as e:
+            raise ValueError(
+                f"No admin metadata found for project_id={project_id}, template_uid={template_uid}"
+            ) from e
+        return response
+
+    def list_admin_metadata(
+        self,
+        limit: Union[int, str] = "All",
+        project_id: Optional[Union[int, str]] = None,
+        template_uid: Optional[Union[str, List[str]]] = None,
+        date_from: Optional[str] = None,
+        date_to: Optional[str] = None,
+        offset: int = 0,
+    ) -> pd.DataFrame:
+        """Lists admin metadata records, optionally filtered by project, template or date range.
+
+        Supports automatic pagination when limit='All'.
+
+        Args:
+            limit (int or str): Number of records to retrieve. Use 'All' to retrieve all records
+                via automatic pagination (batches of 500). Defaults to 'All'.
+            project_id (optional int or str): Filter by project ID or IDNO.
+            template_uid (optional str or list of str): Filter by template UID(s). If a list is
+                provided the values are joined with commas.
+            date_from (optional str): Filter records updated on or after this date (forwarded as-is).
+            date_to (optional str): Filter records updated on or before this date (forwarded as-is).
+            offset (int): Number of records to skip for pagination. Default is 0.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the admin metadata records.
+                If none are found, an empty DataFrame is returned.
+
+        Example:
+        ```python
+        me = MetadataEditor(api_url=api_url, api_key=api_key)
+        all_records = me.list_admin_metadata()
+        filtered = me.list_admin_metadata(project_id=123, template_uid="tpl_1")
+        ```
+        """
+        if isinstance(limit, str):
+            assert limit.lower() == "all", f"Expected limit to be 'All' or a positive integer but got '{limit}'"
+            new_offset = offset
+            new_limit = 500
+            dfs = []
+            while True:
+                df = self.list_admin_metadata(
+                    project_id=project_id,
+                    template_uid=template_uid,
+                    date_from=date_from,
+                    date_to=date_to,
+                    offset=new_offset,
+                    limit=new_limit,
+                )
+                dfs.append(df)
+                if len(df) < new_limit:
+                    break
+                new_offset += new_limit
+            if dfs:
+                return pd.concat(dfs, ignore_index=True)
+            return pd.DataFrame()
+
+        params: Dict = {"offset": offset, "limit": limit}
+        if project_id is not None:
+            params["project_id"] = project_id
+        if template_uid is not None:
+            if not isinstance(template_uid, str) and isinstance(template_uid, Iterable):
+                template_uid = ",".join(template_uid)
+            params["template"] = template_uid
+        if date_from is not None:
+            params["date_from"] = date_from
+        if date_to is not None:
+            params["date_to"] = date_to
+
+        response = self._apinterface.get_request(pth="admin-metadata/data_query", params=params)
+        data = response.get("data", [])
+        if not data:
+            return pd.DataFrame()
+        return pd.DataFrame(data)
+
+    def upsert_admin_metadata(
+        self,
+        project_id: Union[int, str],
+        template_uid: str,
+        metadata: Dict,
+    ) -> Dict:
+        """Creates or updates admin metadata for a project.
+
+        If admin metadata already exists for the given project and template, it will be replaced.
+        If it does not exist, it will be created.
+
+        Args:
+            project_id (int or str): The unique identifier of the project. Can be an integer ID or
+                a string IDNO.
+            template_uid (str): The UID of the admin metadata template. Must be non-empty.
+            metadata (Dict): A dictionary of admin metadata fields to set. Empty values are stripped
+                before sending to the API.
+
+        Returns:
+            Dict: The API response as a dictionary.
+
+        Raises:
+            ValueError: If metadata is not a dict, or if template_uid is empty.
+
+        Example:
+        ```python
+        me = MetadataEditor(api_url=api_url, api_key=api_key)
+        me.upsert_admin_metadata(
+            project_id=123,
+            template_uid="tpl_1",
+            metadata={"field1": "value1", "field2": "value2"},
+        )
+        ```
+        """
+        if not isinstance(metadata, dict):
+            raise ValueError(f"metadata must be a dict but got {type(metadata).__name__}")
+        if not template_uid:
+            raise ValueError("template_uid must be a non-empty string")
+        clean_metadata = remove_empty_from_dict(metadata)
+        body = {"project_id": project_id, "template_uid": template_uid, "metadata": clean_metadata}
+        return self._apinterface.post_request(pth="admin-metadata/data/", json=body)
+
+    def patch_admin_metadata(
+        self,
+        project_id: Union[int, str],
+        template_uid: str,
+        patches: List[Dict],
+    ) -> Dict:
+        """Applies one or more JSON Patch (RFC 6902) operations to admin metadata.
+
+        Args:
+            project_id (int or str): The unique identifier of the project. Can be an integer ID or
+                a string IDNO.
+            template_uid (str): The UID of the admin metadata template.
+            patches (list of dict): A list of JSON Patch operation dictionaries. Each must contain
+                'op' and 'path' keys. Supported ops: 'add', 'remove', 'replace', 'test'.
+                Paths that do not start with '/' will have '/' prepended automatically.
+
+        Returns:
+            Dict: The API response as a dictionary.
+
+        Raises:
+            ValueError: If patches is empty or contains an invalid operation.
+
+        Example:
+        ```python
+        me = MetadataEditor(api_url=api_url, api_key=api_key)
+        me.patch_admin_metadata(
+            project_id=123,
+            template_uid="tpl_1",
+            patches=[{"op": "replace", "path": "/field1", "value": "new_value"}],
+        )
+        ```
+        """
+        if not patches:
+            raise ValueError("patches must be a non-empty list of JSON Patch operations")
+        patches = validate_json_patches(patches)
+        body = {"project_id": project_id, "template_uid": template_uid, "patches": patches}
+        return self._apinterface.post_request(pth="admin-metadata/data_patch/", json=body)
+
+    def delete_admin_metadata(
+        self,
+        project_id: Union[int, str],
+        template_uid: str,
+    ) -> None:
+        """Deletes admin metadata for a specific project and template.
+
+        Args:
+            project_id (int or str): The unique identifier of the project. Can be an integer ID or
+                a string IDNO.
+            template_uid (str): The UID of the admin metadata template.
+
+        Returns:
+            None
+
+        Raises:
+            DeleteNotAppliedError: If the admin metadata still exists after the delete request,
+                indicating the delete was not applied by the server.
+
+        Example:
+        ```python
+        me = MetadataEditor(api_url=api_url, api_key=api_key)
+        me.delete_admin_metadata(project_id=123, template_uid="tpl_1")
+        ```
+        """
+        body = {"project_id": project_id, "template_uid": template_uid}
+        try:
+            self._apinterface.post_request(pth="admin-metadata/data_remove/", json=body)
+        except JSONDecodeError:
+            pass
+
+        try:
+            self.get_admin_metadata(project_id=project_id, template_uid=template_uid)
+        except ValueError:
+            pass  # deleted successfully — record no longer found
+        else:
+            raise DeleteNotAppliedError()
+
+    ####################################################################################################################
     # EXCEL INTERFACE
     ####################################################################################################################
 

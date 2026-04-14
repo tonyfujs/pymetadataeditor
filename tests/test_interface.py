@@ -24,8 +24,7 @@ class MockResponse:
         raise_json_decode_error: bool = False,
         raise_ssl: bool = False,
     ):
-        """
-        Used to create mock responses from the API so that we don't actually call the API everytime we run tests
+        """Used to create mock responses from the API so that we don't actually call the API everytime we run tests
         """
         self.status_code = http_status_code
         self.json_data = json_data if json_data is not None else {}
@@ -521,8 +520,7 @@ class MockGetProjectById:
 
 
 def test_delete_project_by_id(monkeypatch, metadata_editor):
-    """
-    This feels like a bad test - it's testing the implementation instead of focusing on the functionality
+    """This feels like a bad test - it's testing the implementation instead of focusing on the functionality
        But then, because of all the mocking that happens, maybe that's how it has to be?
        Then the functionality will be tested in an integration test.
 
@@ -532,7 +530,6 @@ def test_delete_project_by_id(monkeypatch, metadata_editor):
 
     To test the specific behaviour of the delete_collection_by_id really requires an integration test
     """
-
     # # raises an error when there is no such project to delete
     # monkeypatch.setattr(MetadataEditor, "get_project_by_id", MockGetProjectById(False))
 
@@ -927,3 +924,298 @@ def test_create_update_delete_resource(
     monkeypatch.setattr(RequestsWithSpecificErrors, "post_request", mock_delete_response)
 
     metadata_editor.delete_resource_by_id(project_id=1, resource_id=1)
+
+
+####################################################################################################################
+# ADMIN METADATA
+####################################################################################################################
+
+
+def test_list_admin_metadata_templates_populated(monkeypatch, metadata_editor):
+    def mock_response(*args, **kwargs):
+        return MockResponse(
+            http_status_code=200,
+            json_data={
+                "templates": [
+                    {"uid": "tpl_1", "name": "Template One", "type": "admin"},
+                    {"uid": "tpl_2", "name": "Template Two", "type": "admin"},
+                ]
+            },
+        )
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    result = metadata_editor.list_admin_metadata_templates()
+    assert len(result) == 2
+    assert "uid" in result.columns
+
+
+def test_list_admin_metadata_templates_empty(monkeypatch, metadata_editor):
+    def mock_response(*args, **kwargs):
+        return MockResponse(http_status_code=200, json_data={"templates": []})
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    result = metadata_editor.list_admin_metadata_templates()
+    assert isinstance(result, __import__("pandas").DataFrame)
+    assert len(result) == 0
+
+
+def test_get_admin_metadata_template_by_uid_success(monkeypatch, metadata_editor):
+    def mock_response(*args, **kwargs):
+        return MockResponse(
+            http_status_code=200,
+            json_data={"template": {"uid": "tpl_1", "name": "Template One", "type": "admin"}},
+        )
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    result = metadata_editor.get_admin_metadata_template_by_uid("tpl_1")
+    assert isinstance(result, __import__("pandas").Series)
+    assert result["uid"] == "tpl_1"
+
+
+def test_get_admin_metadata_template_by_uid_not_found(monkeypatch, metadata_editor):
+    def mock_response(*args, **kwargs):
+        return MockResponse(http_status_code=404)
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    with pytest.raises(TemplateError):
+        metadata_editor.get_admin_metadata_template_by_uid("tpl_missing")
+
+
+def test_get_admin_metadata_success(monkeypatch, metadata_editor):
+    def mock_response(*args, **kwargs):
+        return MockResponse(
+            http_status_code=200,
+            json_data={"template_uid": "tpl_1", "metadata": {"key": "value"}},
+        )
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    result = metadata_editor.get_admin_metadata(project_id=123, template_uid="tpl_1")
+    assert isinstance(result, dict)
+    assert result["template_uid"] == "tpl_1"
+
+
+def test_get_admin_metadata_with_idno_string_project_id(monkeypatch, metadata_editor):
+    captured_args = {}
+
+    def mock_response(*args, **kwargs):
+        captured_args["url"] = args[1] if len(args) > 1 else kwargs.get("url", "")
+        return MockResponse(
+            http_status_code=200,
+            json_data={"template_uid": "tpl_1", "metadata": {"key": "value"}},
+        )
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    metadata_editor.get_admin_metadata(project_id="MY_IDNO_123", template_uid="tpl_1")
+    assert "MY_IDNO_123" in captured_args["url"]
+
+
+def test_get_admin_metadata_not_found(monkeypatch, metadata_editor):
+    def mock_response(*args, **kwargs):
+        return MockResponse(http_status_code=404)
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    with pytest.raises(ValueError, match="No admin metadata found"):
+        metadata_editor.get_admin_metadata(project_id=123, template_uid="tpl_1")
+
+
+def test_list_admin_metadata_no_filters(monkeypatch, metadata_editor):
+    call_count = {"n": 0}
+
+    def mock_response(*args, **kwargs):
+        call_count["n"] += 1
+        if call_count["n"] == 1:
+            data = [{"id": i, "template_uid": "tpl_1"} for i in range(500)]
+        else:
+            data = [{"id": i, "template_uid": "tpl_1"} for i in range(2)]
+        return MockResponse(http_status_code=200, json_data={"data": data})
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    result = metadata_editor.list_admin_metadata()
+    assert len(result) == 502
+
+
+def test_list_admin_metadata_with_filters(monkeypatch, metadata_editor):
+    captured_params = {}
+
+    def mock_response(*args, **kwargs):
+        captured_params.update(kwargs.get("params", {}))
+        return MockResponse(http_status_code=200, json_data={"data": []})
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    metadata_editor.list_admin_metadata(
+        limit=10,
+        project_id=42,
+        template_uid="tpl_x",
+        date_from="2024-01-01",
+        date_to="2024-12-31",
+    )
+    assert captured_params["project_id"] == 42
+    assert captured_params["template"] == "tpl_x"
+    assert captured_params["date_from"] == "2024-01-01"
+    assert captured_params["date_to"] == "2024-12-31"
+
+
+def test_list_admin_metadata_template_uid_list_joined_with_commas(monkeypatch, metadata_editor):
+    captured_params = {}
+
+    def mock_response(*args, **kwargs):
+        captured_params.update(kwargs.get("params", {}))
+        return MockResponse(http_status_code=200, json_data={"data": []})
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    metadata_editor.list_admin_metadata(limit=10, template_uid=["tpl_a", "tpl_b"])
+    assert captured_params["template"] == "tpl_a,tpl_b"
+
+
+def test_list_admin_metadata_passes_dates_verbatim(monkeypatch, metadata_editor):
+    captured_params = {}
+
+    def mock_response(*args, **kwargs):
+        captured_params.update(kwargs.get("params", {}))
+        return MockResponse(http_status_code=200, json_data={"data": []})
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    metadata_editor.list_admin_metadata(limit=10, date_from="not-a-real-date", date_to="also-bad")
+    assert captured_params["date_from"] == "not-a-real-date"
+    assert captured_params["date_to"] == "also-bad"
+
+
+def test_list_admin_metadata_empty_result(monkeypatch, metadata_editor):
+    def mock_response(*args, **kwargs):
+        return MockResponse(http_status_code=200, json_data={"data": []})
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    result = metadata_editor.list_admin_metadata(limit=10)
+    assert isinstance(result, __import__("pandas").DataFrame)
+    assert len(result) == 0
+
+
+def test_upsert_admin_metadata_success(monkeypatch, metadata_editor):
+    captured_json = {}
+
+    def mock_post(*args, **kwargs):
+        captured_json.update(kwargs.get("json", {}))
+        return MockResponse(http_status_code=200, json_data={"status": "ok"})
+
+    monkeypatch.setattr(RequestsWithSpecificErrors, "post_request", mock_post)
+    metadata_editor.upsert_admin_metadata(
+        project_id=123,
+        template_uid="tpl_1",
+        metadata={"field1": "value1"},
+    )
+    assert captured_json["project_id"] == 123
+    assert captured_json["template_uid"] == "tpl_1"
+    assert captured_json["metadata"] == {"field1": "value1"}
+
+
+def test_upsert_admin_metadata_strips_empty_values(monkeypatch, metadata_editor):
+    captured_json = {}
+
+    def mock_post(*args, **kwargs):
+        captured_json.update(kwargs.get("json", {}))
+        return MockResponse(http_status_code=200, json_data={"status": "ok"})
+
+    monkeypatch.setattr(RequestsWithSpecificErrors, "post_request", mock_post)
+    metadata_editor.upsert_admin_metadata(
+        project_id=123,
+        template_uid="tpl_1",
+        metadata={"field1": "value1", "empty_str": "", "none_val": None},
+    )
+    assert "empty_str" not in captured_json["metadata"]
+    assert "none_val" not in captured_json["metadata"]
+    assert captured_json["metadata"]["field1"] == "value1"
+
+
+def test_upsert_admin_metadata_rejects_non_dict(metadata_editor):
+    with pytest.raises(ValueError):
+        metadata_editor.upsert_admin_metadata(project_id=123, template_uid="tpl_1", metadata="foo")
+
+
+def test_upsert_admin_metadata_rejects_empty_template_uid(metadata_editor):
+    with pytest.raises(ValueError):
+        metadata_editor.upsert_admin_metadata(project_id=123, template_uid="", metadata={"field": "val"})
+
+
+def test_patch_admin_metadata_multi_op_success(monkeypatch, metadata_editor):
+    captured_json = {}
+
+    def mock_post(*args, **kwargs):
+        captured_json.update(kwargs.get("json", {}))
+        return MockResponse(http_status_code=200, json_data={"status": "ok"})
+
+    monkeypatch.setattr(RequestsWithSpecificErrors, "post_request", mock_post)
+    metadata_editor.patch_admin_metadata(
+        project_id=123,
+        template_uid="tpl_1",
+        patches=[
+            {"op": "replace", "path": "/field1", "value": "new_val"},
+            {"op": "add", "path": "/field2", "value": "another_val"},
+        ],
+    )
+    assert "patches" in captured_json
+    assert len(captured_json["patches"]) == 2
+
+
+def test_patch_admin_metadata_normalises_paths(monkeypatch, metadata_editor):
+    captured_json = {}
+
+    def mock_post(*args, **kwargs):
+        captured_json.update(kwargs.get("json", {}))
+        return MockResponse(http_status_code=200, json_data={"status": "ok"})
+
+    monkeypatch.setattr(RequestsWithSpecificErrors, "post_request", mock_post)
+    metadata_editor.patch_admin_metadata(
+        project_id=123,
+        template_uid="tpl_1",
+        patches=[{"op": "replace", "path": "foo/bar", "value": "v"}],
+    )
+    assert captured_json["patches"][0]["path"] == "/foo/bar"
+
+
+def test_patch_admin_metadata_rejects_empty_list(metadata_editor):
+    with pytest.raises(ValueError):
+        metadata_editor.patch_admin_metadata(project_id=123, template_uid="tpl_1", patches=[])
+
+
+def test_patch_admin_metadata_rejects_invalid_op(metadata_editor):
+    with pytest.raises(ValueError):
+        metadata_editor.patch_admin_metadata(
+            project_id=123,
+            template_uid="tpl_1",
+            patches=[{"op": "upsert", "path": "/field1", "value": "v"}],
+        )
+
+
+class MockGetAdminMetadata:
+    """Mock callable that simulates get_admin_metadata, returning data or raising ValueError."""
+
+    def __init__(self, exists: bool):
+        """Initialize with a flag indicating whether the record should appear to exist."""
+        self.exists = exists
+
+    def __call__(self, *args, **kwargs):
+        """Return admin metadata dict if exists=True, else raise ValueError."""
+        if self.exists:
+            return {"template_uid": "tpl_1", "metadata": {"key": "value"}}
+        else:
+            raise ValueError("No admin metadata found")
+
+
+def test_delete_admin_metadata_success(monkeypatch, metadata_editor):
+    def mock_post(*args, **kwargs):
+        return MockResponse(http_status_code=200, json_data={"status": "ok"})
+
+    monkeypatch.setattr(RequestsWithSpecificErrors, "post_request", mock_post)
+    monkeypatch.setattr(metadata_editor, "get_admin_metadata", MockGetAdminMetadata(exists=False))
+    # Should not raise
+    metadata_editor.delete_admin_metadata(project_id=123, template_uid="tpl_1")
+
+
+def test_delete_admin_metadata_not_applied(monkeypatch, metadata_editor):
+    def mock_post(*args, **kwargs):
+        return MockResponse(http_status_code=200, json_data={"status": "ok"})
+
+    monkeypatch.setattr(RequestsWithSpecificErrors, "post_request", mock_post)
+    monkeypatch.setattr(metadata_editor, "get_admin_metadata", MockGetAdminMetadata(exists=True))
+    with pytest.raises(DeleteNotAppliedError):
+        metadata_editor.delete_admin_metadata(project_id=123, template_uid="tpl_1")

@@ -1081,37 +1081,6 @@ class MetadataEditor:
         )
         return ret["id"]
 
-    # def log_project_admin_metadata(
-    #         self, id: int, metadata: Union[BaseModel, Dict, str], metadata_type_or_template_uid: Optional[str] = None
-    # ) -> int:
-    #     """Validates and logs admin metadata which can be a dictionary, a pydantic model or a path to an Excel file.
-
-    #     Args:
-    #         id (int): The ID of the project to associate the metadata with.
-    #         metadata (dictionary or BaseModel or str): If str, it's assumed this is a path to an appropriately
-    #             formatted Excel file.
-    #         admin_metadata_template_uid (str, optional): The UID of the admin metadata template to use.
-    #             otherwise the UID associated with the pydantic model or the Excel file will be used.
-
-    #     Returns:
-    #         int: The ID of the newly created admin metadata
-    #     """
-    #     metadata, metadata_type, uid = self._process_metadata_input(metadata, metadata_type_or_template_uid)
-    #     post_request_pth = "admin-metadata/data/"
-    #     post_json = {
-    #         "project_id": id,
-    #         "template_uid": uid,
-    #         "metadata": remove_empty_from_dict(metadata.model_dump(mode="json",
-    #                                                                exclude_none=True,
-    #                                                                exclude_unset=True)),
-    #     }
-    #     ret = self._apinterface.post_request(
-    #         pth=post_request_pth,
-    #         json=post_json,
-    #         id=id,
-    #     )
-    #     return ret
-
     def update_project_log_by_id(self, id: int, new_metadata: Union[BaseModel, Dict, str]):
         """Updates the record of the metadata.
 

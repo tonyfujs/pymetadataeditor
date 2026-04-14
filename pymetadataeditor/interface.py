@@ -1644,7 +1644,7 @@ class MetadataEditor:
 
         try:
             self.get_admin_metadata(project_id=project_id, template_uid=template_uid)
-        except ValueError:
+        except (ValueError, HTTPError, PermissionError, JSONDecodeError):
             pass  # deleted successfully — record no longer found
         else:
             raise DeleteNotAppliedError()

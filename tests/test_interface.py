@@ -955,7 +955,7 @@ def test_list_admin_metadata_templates_empty(monkeypatch, metadata_editor):
 
     monkeypatch.setattr(requests, "request", mock_response)
     result = metadata_editor.list_admin_metadata_templates()
-    assert isinstance(result, __import__("pandas").DataFrame)
+    assert isinstance(result, pd.DataFrame)
     assert len(result) == 0
 
 
@@ -968,7 +968,7 @@ def test_get_admin_metadata_template_by_uid_success(monkeypatch, metadata_editor
 
     monkeypatch.setattr(requests, "request", mock_response)
     result = metadata_editor.get_admin_metadata_template_by_uid("tpl_1")
-    assert isinstance(result, __import__("pandas").Series)
+    assert isinstance(result, pd.Series)
     assert result["uid"] == "tpl_1"
 
 
@@ -992,6 +992,7 @@ def test_get_admin_metadata_success(monkeypatch, metadata_editor):
     result = metadata_editor.get_admin_metadata(project_id=123, template_uid="tpl_1")
     assert isinstance(result, dict)
     assert result["template_uid"] == "tpl_1"
+    assert result["metadata"]["key"] == "value"
 
 
 def test_get_admin_metadata_with_idno_string_project_id(monkeypatch, metadata_editor):
@@ -1086,7 +1087,7 @@ def test_list_admin_metadata_empty_result(monkeypatch, metadata_editor):
 
     monkeypatch.setattr(requests, "request", mock_response)
     result = metadata_editor.list_admin_metadata(limit=10)
-    assert isinstance(result, __import__("pandas").DataFrame)
+    assert isinstance(result, pd.DataFrame)
     assert len(result) == 0
 
 

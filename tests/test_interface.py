@@ -1300,3 +1300,26 @@ def test_list_collection_project_access(monkeypatch, metadata_editor):
     result = metadata_editor.list_collection_project_access(collection_id=10)
     assert isinstance(result, pd.DataFrame)
     assert len(result) == 0
+
+
+def test_assign_collection_project_access(monkeypatch, metadata_editor):
+    def mock_response(*args, **kwargs):
+        return MockResponse(http_status_code=200, json_data={"status": "success"})
+
+    monkeypatch.setattr(requests, "request", mock_response)
+
+    # basic assign with list of permissions
+    result = metadata_editor.assign_collection_project_access(collection_id=10, user_id=1, permissions=["view"])
+    assert result == {"status": "success"}
+
+    # string permission gets wrapped in list
+    result = metadata_editor.assign_collection_project_access(collection_id=10, user_id=1, permissions="view")
+    assert result == {"status": "success"}
+
+    # recursive raises NotImplementedError
+    with pytest.raises(NotImplementedError):
+        metadata_editor.assign_collection_project_access(collection_id=10, user_id=1, permissions=["view"], recursive=True)
+
+    # empty permissions raises ValueError
+    with pytest.raises(ValueError):
+        metadata_editor.assign_collection_project_access(collection_id=10, user_id=1, permissions=[])

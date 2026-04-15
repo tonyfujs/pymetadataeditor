@@ -1360,3 +1360,15 @@ def test_list_collection_acl(monkeypatch, metadata_editor):
     result = metadata_editor.list_collection_acl(collection_id=10)
     assert isinstance(result, pd.DataFrame)
     assert len(result) == 0
+
+
+def test_check_collection_acl(monkeypatch, metadata_editor):
+    def mock_response(*args, **kwargs):
+        return MockResponse(
+            http_status_code=200,
+            json_data={"status": "success", "has_access": True},
+        )
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    result = metadata_editor.check_collection_acl(collection_id=10, user_id=1)
+    assert result == {"status": "success", "has_access": True}

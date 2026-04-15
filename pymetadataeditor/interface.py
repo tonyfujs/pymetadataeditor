@@ -2142,6 +2142,20 @@ class MetadataEditor:
             return pd.DataFrame([], columns=["user_id", "email", "permissions"])
         return pd.DataFrame(users)
 
+    def check_collection_acl(self, collection_id: int, user_id: int) -> dict:
+        """Check if a user has ACL access to a collection.
+
+        Args:
+            collection_id (int): The ID of the collection.
+            user_id (int): The ID of the user to check.
+
+        Returns:
+            dict: Parsed response JSON indicating whether the user has ACL access.
+        """
+        pth = f"collections/user_acl_check/{int(collection_id)}/{int(user_id)}"
+        response = self._apinterface.get_request(pth)
+        return response
+
     ####################################################################################################################
     # RESOURCE METHODS
     ####################################################################################################################

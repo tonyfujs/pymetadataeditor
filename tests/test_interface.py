@@ -1430,3 +1430,35 @@ def test_remove_collection_acl(monkeypatch, metadata_editor):
     # recursive raises NotImplementedError
     with pytest.raises(NotImplementedError):
         metadata_editor.remove_collection_acl(collection_id=10, user_id=1, recursive=True)
+
+
+def test_get_collection_permissions(monkeypatch, metadata_editor):
+    permissions_data = {
+        "status": "success",
+        "user_id": 5,
+        "is_admin": False,
+        "admin_type": "none",
+        "collections": {
+            "10": {
+                "id": 10,
+                "title": "Test Collection",
+                "permission_level": "edit",
+                "can_edit": True,
+                "can_admin": False,
+                "can_delete": False,
+                "can_manage_access": False,
+                "can_add_projects": True,
+                "can_remove_projects": True,
+            }
+        },
+    }
+
+    def mock_response(*args, **kwargs):
+        return MockResponse(http_status_code=200, json_data=permissions_data)
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    result = metadata_editor.get_collection_permissions()
+    assert result["user_id"] == 5
+    assert result["is_admin"] is False
+    assert "10" in result["collections"]
+    assert result["collections"]["10"]["permission_level"] == "edit"

@@ -2262,6 +2262,16 @@ class MetadataEditor:
         )
         return response
 
+    def get_collection_permissions(self) -> dict:
+        """Get the authenticated user's permission summary across all collections.
+
+        Returns:
+            dict: Permission summary including user_id, is_admin, admin_type,
+                and a collections dict keyed by collection ID with permission details.
+        """
+        response = self._apinterface.get_request("collections/permissions")
+        return response
+
     ####################################################################################################################
     # RESOURCE METHODS
     ####################################################################################################################

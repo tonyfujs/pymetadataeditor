@@ -55,6 +55,7 @@ nav:
       - AI-Powered Metadata Generation: user_guide/07_ai_powered_generation.md
       - Managing Collections: user_guide/08_managing_collections.md
       - Managing Resources: user_guide/09_managing_resources.md
+      - Managing Admin Metadata: user_guide/12_managing_admin_metadata.md
       - Deleting Data: user_guide/10_deleting_data.md
       - Advanced Usage: user_guide/11_advanced.md
   - How-To Guides:

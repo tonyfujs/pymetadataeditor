@@ -2127,6 +2127,21 @@ class MetadataEditor:
         )
         return response
 
+    def list_collection_acl(self, collection_id: int) -> pd.DataFrame:
+        """List users with ACL access to a collection.
+
+        Args:
+            collection_id (int): The ID of the collection.
+
+        Returns:
+            pd.DataFrame: Users with ACL access to the collection.
+        """
+        response = self._apinterface.get_request("collections/user_acl/{}", id=collection_id)
+        users = response.get("users", [])
+        if not users:
+            return pd.DataFrame([], columns=["user_id", "email", "permissions"])
+        return pd.DataFrame(users)
+
     ####################################################################################################################
     # RESOURCE METHODS
     ####################################################################################################################

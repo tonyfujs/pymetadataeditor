@@ -1337,3 +1337,26 @@ def test_remove_collection_project_access(monkeypatch, metadata_editor):
     # recursive raises NotImplementedError
     with pytest.raises(NotImplementedError):
         metadata_editor.remove_collection_project_access(collection_id=10, user_id=1, recursive=True)
+
+
+def test_list_collection_acl(monkeypatch, metadata_editor):
+    def mock_response(*args, **kwargs):
+        return MockResponse(
+            http_status_code=200,
+            json_data={"users": [{"user_id": 1, "email": "alice@example.com", "permissions": ["edit"]}]},
+        )
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    result = metadata_editor.list_collection_acl(collection_id=10)
+    assert isinstance(result, pd.DataFrame)
+    assert len(result) == 1
+    assert result.iloc[0]["email"] == "alice@example.com"
+
+    # empty result
+    def mock_response_empty(*args, **kwargs):
+        return MockResponse(http_status_code=200, json_data={"users": []})
+
+    monkeypatch.setattr(requests, "request", mock_response_empty)
+    result = metadata_editor.list_collection_acl(collection_id=10)
+    assert isinstance(result, pd.DataFrame)
+    assert len(result) == 0

@@ -397,6 +397,40 @@ Deletes a custom template. Standard templates cannot be deleted.
 
 ---
 
+### Users
+
+#### `list_users() -> pd.DataFrame`
+
+Returns a DataFrame of all users registered in the Metadata Editor instance, with columns `email` and `username` (indexed by `id`).
+
+---
+
+#### `find_user_by_email(email, name) -> Optional[int]`
+
+```python
+def find_user_by_email(
+    self,
+    email: str,
+    name: str = "",
+) -> Optional[int]
+```
+
+Looks up a user's integer ID by email address (primary match) or username (fallback). Returns `None` if no match is found.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `email` | `str` | required | The user's email address to search for |
+| `name` | `str` | `""` | Optional username to match against if email is not sufficient |
+
+Raises `ValueError` if both `email` and `name` are empty.
+
+```python
+user_id = me.find_user_by_email("alice@example.com")
+user_id = me.find_user_by_email("", name="alice")
+```
+
+---
+
 ### Collections
 
 #### `list_collections() -> pd.DataFrame`
@@ -524,6 +558,169 @@ def set_template_for_collection(self, collection_id: int, template_uid: str)
 ```
 
 Assigns a template to all projects in a collection.
+
+---
+
+### Collection Permissions
+
+Methods for managing who has access to collections and what they can do. There are two distinct access control mechanisms:
+
+- **Project access** — controls which projects within a collection a user can see or edit
+- **ACL (Access Control List)** — controls administrative-level access to the collection itself
+
+#### Project Access
+
+##### `list_collection_project_access(collection_id) -> pd.DataFrame`
+
+```python
+def list_collection_project_access(self, collection_id: int) -> pd.DataFrame
+```
+
+Returns a DataFrame of users with project access in a collection. Columns include `user_id`, `email`, and `permissions`.
+
+---
+
+##### `assign_collection_project_access(collection_id, user_id, permissions, recursive)`
+
+```python
+def assign_collection_project_access(
+    self,
+    collection_id: int,
+    user_id: int,
+    permissions: Union[List[str], str],
+    recursive: bool = False,
+) -> Optional[dict]
+```
+
+Assigns project access permissions for a user within a collection. Returns the API response as a dict.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `collection_id` | `int` | required | The collection to grant access to |
+| `user_id` | `int` | required | The target user's ID |
+| `permissions` | `Union[List[str], str]` | required | Permission level(s) to assign (e.g. `"view"`) |
+| `recursive` | `bool` | `False` | If `True`, raises `NotImplementedError` (not yet implemented) |
+
+Raises `ValueError` if `permissions` is empty.
+
+```python
+me.assign_collection_project_access(collection_id=5, user_id=42, permissions="view")
+```
+
+---
+
+##### `remove_collection_project_access(collection_id, user_id, recursive)`
+
+```python
+def remove_collection_project_access(
+    self,
+    collection_id: int,
+    user_id: int,
+    recursive: bool = False,
+) -> Optional[dict]
+```
+
+Removes project access permissions for a user within a collection. Returns the API response as a dict. Raises `NotImplementedError` if `recursive=True`.
+
+---
+
+#### ACL (Access Control List)
+
+##### `list_collection_acl(collection_id) -> pd.DataFrame`
+
+```python
+def list_collection_acl(self, collection_id: int) -> pd.DataFrame
+```
+
+Returns a DataFrame of users with ACL access to a collection. Columns include `user_id`, `email`, and `permissions`.
+
+---
+
+##### `check_collection_acl(collection_id, user_id) -> dict`
+
+```python
+def check_collection_acl(self, collection_id: int, user_id: int) -> dict
+```
+
+Checks whether a specific user has ACL access to a collection. Returns the API response as a dict.
+
+```python
+result = me.check_collection_acl(collection_id=5, user_id=42)
+```
+
+---
+
+##### `assign_collection_acl(collection_id, user_id, permissions, recursive)`
+
+```python
+def assign_collection_acl(
+    self,
+    collection_id: int,
+    user_id: int,
+    permissions: Union[List[str], str],
+    recursive: bool = False,
+) -> Optional[dict]
+```
+
+Assigns ACL access to a collection for a user. Returns the API response as a dict.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `collection_id` | `int` | required | The collection to grant ACL access to |
+| `user_id` | `int` | required | The target user's ID |
+| `permissions` | `Union[List[str], str]` | required | Permission level(s) to assign |
+| `recursive` | `bool` | `False` | If `True`, raises `NotImplementedError` (not yet implemented) |
+
+Raises `ValueError` if `permissions` is empty.
+
+---
+
+##### `update_collection_acl(collection_id, user_id, permissions, recursive)`
+
+```python
+def update_collection_acl(
+    self,
+    collection_id: int,
+    user_id: int,
+    permissions: Union[List[str], str],
+    recursive: bool = False,
+) -> Optional[dict]
+```
+
+Updates existing ACL permissions for a user on a collection. Use this to change permission levels after initial assignment. Returns the API response as a dict. Raises `NotImplementedError` if `recursive=True`.
+
+---
+
+##### `remove_collection_acl(collection_id, user_id, recursive)`
+
+```python
+def remove_collection_acl(
+    self,
+    collection_id: int,
+    user_id: int,
+    recursive: bool = False,
+) -> Optional[dict]
+```
+
+Removes ACL access from a collection for a user. Returns the API response as a dict. Raises `NotImplementedError` if `recursive=True`.
+
+---
+
+#### Permission Inspection
+
+##### `get_collection_permissions() -> dict`
+
+```python
+def get_collection_permissions(self) -> dict
+```
+
+Returns the authenticated user's permission summary across all collections. The returned dict includes `user_id`, `is_admin`, `admin_type`, and a `collections` dict keyed by collection ID with permission details.
+
+```python
+perms = me.get_collection_permissions()
+print(perms["is_admin"])
+print(perms["collections"])
+```
 
 ---
 

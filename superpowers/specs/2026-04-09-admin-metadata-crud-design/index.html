@@ -748,6 +748,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../user_guide/12_managing_admin_metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Managing Admin Metadata
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../user_guide/10_deleting_data/" class="md-nav__link">
         
   
@@ -2169,13 +2197,13 @@
 <hr />
 <h2 id="1-context-motivation">1. Context &amp; motivation</h2>
 <p><code>pymetadataeditor</code> is a Python client library for the <a href="https://github.com/mah0001/metadata-editor">Metadata Editor</a> REST API. It is intended to be a <strong>general-purpose</strong> client — clean of any organisation- or workflow-specific logic — usable by any institution running a Metadata Editor instance.</p>
-<p>A gap analysis of <a href="../../../publishing.py"><code>docs/publishing.py</code></a> (a Data360 publishing workflow script) against the current <code>pymetadataeditor</code> public surface identified <strong>administrative metadata</strong> as the most urgent missing capability. Admin metadata is an entirely separate concern from project metadata: it has its own template namespace, its own CRUD endpoints, and is keyed by <code>(project_id, template_uid)</code> pairs rather than by numeric project ID alone.</p>
+<p>A gap analysis of <a href="../../publishing.py"><code>docs/publishing.py</code></a> (a Data360 publishing workflow script) against the current <code>pymetadataeditor</code> public surface identified <strong>administrative metadata</strong> as the most urgent missing capability. Admin metadata is an entirely separate concern from project metadata: it has its own template namespace, its own CRUD endpoints, and is keyed by <code>(project_id, template_uid)</code> pairs rather than by numeric project ID alone.</p>
 <p>Today the only way to work with admin metadata through <code>pymetadataeditor</code> is <code>generic_api_request()</code> — i.e. callers must hand-craft URLs and bodies, completely bypassing the class's validation, error handling, and type conventions. A commented-out stub of <code>log_project_admin_metadata</code> already exists in <a href="../../../pymetadataeditor/interface.py#L1084-L1113"><code>pymetadataeditor/interface.py:1084-1113</code></a>, indicating that earlier work began in this direction but was abandoned.</p>
 <p>This spec defines a minimal, dict-only CRUD surface for admin metadata that:</p>
 <ul>
 <li>Uses the same HTTP layer, error types, and conventions as the rest of <code>MetadataEditor</code></li>
 <li>Stays <strong>general-purpose</strong> — no Data360/World Bank/SDMX concerns leak in</li>
-<li>Ships as round 1 of a broader package of gaps identified in <a href="../../../publishing.py"><code>docs/publishing.py</code></a></li>
+<li>Ships as round 1 of a broader package of gaps identified in <a href="../../publishing.py"><code>docs/publishing.py</code></a></li>
 <li>Defers Pydantic/Excel support, admin-template Pydantic class generation, and edit history to a round 2</li>
 </ul>
 <p>Out of scope (deferred from the initial gap analysis):</p>
@@ -2212,7 +2240,7 @@
 </ul>
 <hr />
 <h2 id="3-admin-metadata-api-surface-ground-truth">3. Admin metadata API surface (ground truth)</h2>
-<p>Sourced from <a href="../../../metadata-editor-api.yaml"><code>docs/metadata-editor-api.yaml</code></a> (the Metadata Editor OpenAPI spec).</p>
+<p>Sourced from <a href="../../metadata-editor-api.yaml"><code>docs/metadata-editor-api.yaml</code></a> (the Metadata Editor OpenAPI spec).</p>
 <table>
 <thead>
 <tr>
@@ -2736,7 +2764,7 @@
 <hr />
 <h2 id="7-relationship-to-other-work">7. Relationship to other work</h2>
 <h3 id="71-data360-sibling-package-future-separate-spec">7.1 Data360 sibling package (future, separate spec)</h3>
-<p>Strategic decision: the Data360-specific helpers in <a href="../../../publishing.py"><code>docs/publishing.py</code></a> (SDMX schema parsing, indicator/database metadata summary building, Data360 payload shaping, <code>create_edit_metadata_project_indicator/database</code>, <code>trigger_update</code> DDH integration) will move into a <strong>new sibling package</strong> — tentatively <code>wb-data360-publishing</code> — that depends on <code>pymetadataeditor</code>. That package is out of scope for this spec and will be designed separately.</p>
+<p>Strategic decision: the Data360-specific helpers in <a href="../../publishing.py"><code>docs/publishing.py</code></a> (SDMX schema parsing, indicator/database metadata summary building, Data360 payload shaping, <code>create_edit_metadata_project_indicator/database</code>, <code>trigger_update</code> DDH integration) will move into a <strong>new sibling package</strong> — tentatively <code>wb-data360-publishing</code> — that depends on <code>pymetadataeditor</code>. That package is out of scope for this spec and will be designed separately.</p>
 <p>Implication for the current design: the admin-metadata API must be <strong>ergonomic enough to use directly</strong> from the sibling package without workaround helpers. In particular:</p>
 <ul>
 <li><code>upsert_admin_metadata(project_id, template_uid, metadata)</code> replaces <code>add_data360_admin_metadata</code> cleanly.</li>

@@ -1724,6 +1724,41 @@ class MetadataEditor:
             df.index = new_index
         return df
 
+    def find_user_by_email(self, email: str, name: str = "") -> Optional[int]:
+        """Look up a user's ID by email (primary) or username (fallback).
+
+        Args:
+            email (str): The user's email address to search for.
+            name (str): Optional username to match against if email is not sufficient.
+
+        Returns:
+            Optional[int]: The user's integer ID if found, otherwise None.
+
+        Raises:
+            ValueError: If both email and name are empty.
+        """
+        email_lower = email.strip().lower() if email else ""
+        name_lower = name.strip().lower() if name else ""
+
+        if not email_lower and not name_lower:
+            raise ValueError("At least one of email or name must be provided")
+
+        users_df = self.list_users()
+        if users_df.empty:
+            return None
+
+        for _, user in users_df.iterrows():
+            user_email = str(user.get("email", "")).lower()
+            user_name = str(user.get("username", "")).lower()
+
+            email_match = bool(email_lower and user_email == email_lower)
+            name_match = bool(name_lower and user_name == name_lower)
+
+            if email_match or name_match:
+                return int(user.name)  # .name is the pandas Series index, which is the user's id
+
+        return None
+
     ####################################################################################################################
     # COLLECTION METHODS
     ####################################################################################################################

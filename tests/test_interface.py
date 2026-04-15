@@ -1243,3 +1243,37 @@ def test_list_users(monkeypatch, metadata_editor):
     users = metadata_editor.list_users()
     assert isinstance(users, pd.DataFrame)
     assert len(users) == 0
+
+
+def test_find_user_by_email(monkeypatch, metadata_editor):
+    users_data = {
+        "status": "success",
+        "users": [
+            {"id": 1, "email": "alice@example.com", "username": "alice"},
+            {"id": 2, "email": "bob@example.com", "username": "bob"},
+        ],
+    }
+
+    def mock_response(*args, **kwargs):
+        return MockResponse(http_status_code=200, json_data=users_data)
+
+    monkeypatch.setattr(requests, "request", mock_response)
+
+    # find by email
+    assert metadata_editor.find_user_by_email(email="alice@example.com") == 1
+
+    # find by email case-insensitive
+    assert metadata_editor.find_user_by_email(email="ALICE@EXAMPLE.COM") == 1
+
+    # find by name fallback
+    assert metadata_editor.find_user_by_email(email="", name="bob") == 2
+
+    # not found
+    assert metadata_editor.find_user_by_email(email="nobody@example.com") is None
+
+    # email takes priority over name when both provided
+    assert metadata_editor.find_user_by_email(email="alice@example.com", name="bob") == 1
+
+    # empty inputs raise ValueError
+    with pytest.raises(ValueError):
+        metadata_editor.find_user_by_email(email="", name="")

@@ -1220,3 +1220,26 @@ def test_delete_admin_metadata_not_applied(monkeypatch, metadata_editor):
     monkeypatch.setattr(metadata_editor, "get_admin_metadata", MockGetAdminMetadata(exists=True))
     with pytest.raises(DeleteNotAppliedError):
         metadata_editor.delete_admin_metadata(project_id=123, template_uid="tpl_1")
+
+
+def test_list_users(monkeypatch, metadata_editor):
+    def mock_response(*args, **kwargs):
+        return MockResponse(
+            http_status_code=200,
+            json_data={"status": "success", "users": [{"id": 1, "email": "alice@example.com", "username": "alice"}]},
+        )
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    users = metadata_editor.list_users()
+    assert isinstance(users, pd.DataFrame)
+    assert len(users) == 1
+    assert users.loc[1, "email"] == "alice@example.com"
+
+    # empty users list
+    def mock_response_empty(*args, **kwargs):
+        return MockResponse(http_status_code=200, json_data={"status": "success", "users": []})
+
+    monkeypatch.setattr(requests, "request", mock_response_empty)
+    users = metadata_editor.list_users()
+    assert isinstance(users, pd.DataFrame)
+    assert len(users) == 0

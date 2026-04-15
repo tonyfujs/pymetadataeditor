@@ -1703,6 +1703,28 @@ class MetadataEditor:
         return self._process_metadata_output(object, output_mode, simplify=exclude_unset)
 
     ####################################################################################################################
+    # USER METHODS
+    ####################################################################################################################
+
+    def list_users(self) -> pd.DataFrame:
+        """List all users registered in the Metadata Editor instance.
+
+        Returns:
+            pd.DataFrame: User information including id, email, and username.
+        """
+        response = self._apinterface.get_request("users")
+        if "users" not in response or len(response["users"]) == 0:
+            return pd.DataFrame([], columns=["id", "email", "username"]).set_index("id")
+        df = pd.DataFrame(response["users"]).set_index("id")
+        try:
+            new_index = df.index.astype(int)
+        except ValueError:
+            pass
+        else:
+            df.index = new_index
+        return df
+
+    ####################################################################################################################
     # COLLECTION METHODS
     ####################################################################################################################
 

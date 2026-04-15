@@ -2236,6 +2236,32 @@ class MetadataEditor:
         )
         return response
 
+    def remove_collection_acl(self, collection_id: int, user_id: int, recursive: bool = False) -> Optional[dict]:
+        """Remove ACL access from a collection for a user.
+
+        Args:
+            collection_id (int): The collection to revoke ACL access from.
+            user_id (int): The target user's ID.
+            recursive (bool): If True, apply to child collections as well. Not yet implemented.
+
+        Returns:
+            Optional[dict]: Parsed response JSON on success, None on failure.
+
+        Raises:
+            NotImplementedError: If recursive=True (not yet implemented).
+        """
+        if recursive:
+            raise NotImplementedError("Recursive permissions require collection hierarchy support — not yet implemented")
+
+        collection_id = int(collection_id)
+        user_id = int(user_id)
+
+        response = self._apinterface.post_request(
+            "collections/user_acl_remove",
+            json={"collection_id": collection_id, "user_id": user_id},
+        )
+        return response
+
     ####################################################################################################################
     # RESOURCE METHODS
     ####################################################################################################################

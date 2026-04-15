@@ -1394,3 +1394,25 @@ def test_assign_collection_acl(monkeypatch, metadata_editor):
     # empty permissions raises ValueError
     with pytest.raises(ValueError):
         metadata_editor.assign_collection_acl(collection_id=10, user_id=1, permissions=[])
+
+
+def test_update_collection_acl(monkeypatch, metadata_editor):
+    def mock_response(*args, **kwargs):
+        return MockResponse(http_status_code=200, json_data={"status": "success"})
+
+    monkeypatch.setattr(requests, "request", mock_response)
+
+    result = metadata_editor.update_collection_acl(collection_id=10, user_id=1, permissions=["admin"])
+    assert result == {"status": "success"}
+
+    # string permission gets wrapped in list
+    result = metadata_editor.update_collection_acl(collection_id=10, user_id=1, permissions="admin")
+    assert result == {"status": "success"}
+
+    # recursive raises NotImplementedError
+    with pytest.raises(NotImplementedError):
+        metadata_editor.update_collection_acl(collection_id=10, user_id=1, permissions=["admin"], recursive=True)
+
+    # empty permissions raises ValueError
+    with pytest.raises(ValueError):
+        metadata_editor.update_collection_acl(collection_id=10, user_id=1, permissions=[])

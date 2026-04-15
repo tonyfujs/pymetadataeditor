@@ -2196,6 +2196,46 @@ class MetadataEditor:
         )
         return response
 
+    def update_collection_acl(
+        self,
+        collection_id: int,
+        user_id: int,
+        permissions: Union[List[str], str],
+        recursive: bool = False,
+    ) -> Optional[dict]:
+        """Update ACL permissions for a user on a collection.
+
+        Args:
+            collection_id (int): The collection to update ACL access for.
+            user_id (int): The target user's ID.
+            permissions (Union[List[str], str]): New permission level(s) to set.
+            recursive (bool): If True, apply to child collections as well. Not yet implemented.
+
+        Returns:
+            Optional[dict]: Parsed response JSON on success, None on failure.
+
+        Raises:
+            NotImplementedError: If recursive=True (not yet implemented).
+            ValueError: If permissions is empty.
+        """
+        if recursive:
+            raise NotImplementedError("Recursive permissions require collection hierarchy support — not yet implemented")
+
+        if isinstance(permissions, str):
+            permissions = [permissions]
+
+        if not permissions:
+            raise ValueError("permissions must not be empty")
+
+        collection_id = int(collection_id)
+        user_id = int(user_id)
+
+        response = self._apinterface.post_request(
+            "collections/user_acl_update",
+            json={"collection_id": collection_id, "user_id": user_id, "permissions": permissions},
+        )
+        return response
+
     ####################################################################################################################
     # RESOURCE METHODS
     ####################################################################################################################

@@ -28,3 +28,6 @@ __pycache__/
 
 # template warnings
 template_warnings*/
+
+# MkDocs build output
+site/

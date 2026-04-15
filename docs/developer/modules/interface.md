@@ -579,6 +579,127 @@ Deletes a resource from a project. Raises `DeleteNotAppliedError` if the delete 
 
 ---
 
+### Admin Metadata
+
+Admin metadata is a separate namespace from project metadata, keyed by `(project_id, template_uid)`. It uses its own template registry and CRUD endpoints. Output is always a plain `dict` (no Pydantic or Excel modes).
+
+---
+
+#### `list_admin_metadata_templates() -> pd.DataFrame`
+
+```python
+def list_admin_metadata_templates(self) -> pd.DataFrame
+```
+
+Returns a DataFrame of all admin metadata templates available on the instance. Returns an empty DataFrame if none exist.
+
+---
+
+#### `get_admin_metadata_template_by_uid(uid) -> pd.Series`
+
+```python
+def get_admin_metadata_template_by_uid(self, uid: str) -> pd.Series
+```
+
+Returns a Series with the details of the admin template identified by `uid`.
+
+Raises `TemplateError` if the UID is not found or access is denied.
+
+---
+
+#### `get_admin_metadata(project_id, template_uid) -> Dict`
+
+```python
+def get_admin_metadata(
+    self,
+    project_id: Union[int, str],
+    template_uid: str,
+) -> Dict
+```
+
+Returns the admin metadata record for the `(project_id, template_uid)` pair.
+
+Raises `ValueError` if no record exists.
+
+---
+
+#### `list_admin_metadata(...) -> pd.DataFrame`
+
+```python
+def list_admin_metadata(
+    self,
+    project_id: Optional[Union[int, str]] = None,
+    template_uid: Optional[Union[str, List[str]]] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    limit: Union[int, str] = "All",
+    offset: int = 0,
+) -> pd.DataFrame
+```
+
+Returns a DataFrame of admin metadata records, optionally filtered. All parameters are optional.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `project_id` | `int` or `str` | Filter by project ID or IDNO |
+| `template_uid` | `str` or `list[str]` | Filter by one or more template UIDs |
+| `date_from` | `str` | Include records updated on or after this date |
+| `date_to` | `str` | Include records updated on or before this date |
+| `limit` | `int` or `"All"` | Records to fetch; `"All"` auto-paginates in batches of 500 |
+| `offset` | `int` | Records to skip (used for manual pagination) |
+
+---
+
+#### `upsert_admin_metadata(project_id, template_uid, metadata) -> Dict`
+
+```python
+def upsert_admin_metadata(
+    self,
+    project_id: Union[int, str],
+    template_uid: str,
+    metadata: Dict,
+) -> Dict
+```
+
+Creates or fully replaces the admin metadata record for `(project_id, template_uid)`. Empty values are stripped before sending. Accepts `dict` only — Pydantic models are not supported.
+
+Raises `ValueError` if `metadata` is not a dict or `template_uid` is empty.
+
+---
+
+#### `patch_admin_metadata(project_id, template_uid, patches) -> Dict`
+
+```python
+def patch_admin_metadata(
+    self,
+    project_id: Union[int, str],
+    template_uid: str,
+    patches: List[Dict],
+) -> Dict
+```
+
+Applies one or more [RFC 6902 JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902) operations to an existing admin metadata record. Supported ops: `add`, `remove`, `replace`, `test`. Paths without a leading `/` are auto-corrected.
+
+Raises `ValueError` if `patches` is empty or contains an invalid operation.
+
+---
+
+#### `delete_admin_metadata(project_id, template_uid) -> None`
+
+```python
+def delete_admin_metadata(
+    self,
+    project_id: Union[int, str],
+    template_uid: str,
+) -> None
+```
+
+Deletes the admin metadata record for `(project_id, template_uid)`.
+
+Raises `DeleteNotAppliedError` if the record still exists after the delete request.
+
+---
+
 ### Generic / Low-Level
 
 #### `generic_api_request(method, endpoint, params, data, json, files) -> Dict`

@@ -2041,6 +2041,25 @@ class MetadataEditor:
         )
 
     ####################################################################################################################
+    # COLLECTION PERMISSION METHODS
+    ####################################################################################################################
+
+    def list_collection_project_access(self, collection_id: int) -> pd.DataFrame:
+        """List users with project access in a collection.
+
+        Args:
+            collection_id (int): The ID of the collection.
+
+        Returns:
+            pd.DataFrame: Users with project access in the collection.
+        """
+        response = self._apinterface.get_request("collections/user_project_access/{}", id=collection_id)
+        users = response.get("users", [])
+        if not users:
+            return pd.DataFrame([], columns=["user_id", "email", "permissions"])
+        return pd.DataFrame(users)
+
+    ####################################################################################################################
     # RESOURCE METHODS
     ####################################################################################################################
 

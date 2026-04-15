@@ -1277,3 +1277,26 @@ def test_find_user_by_email(monkeypatch, metadata_editor):
     # empty inputs raise ValueError
     with pytest.raises(ValueError):
         metadata_editor.find_user_by_email(email="", name="")
+
+
+def test_list_collection_project_access(monkeypatch, metadata_editor):
+    def mock_response(*args, **kwargs):
+        return MockResponse(
+            http_status_code=200,
+            json_data={"users": [{"user_id": 1, "email": "alice@example.com", "permissions": ["view"]}]},
+        )
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    result = metadata_editor.list_collection_project_access(collection_id=10)
+    assert isinstance(result, pd.DataFrame)
+    assert len(result) == 1
+    assert result.iloc[0]["email"] == "alice@example.com"
+
+    # empty result
+    def mock_response_empty(*args, **kwargs):
+        return MockResponse(http_status_code=200, json_data={"users": []})
+
+    monkeypatch.setattr(requests, "request", mock_response_empty)
+    result = metadata_editor.list_collection_project_access(collection_id=10)
+    assert isinstance(result, pd.DataFrame)
+    assert len(result) == 0

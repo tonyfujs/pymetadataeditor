@@ -1747,17 +1747,19 @@ class MetadataEditor:
         if users_df.empty:
             return None
 
+        # Two-pass: email match takes priority over name match
+        name_match_id = None
         for _, user in users_df.iterrows():
             user_email = str(user.get("email", "")).lower()
             user_name = str(user.get("username", "")).lower()
 
-            email_match = bool(email_lower and user_email == email_lower)
-            name_match = bool(name_lower and user_name == name_lower)
-
-            if email_match or name_match:
+            if email_lower and user_email == email_lower:
                 return int(user.name)  # .name is the pandas Series index, which is the user's id
 
-        return None
+            if name_match_id is None and name_lower and user_name == name_lower:
+                name_match_id = int(user.name)
+
+        return name_match_id
 
     ####################################################################################################################
     # COLLECTION METHODS

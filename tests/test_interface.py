@@ -1274,6 +1274,10 @@ def test_find_user_by_email(monkeypatch, metadata_editor):
     # email takes priority over name when both provided
     assert metadata_editor.find_user_by_email(email="alice@example.com", name="bob") == 1
 
+    # email takes priority even when name match appears first in list
+    # bob (id=2) appears before alice's email match, but email should still win
+    assert metadata_editor.find_user_by_email(email="bob@example.com", name="alice") == 2
+
     # empty inputs raise ValueError
     with pytest.raises(ValueError):
         metadata_editor.find_user_by_email(email="", name="")

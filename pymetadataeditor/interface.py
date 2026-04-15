@@ -2082,7 +2082,7 @@ class MetadataEditor:
             ValueError: If permissions is empty.
         """
         if recursive:
-            raise NotImplementedError("Recursive permissions require collection hierarchy support — not yet implemented")
+            raise NotImplementedError("Recursive permissions require collection hierarchy support")
 
         if isinstance(permissions, str):
             permissions = [permissions]
@@ -2116,7 +2116,7 @@ class MetadataEditor:
             NotImplementedError: If recursive=True (not yet implemented).
         """
         if recursive:
-            raise NotImplementedError("Recursive permissions require collection hierarchy support — not yet implemented")
+            raise NotImplementedError("Recursive permissions require collection hierarchy support")
 
         collection_id = int(collection_id)
         user_id = int(user_id)
@@ -2179,7 +2179,7 @@ class MetadataEditor:
             ValueError: If permissions is empty.
         """
         if recursive:
-            raise NotImplementedError("Recursive permissions require collection hierarchy support — not yet implemented")
+            raise NotImplementedError("Recursive permissions require collection hierarchy support")
 
         if isinstance(permissions, str):
             permissions = [permissions]
@@ -2219,7 +2219,7 @@ class MetadataEditor:
             ValueError: If permissions is empty.
         """
         if recursive:
-            raise NotImplementedError("Recursive permissions require collection hierarchy support — not yet implemented")
+            raise NotImplementedError("Recursive permissions require collection hierarchy support")
 
         if isinstance(permissions, str):
             permissions = [permissions]
@@ -2251,7 +2251,7 @@ class MetadataEditor:
             NotImplementedError: If recursive=True (not yet implemented).
         """
         if recursive:
-            raise NotImplementedError("Recursive permissions require collection hierarchy support — not yet implemented")
+            raise NotImplementedError("Recursive permissions require collection hierarchy support")
 
         collection_id = int(collection_id)
         user_id = int(user_id)

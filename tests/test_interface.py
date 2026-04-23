@@ -778,6 +778,18 @@ def test_get_template_by_uid(monkeypatch, metadata_editor):
     actual = metadata_editor.get_template_by_uid("example")
     assert actual.name == "example name"
 
+    # template returned without a "result" wrapper (observed in the wild for
+    # some custom templates — see interface.py:get_template_by_uid)
+    def mock_response(*args, **kwargs):
+        return MockResponse(
+            http_status_code=200,
+            json_data={"uid": "example2", "name": "example2 name", "data_type": "microdata"},
+        )
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    actual = metadata_editor.get_template_by_uid("example2")
+    assert actual.name == "example2 name"
+
 
 def test_set_template_for_collection(monkeypatch, metadata_editor):
     # This test also feel unsatisfying since it's testing the implementation not the funcationality.

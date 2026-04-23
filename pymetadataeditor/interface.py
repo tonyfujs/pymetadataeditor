@@ -1285,10 +1285,17 @@ class MetadataEditor:
         if uid in self._templates:
             return self._templates[uid]["template"]
         response = self._apinterface.get_request("templates/{}", uid)
-        if "result" not in response:
-            raise KeyError(f"No result returned.\nResponse: {response}")
+        # The API is inconsistent: some templates are wrapped in a {"result": {...}}
+        # envelope, others are returned at the top level. Accept both.
+        template_body = response.get("result", response)
+        if not isinstance(template_body, dict) or "name" not in template_body or "data_type" not in template_body:
+            raise KeyError(
+                f"Response for template UID '{uid}' did not contain a template body "
+                f"(expected either a 'result' key or a top-level template object with "
+                f"'name' and 'data_type').\nResponse: {response}"
+            )
 
-        temp = pd.Series(response["result"], name=response["result"]["name"])
+        temp = pd.Series(template_body, name=template_body["name"])
         try:
             standard_type_name = self._mm.standardize_metadata_name(temp.data_type)
         except ValueError:

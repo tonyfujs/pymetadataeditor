@@ -9,6 +9,7 @@ from typing import Callable, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 import pandas as pd
 import tiktoken
+from email_validator import EmailNotValidError, validate_email
 from markitdown import MarkItDown
 from metadataschemas.metadata_manager import MetadataManager
 from metadataschemas.utils.schema_base_model import SchemaBaseModel
@@ -1743,17 +1744,11 @@ class MetadataEditor:
         if not email_lower and not name_lower:
             raise ValueError("At least one of email or name must be provided")
 
-        # Basic email syntax check: non-empty local and domain parts, a dot in the domain,
-        # and no whitespace. Matches the shape of addresses the Metadata Editor API accepts.
         if email_lower:
-            local_sep = email_lower.rfind("@")
-            if (
-                local_sep <= 0
-                or local_sep == len(email_lower) - 1
-                or "." not in email_lower[local_sep + 1 :]
-                or any(ch.isspace() for ch in email_lower)
-            ):
-                raise ValueError(f"{email!r} is not a valid email address")
+            try:
+                validate_email(email_lower, check_deliverability=False)
+            except EmailNotValidError as exc:
+                raise ValueError(f"{email!r} is not a valid email address: {exc}") from exc
 
         users_df = self.list_users()
 

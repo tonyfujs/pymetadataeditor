@@ -424,7 +424,7 @@ Looks up a user's integer ID by email address (primary match) or username (fallb
 
 Raises `ValueError` when:
 - both `email` and `name` are empty,
-- the supplied `email` is not a syntactically valid address (e.g. missing `@`, missing domain, contains whitespace), or
+- the supplied `email` is not a syntactically valid address (validated via the [`email-validator`](https://pypi.org/project/email-validator/) library — the same engine behind Pydantic's `EmailStr`), or
 - no user matches the supplied email/username.
 
 ```python

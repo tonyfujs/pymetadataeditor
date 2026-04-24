@@ -9,6 +9,7 @@ from typing import Callable, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 import pandas as pd
 import tiktoken
+from emval import validate_email as _validate_email_syntax
 from markitdown import MarkItDown
 from metadataschemas.metadata_manager import MetadataManager
 from metadataschemas.utils.schema_base_model import SchemaBaseModel
@@ -1459,9 +1460,7 @@ class MetadataEditor:
         try:
             response = self._apinterface.get_request(pth, id=template_uid)
         except (HTTPError, PermissionError) as e:
-            raise ValueError(
-                f"No admin metadata found for project_id={project_id}, template_uid={template_uid}"
-            ) from e
+            raise ValueError(f"No admin metadata found for project_id={project_id}, template_uid={template_uid}") from e
         return response
 
     def list_admin_metadata(
@@ -1708,6 +1707,81 @@ class MetadataEditor:
         )
         object = self._process_metadata_input(filename)[0]
         return self._process_metadata_output(object, output_mode, simplify=exclude_unset)
+
+    ####################################################################################################################
+    # USER METHODS
+    ####################################################################################################################
+
+    def list_users(self) -> pd.DataFrame:
+        """List all users registered in the Metadata Editor instance.
+
+        Returns:
+            pd.DataFrame: User information including id, email, and username.
+        """
+        response = self._apinterface.get_request("users")
+        if "users" not in response or len(response["users"]) == 0:
+            return pd.DataFrame([], columns=["id", "email", "username"]).set_index("id")
+        df = pd.DataFrame(response["users"]).set_index("id")
+        try:
+            new_index = df.index.astype(int)
+        except ValueError:
+            pass
+        else:
+            df.index = new_index
+        return df
+
+    def find_user_by_email(self, email: str, name: str = "") -> int:
+        """Look up a user's ID by email (primary) or username (fallback).
+
+        Args:
+            email (str): The user's email address to search for.
+            name (str): Optional username to match against if email is not sufficient.
+
+        Returns:
+            int: The user's integer ID.
+
+        Raises:
+            ValueError: If both email and name are empty, if the email is not a
+                syntactically valid address, or if no user matches the given
+                email or name.
+        """
+        email_lower = email.strip().lower() if email else ""
+        name_lower = name.strip().lower() if name else ""
+
+        if not email_lower and not name_lower:
+            raise ValueError("At least one of email or name must be provided")
+
+        if email_lower:
+            try:
+                # emval raises the builtin SyntaxError on bad input; deliverable_address
+                # disables the DNS lookup since we only need syntactic validity here.
+                _validate_email_syntax(email_lower, deliverable_address=False)
+            except SyntaxError as exc:
+                raise ValueError(f"{email!r} is not a valid email address: {exc}") from exc
+
+        users_df = self.list_users()
+
+        # Two-pass: email match takes priority over name match
+        name_match_id = None
+        if not users_df.empty:
+            for _, user in users_df.iterrows():
+                user_email = str(user.get("email", "")).lower()
+                user_name = str(user.get("username", "")).lower()
+
+                if email_lower and user_email == email_lower:
+                    return int(user.name)  # .name is the pandas Series index, which is the user's id
+
+                if name_match_id is None and name_lower and user_name == name_lower:
+                    name_match_id = int(user.name)
+
+        if name_match_id is not None:
+            return name_match_id
+
+        if email_lower and name_lower:
+            raise ValueError(f"No user found with email {email!r} or username {name!r}")
+        if email_lower:
+            raise ValueError(f"No user found with email {email!r}")
+        raise ValueError(f"No user found with username {name!r}")
 
     ####################################################################################################################
     # COLLECTION METHODS
@@ -1989,6 +2063,240 @@ class MetadataEditor:
             "collections/template",
             json={"collection_id": collection_id, "template_uid": template_uid, "project_type": template_type},
         )
+
+    ####################################################################################################################
+    # COLLECTION PERMISSION METHODS
+    ####################################################################################################################
+
+    def list_collection_project_access(self, collection_id: int) -> pd.DataFrame:
+        """List users with project access in a collection.
+
+        Args:
+            collection_id (int): The ID of the collection.
+
+        Returns:
+            pd.DataFrame: Users with project access in the collection.
+        """
+        response = self._apinterface.get_request("collections/user_project_access/{}", id=collection_id)
+        users = response.get("users", [])
+        if not users:
+            return pd.DataFrame([], columns=["user_id", "email", "permissions"])
+        return pd.DataFrame(users)
+
+    def assign_collection_project_access(
+        self,
+        collection_id: int,
+        user_id: int,
+        permissions: Union[List[str], str],
+        recursive: bool = False,
+    ) -> Optional[dict]:
+        """Assign project access permissions for a user within a collection.
+
+        Args:
+            collection_id (int): The collection to grant access to.
+            user_id (int): The target user's ID.
+            permissions (Union[List[str], str]): Permission level(s) to assign (e.g. "view").
+            recursive (bool): If True, apply to child collections as well. Not yet implemented.
+
+        Returns:
+            Optional[dict]: Parsed response JSON on success, None on failure.
+
+        Raises:
+            NotImplementedError: If recursive=True (not yet implemented).
+            ValueError: If permissions is empty.
+        """
+        if recursive:
+            raise NotImplementedError("Recursive permissions require collection hierarchy support")
+
+        if isinstance(permissions, str):
+            permissions = [permissions]
+
+        if not permissions:
+            raise ValueError("permissions must not be empty")
+
+        collection_id = int(collection_id)
+        user_id = int(user_id)
+
+        response = self._apinterface.post_request(
+            "collections/user_project_access",
+            json={"collection_id": collection_id, "user_id": user_id, "permissions": permissions},
+        )
+        return response
+
+    def remove_collection_project_access(
+        self, collection_id: int, user_id: int, recursive: bool = False
+    ) -> Optional[dict]:
+        """Remove project access permissions for a user within a collection.
+
+        Args:
+            collection_id (int): The collection to revoke access from.
+            user_id (int): The target user's ID.
+            recursive (bool): If True, apply to child collections as well. Not yet implemented.
+
+        Returns:
+            Optional[dict]: Parsed response JSON on success, None on failure.
+
+        Raises:
+            NotImplementedError: If recursive=True (not yet implemented).
+        """
+        if recursive:
+            raise NotImplementedError("Recursive permissions require collection hierarchy support")
+
+        collection_id = int(collection_id)
+        user_id = int(user_id)
+
+        response = self._apinterface.post_request(
+            "collections/remove_user_project_access",
+            json={"collection_id": collection_id, "user_id": user_id},
+        )
+        return response
+
+    def list_collection_acl(self, collection_id: int) -> pd.DataFrame:
+        """List users with ACL access to a collection.
+
+        Args:
+            collection_id (int): The ID of the collection.
+
+        Returns:
+            pd.DataFrame: Users with ACL access to the collection.
+        """
+        response = self._apinterface.get_request("collections/user_acl/{}", id=collection_id)
+        users = response.get("users", [])
+        if not users:
+            return pd.DataFrame([], columns=["user_id", "email", "permissions"])
+        return pd.DataFrame(users)
+
+    def check_collection_acl(self, collection_id: int, user_id: int) -> dict:
+        """Check if a user has ACL access to a collection.
+
+        Args:
+            collection_id (int): The ID of the collection.
+            user_id (int): The ID of the user to check.
+
+        Returns:
+            dict: Parsed response JSON indicating whether the user has ACL access.
+        """
+        pth = f"collections/user_acl_check/{int(collection_id)}/{int(user_id)}"
+        response = self._apinterface.get_request(pth)
+        return response
+
+    def assign_collection_acl(
+        self,
+        collection_id: int,
+        user_id: int,
+        permissions: str,
+        recursive: bool = False,
+    ) -> Optional[dict]:
+        """Assign ACL access to a collection for a user.
+
+        Args:
+            collection_id (int): The collection to grant ACL access to.
+            user_id (int): The target user's ID.
+            permissions (str): Permission level to assign (e.g. "view", "edit", "admin").
+            recursive (bool): If True, apply to child collections as well. Not yet implemented.
+
+        Returns:
+            Optional[dict]: Parsed response JSON on success, None on failure.
+
+        Raises:
+            NotImplementedError: If recursive=True (not yet implemented).
+            TypeError: If permissions is not a string.
+            ValueError: If permissions is empty.
+        """
+        if recursive:
+            raise NotImplementedError("Recursive permissions require collection hierarchy support")
+
+        if not isinstance(permissions, str):
+            raise TypeError("permissions must be a string")
+
+        if not permissions.strip():
+            raise ValueError("permissions must not be empty")
+
+        collection_id = int(collection_id)
+        user_id = int(user_id)
+
+        response = self._apinterface.post_request(
+            "collections/user_acl",
+            json={"collection_id": collection_id, "user_id": user_id, "permissions": permissions},
+        )
+        return response
+
+    def update_collection_acl(
+        self,
+        collection_id: int,
+        user_id: int,
+        permissions: str,
+        recursive: bool = False,
+    ) -> Optional[dict]:
+        """Update ACL permissions for a user on a collection.
+
+        Args:
+            collection_id (int): The collection to update ACL access for.
+            user_id (int): The target user's ID.
+            permissions (str): New permission level to set (e.g. "view", "edit", "admin").
+            recursive (bool): If True, apply to child collections as well. Not yet implemented.
+
+        Returns:
+            Optional[dict]: Parsed response JSON on success, None on failure.
+
+        Raises:
+            NotImplementedError: If recursive=True (not yet implemented).
+            TypeError: If permissions is not a string.
+            ValueError: If permissions is empty.
+        """
+        if recursive:
+            raise NotImplementedError("Recursive permissions require collection hierarchy support")
+
+        if not isinstance(permissions, str):
+            raise TypeError("permissions must be a string")
+
+        if not permissions.strip():
+            raise ValueError("permissions must not be empty")
+
+        collection_id = int(collection_id)
+        user_id = int(user_id)
+
+        response = self._apinterface.post_request(
+            "collections/user_acl_update",
+            json={"collection_id": collection_id, "user_id": user_id, "permissions": permissions},
+        )
+        return response
+
+    def remove_collection_acl(self, collection_id: int, user_id: int, recursive: bool = False) -> Optional[dict]:
+        """Remove ACL access from a collection for a user.
+
+        Args:
+            collection_id (int): The collection to revoke ACL access from.
+            user_id (int): The target user's ID.
+            recursive (bool): If True, apply to child collections as well. Not yet implemented.
+
+        Returns:
+            Optional[dict]: Parsed response JSON on success, None on failure.
+
+        Raises:
+            NotImplementedError: If recursive=True (not yet implemented).
+        """
+        if recursive:
+            raise NotImplementedError("Recursive permissions require collection hierarchy support")
+
+        collection_id = int(collection_id)
+        user_id = int(user_id)
+
+        response = self._apinterface.post_request(
+            "collections/user_acl_remove",
+            json={"collection_id": collection_id, "user_id": user_id},
+        )
+        return response
+
+    def get_collection_permissions(self) -> dict:
+        """Get the authenticated user's permission summary across all collections.
+
+        Returns:
+            dict: Permission summary including user_id, is_admin, admin_type,
+                and a collections dict keyed by collection ID with permission details.
+        """
+        response = self._apinterface.get_request("collections/permissions")
+        return response
 
     ####################################################################################################################
     # RESOURCE METHODS

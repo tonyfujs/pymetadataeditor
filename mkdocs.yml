@@ -87,3 +87,6 @@ nav:
           - templates.py: developer/modules/templates.md
           - llm_helpers.py: developer/modules/llm_helpers.md
           - utils.py: developer/modules/utils.md
+  - AI & LLMs:
+      - Overview: ai_and_llms.md
+      - Agent skill: skill.md

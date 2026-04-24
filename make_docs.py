@@ -53,6 +53,7 @@ LLMS_TXT_SECTIONS: list[tuple[str, list[tuple[str, str]]]] = [
             ("index.md", "Site landing page — overview of capabilities and supported metadata types."),
             ("getting_started.md", "End-to-end first workflow: connect, browse, retrieve, and update a project."),
             ("skill.md", "Agent skill: architecture, capability map, common workflows, and key conventions."),
+            ("ai_and_llms.md", "AI & LLMs overview: how to use the skill, llms.txt, and llms-full.txt."),
         ],
     ),
     (
@@ -134,6 +135,7 @@ LLMS_FULL_ORDER: list[str] = [
     "index.md",
     "getting_started.md",
     "skill.md",
+    "ai_and_llms.md",
     "user_guide/01_browsing_projects.md",
     "user_guide/02_schemas_and_templates.md",
     "user_guide/03_creating_metadata.md",
@@ -180,7 +182,7 @@ def _doc_url(relative_path: str) -> str:
 
 
 def build_llms_txt() -> None:
-    """Write ``llms.txt`` at the repo root following the llms.txt spec."""
+    """Write ``llms.txt`` at the repo root and in ``docs/`` so MkDocs serves it at /llms.txt."""
     parts: list[str] = [LLMS_TXT_INTRO.rstrip(), ""]
     for heading, entries in LLMS_TXT_SECTIONS:
         parts.append(f"## {heading}")
@@ -188,11 +190,13 @@ def build_llms_txt() -> None:
         for relative_path, description in entries:
             parts.append(f"- [{relative_path}]({_doc_url(relative_path)}): {description}")
         parts.append("")
-    (REPO_ROOT / "llms.txt").write_text("\n".join(parts).rstrip() + "\n", encoding="utf-8")
+    body = "\n".join(parts).rstrip() + "\n"
+    (REPO_ROOT / "llms.txt").write_text(body, encoding="utf-8")
+    (DOCS_ROOT / "llms.txt").write_text(body, encoding="utf-8")
 
 
 def build_llms_full_txt() -> None:
-    """Write ``llms-full.txt`` at the repo root — one big concatenation of the docs."""
+    """Write ``llms-full.txt`` at the repo root and in ``docs/`` — one big concatenation of the docs."""
     header = (
         "# pyMetadataEditor — Full Documentation Bundle\n\n"
         "This file is a single-shot ingestion target for LLM consumers. It concatenates every\n"
@@ -207,7 +211,9 @@ def build_llms_full_txt() -> None:
             continue
         chunks.append(f"===== docs/{relative_path} =====\n\n")
         chunks.append(path.read_text(encoding="utf-8").rstrip() + "\n\n")
-    (REPO_ROOT / "llms-full.txt").write_text("".join(chunks).rstrip() + "\n", encoding="utf-8")
+    body = "".join(chunks).rstrip() + "\n"
+    (REPO_ROOT / "llms-full.txt").write_text(body, encoding="utf-8")
+    (DOCS_ROOT / "llms-full.txt").write_text(body, encoding="utf-8")
 
 
 # # Filter out cells with warnings

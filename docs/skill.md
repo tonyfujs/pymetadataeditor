@@ -449,8 +449,9 @@ The package ships a full [MkDocs + Material](https://squidfunk.github.io/mkdocs-
 | [docs/using_automated_metadata_creation.md](using_automated_metadata_creation.md) | Long-form LLM-powered metadata generation guide |
 | [docs/examples.md](examples.md) | Worked examples (batch upload, migration, collection management) |
 | [docs/demo.md](demo.md) | End-to-end demonstration workflow |
-| [llms.txt](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/llms.txt) | llms.txt-spec summary of the documentation site (repo root) |
-| [llms-full.txt](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/llms-full.txt) | Single-file concatenation of every doc for LLM ingestion (repo root) |
+| [AI & LLMs overview](ai_and_llms.md) | Explains the agent skill, `llms.txt`, and `llms-full.txt` for AI consumers |
+| [llms.txt](llms.txt) | llms.txt-spec summary of the documentation site (served at site root) |
+| [llms-full.txt](llms-full.txt) | Single-file concatenation of every doc for LLM ingestion (served at site root) |
 
 ---
 

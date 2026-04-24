@@ -67,3 +67,4 @@ poetry add pymetadataeditor
 | [How-To Guides](how_to/move_projects_between_collections.md) | Practical recipes for common multi-step tasks |
 | [API Reference](reference/api.md) | Full method signatures and parameter docs |
 | [Reference](reference/output_modes.md) | Output modes, metadata types, error handling |
+| [AI & LLMs](ai_and_llms.md) | Agent skill, `llms.txt`, and `llms-full.txt` for AI assistants |

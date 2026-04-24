@@ -66,7 +66,8 @@ The package has a full MkDocs + Material site in `docs/` (built with `mkdocs bui
 | [docs/developer/modules/](docs/developer/modules/) | Deep-dive per-module reference (site-served copies of the skill module docs) |
 | [docs/examples.md](docs/examples.md) | Worked examples: batch upload, collection migration, instance-to-instance transfer |
 | [docs/using_automated_metadata_creation.md](docs/using_automated_metadata_creation.md) | LLM metadata generation guide |
-| [llms.txt](llms.txt) / [llms-full.txt](llms-full.txt) | llms.txt-spec summary + single-file concatenation for LLM ingestion |
+| [docs/ai_and_llms.md](docs/ai_and_llms.md) | AI & LLMs landing page — explains the skill, `llms.txt`, and `llms-full.txt` for users |
+| [llms.txt](llms.txt) / [llms-full.txt](llms-full.txt) | llms.txt-spec summary + single-file concatenation for LLM ingestion (also copied into `docs/` so the MkDocs site serves them at `/llms.txt` and `/llms-full.txt`) |
 
 ---
 

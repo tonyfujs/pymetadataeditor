@@ -244,7 +244,8 @@ def test_projects_integration(tmpdir, metadata_editor):
             metadata=creation_data[metadata_type], metadata_type_or_template_uid=creation_template
         )
         metadata_editor.delete_project_by_id(project_id)
-        pydantic_model = metadata_editor.get_metadata_class(creation_template)(**creation_data[metadata_type])
+        klass = metadata_editor.get_metadata_class(creation_template)
+        pydantic_model = klass(**creation_data[metadata_type])
         project_id = metadata_editor.create_project_log(metadata=pydantic_model)
         metadata_editor.delete_project_by_id(project_id)
         filename = os.path.join(tmpdir, f"{metadata_type}.xlsx")
@@ -260,8 +261,11 @@ def test_projects_integration(tmpdir, metadata_editor):
             #     assert k in project_metadata, project_metadata
             #     assert project_metadata[k] == v, project_metadata
 
+            # Templates silently drop fields they don't define, so compare against
+            # the pydantic model's dump (what actually gets sent) instead of the raw dict.
             project_metadata = metadata_editor.get_project_metadata_by_id(project_id, output_mode="dict")
-            for k, v in creation_data[metadata_type].items():
+            expected_created = pydantic_model.model_dump(mode="json", exclude_none=True, exclude_unset=True)
+            for k, v in expected_created.items():
                 assert k in project_metadata, project_metadata
                 assert project_metadata[k] == v, project_metadata
 
@@ -269,7 +273,10 @@ def test_projects_integration(tmpdir, metadata_editor):
             print(f"updating project {project_id} with {update_data[metadata_type]}")
             metadata_editor.update_project_log_by_id(project_id, new_metadata=update_data[metadata_type])
             project_metadata_updated = metadata_editor.get_project_metadata_by_id(project_id, output_mode="dict")
-            for k, v in update_data[metadata_type].items():
+            expected_updated = klass(**update_data[metadata_type]).model_dump(
+                mode="json", exclude_none=True, exclude_unset=True
+            )
+            for k, v in expected_updated.items():
                 assert project_metadata_updated[k] == v, project_metadata_updated
 
             # # check project is searchable and updated

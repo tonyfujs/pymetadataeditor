@@ -9,7 +9,7 @@ from nbconvert.preprocessors import ExecutePreprocessor
 from pydantic import ValidationError
 
 from pymetadataeditor import MetadataEditor
-from pymetadataeditor.interface import DeleteNotAppliedError, TemplateError
+from pymetadataeditor.interface import TemplateError
 
 
 @pytest.fixture
@@ -229,19 +229,27 @@ def test_projects_integration(tmpdir, metadata_editor):
         ],
     }
 
+    # Pin a specific template UID for types whose server default template requires
+    # fields beyond the minimal creation_data above. Falls back to the metadata type,
+    # which resolves to the current default template.
+    creation_template_overrides = {
+        "indicator": "timeseries-system-en",
+    }
+
     for metadata_type in metadata_types:
+        creation_template = creation_template_overrides.get(metadata_type, metadata_type)
         print(f"looking at {metadata_type} with creation data {creation_data[metadata_type]}")
         # create project
         project_id = metadata_editor.create_project_log(
-            metadata=creation_data[metadata_type], metadata_type_or_template_uid=metadata_type
+            metadata=creation_data[metadata_type], metadata_type_or_template_uid=creation_template
         )
         metadata_editor.delete_project_by_id(project_id)
-        pydantic_model = metadata_editor.get_metadata_class(metadata_type)(**creation_data[metadata_type])
+        pydantic_model = metadata_editor.get_metadata_class(creation_template)(**creation_data[metadata_type])
         project_id = metadata_editor.create_project_log(metadata=pydantic_model)
         metadata_editor.delete_project_by_id(project_id)
         filename = os.path.join(tmpdir, f"{metadata_type}.xlsx")
         metadata_editor.save_metadata_to_excel(pydantic_model, filename=filename)
-        project_id = metadata_editor.create_project_log(filename, metadata_type_or_template_uid=metadata_type)
+        project_id = metadata_editor.create_project_log(filename, metadata_type_or_template_uid=creation_template)
 
         try:
             assert len(metadata_editor.list_projects(limit="all")) == num_original_projects + 1

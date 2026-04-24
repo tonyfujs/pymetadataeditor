@@ -46,12 +46,12 @@ New section `# USER METHODS` in `interface.py`, placed before collection methods
 - **Pattern:** Mirrors `list_collections()`
 - **Note:** The `/users` endpoint is not documented in the OpenAPI spec (`metadata-editor-api.yaml`) but is used in the reference implementation (`docs/user_permissions.py`). Needs verification against the live API.
 
-#### `find_user_by_email(email: str, name: str = "") -> int | None`
+#### `find_user_by_email(email: str, name: str = "") -> int`
 
 - Convenience wrapper around `list_users()`
 - Fetches all users, normalizes email/name to lowercase, matches against `email` (primary) or `username` (fallback)
-- Returns the user's integer `id` if found, `None` otherwise
-- Raises `ValueError` if both `email` and `name` are empty
+- Returns the user's integer `id`
+- Raises `ValueError` when: both `email` and `name` are empty, the email is syntactically invalid (missing `@`, missing domain, whitespace, etc.), or no user matches the supplied email/name. The error message names the value that failed so callers can surface it to the end user.
 - **Design note:** Named `find_user_by_email` (vs `lookup_user_id` in the reference implementation) to better describe the primary lookup path. The `name` parameter is a fallback, not an independent search path.
 
 ---
@@ -97,16 +97,17 @@ Wrap endpoints that control who can manage the collection itself (edit propertie
 - **Requester path:** `"collections/user_acl_check/{collectionId}/{userId}"` — note: this endpoint takes two path params, so the requester's single `id` substitution won't work. Construct the path manually: `f"collections/user_acl_check/{collection_id}/{user_id}"`
 - **Returns:** Parsed response JSON indicating whether the user has ACL access
 
-#### `assign_collection_acl(collection_id: int, user_id: int, permissions: list[str] | str, recursive: bool = False) -> dict | None`
+#### `assign_collection_acl(collection_id: int, user_id: int, permissions: str, recursive: bool = False) -> dict | None`
 
 - **Requester path:** `"collections/user_acl"`
-- **Payload:** `{"collection_id": int, "user_id": int, "permissions": [...]}`
-- Same string-to-list normalization and recursive behavior as project access methods
+- **Payload:** `{"collection_id": int, "user_id": int, "permissions": "<level>"}`
+- `permissions` is a single string (e.g. `"view"`, `"edit"`, `"admin"`) — the API expects a scalar, not a list
+- Raises `TypeError` if `permissions` is not a string, `ValueError` if it is empty, and `NotImplementedError` if `recursive=True`
 
-#### `update_collection_acl(collection_id: int, user_id: int, permissions: list[str] | str, recursive: bool = False) -> dict | None`
+#### `update_collection_acl(collection_id: int, user_id: int, permissions: str, recursive: bool = False) -> dict | None`
 
 - **Requester path:** `"collections/user_acl_update"`
-- **Payload:** same shape as assign
+- **Payload:** same shape as assign (scalar `permissions` string)
 - The API has an explicit update endpoint for ACL (unlike project access)
 
 #### `remove_collection_acl(collection_id: int, user_id: int, recursive: bool = False) -> dict | None`
@@ -166,9 +167,9 @@ def _get_child_collection_ids(self, collection_id: int) -> list[int]:
 
 ## Error Handling
 
-- Input validation at method level: type coercion for `collection_id`/`user_id` to `int`, non-empty `permissions`, valid email format where applicable
+- Input validation at method level: type coercion for `collection_id`/`user_id` to `int`, `permissions` must be a non-empty string, valid email format where applicable
 - HTTP errors surfaced via `raise_for_status()` through `requester.py`, following existing patterns
-- `find_user_by_email` returns `None` when user not found (no exception)
+- `find_user_by_email` raises `ValueError` when the email is syntactically invalid or no user matches — callers can surface the message verbatim. It never returns `None`.
 
 ---
 
@@ -176,7 +177,7 @@ def _get_child_collection_ids(self, collection_id: int) -> list[int]:
 
 - Unit tests in `tests/test_interface.py` using `MockResponse`
 - One test per method minimum, plus edge cases:
-  - `find_user_by_email`: user found by email, found by name, not found, empty input raises `ValueError`
+  - `find_user_by_email`: user found by email, found by name, not found raises `ValueError`, malformed email raises `ValueError`, empty input raises `ValueError`
   - Permission methods: success, HTTP error handling
   - `recursive=True`: raises `NotImplementedError`
 - No integration tests in this iteration (require live API with permission to modify access)
@@ -209,4 +210,4 @@ def _get_child_collection_ids(self, collection_id: int) -> list[int]:
 
 ## Permissions Values
 
-The `UserCollectionAccess` schema in the OpenAPI spec defines permissions as an array of strings with only `"view"` in the enum. This appears incomplete — the actual valid values likely include `"view"`, `"edit"`, `"admin"` based on the `CollectionPermission` response schema's `permission_level` field. No client-side validation of permission values will be added; the API will reject invalid values.
+The `UserCollectionAccess` schema in the OpenAPI spec defines permissions as an array of strings with only `"view"` in the enum. This appears incomplete — the actual valid values likely include `"view"`, `"edit"`, `"admin"` based on the `CollectionPermission` response schema's `permission_level` field. Project-access methods continue to accept a list or a single string (normalized to a list before POSTing). ACL methods (`assign_collection_acl`, `update_collection_acl`) accept a single string only — the ACL API endpoints expect a scalar. No client-side validation of permission values will be added; the API will reject invalid values.

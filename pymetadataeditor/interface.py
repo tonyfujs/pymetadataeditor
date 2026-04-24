@@ -1452,9 +1452,7 @@ class MetadataEditor:
         try:
             response = self._apinterface.get_request(pth, id=template_uid)
         except (HTTPError, PermissionError) as e:
-            raise ValueError(
-                f"No admin metadata found for project_id={project_id}, template_uid={template_uid}"
-            ) from e
+            raise ValueError(f"No admin metadata found for project_id={project_id}, template_uid={template_uid}") from e
         return response
 
     def list_admin_metadata(
@@ -1724,7 +1722,7 @@ class MetadataEditor:
             df.index = new_index
         return df
 
-    def find_user_by_email(self, email: str, name: str = "") -> Optional[int]:
+    def find_user_by_email(self, email: str, name: str = "") -> int:
         """Look up a user's ID by email (primary) or username (fallback).
 
         Args:
@@ -1732,10 +1730,12 @@ class MetadataEditor:
             name (str): Optional username to match against if email is not sufficient.
 
         Returns:
-            Optional[int]: The user's integer ID if found, otherwise None.
+            int: The user's integer ID.
 
         Raises:
-            ValueError: If both email and name are empty.
+            ValueError: If both email and name are empty, if the email is not a
+                syntactically valid address, or if no user matches the given
+                email or name.
         """
         email_lower = email.strip().lower() if email else ""
         name_lower = name.strip().lower() if name else ""
@@ -1743,23 +1743,41 @@ class MetadataEditor:
         if not email_lower and not name_lower:
             raise ValueError("At least one of email or name must be provided")
 
+        # Basic email syntax check: non-empty local and domain parts, a dot in the domain,
+        # and no whitespace. Matches the shape of addresses the Metadata Editor API accepts.
+        if email_lower:
+            local_sep = email_lower.rfind("@")
+            if (
+                local_sep <= 0
+                or local_sep == len(email_lower) - 1
+                or "." not in email_lower[local_sep + 1 :]
+                or any(ch.isspace() for ch in email_lower)
+            ):
+                raise ValueError(f"{email!r} is not a valid email address")
+
         users_df = self.list_users()
-        if users_df.empty:
-            return None
 
         # Two-pass: email match takes priority over name match
         name_match_id = None
-        for _, user in users_df.iterrows():
-            user_email = str(user.get("email", "")).lower()
-            user_name = str(user.get("username", "")).lower()
+        if not users_df.empty:
+            for _, user in users_df.iterrows():
+                user_email = str(user.get("email", "")).lower()
+                user_name = str(user.get("username", "")).lower()
 
-            if email_lower and user_email == email_lower:
-                return int(user.name)  # .name is the pandas Series index, which is the user's id
+                if email_lower and user_email == email_lower:
+                    return int(user.name)  # .name is the pandas Series index, which is the user's id
 
-            if name_match_id is None and name_lower and user_name == name_lower:
-                name_match_id = int(user.name)
+                if name_match_id is None and name_lower and user_name == name_lower:
+                    name_match_id = int(user.name)
 
-        return name_match_id
+        if name_match_id is not None:
+            return name_match_id
+
+        if email_lower and name_lower:
+            raise ValueError(f"No user found with email {email!r} or username {name!r}")
+        if email_lower:
+            raise ValueError(f"No user found with email {email!r}")
+        raise ValueError(f"No user found with username {name!r}")
 
     ####################################################################################################################
     # COLLECTION METHODS
@@ -2162,7 +2180,7 @@ class MetadataEditor:
         self,
         collection_id: int,
         user_id: int,
-        permissions: Union[List[str], str],
+        permissions: str,
         recursive: bool = False,
     ) -> Optional[dict]:
         """Assign ACL access to a collection for a user.
@@ -2170,7 +2188,7 @@ class MetadataEditor:
         Args:
             collection_id (int): The collection to grant ACL access to.
             user_id (int): The target user's ID.
-            permissions (Union[List[str], str]): Permission level(s) to assign.
+            permissions (str): Permission level to assign (e.g. "view", "edit", "admin").
             recursive (bool): If True, apply to child collections as well. Not yet implemented.
 
         Returns:
@@ -2178,15 +2196,16 @@ class MetadataEditor:
 
         Raises:
             NotImplementedError: If recursive=True (not yet implemented).
+            TypeError: If permissions is not a string.
             ValueError: If permissions is empty.
         """
         if recursive:
             raise NotImplementedError("Recursive permissions require collection hierarchy support")
 
-        if isinstance(permissions, str):
-            permissions = [permissions]
+        if not isinstance(permissions, str):
+            raise TypeError("permissions must be a string")
 
-        if not permissions:
+        if not permissions.strip():
             raise ValueError("permissions must not be empty")
 
         collection_id = int(collection_id)
@@ -2202,7 +2221,7 @@ class MetadataEditor:
         self,
         collection_id: int,
         user_id: int,
-        permissions: Union[List[str], str],
+        permissions: str,
         recursive: bool = False,
     ) -> Optional[dict]:
         """Update ACL permissions for a user on a collection.
@@ -2210,7 +2229,7 @@ class MetadataEditor:
         Args:
             collection_id (int): The collection to update ACL access for.
             user_id (int): The target user's ID.
-            permissions (Union[List[str], str]): New permission level(s) to set.
+            permissions (str): New permission level to set (e.g. "view", "edit", "admin").
             recursive (bool): If True, apply to child collections as well. Not yet implemented.
 
         Returns:
@@ -2218,15 +2237,16 @@ class MetadataEditor:
 
         Raises:
             NotImplementedError: If recursive=True (not yet implemented).
+            TypeError: If permissions is not a string.
             ValueError: If permissions is empty.
         """
         if recursive:
             raise NotImplementedError("Recursive permissions require collection hierarchy support")
 
-        if isinstance(permissions, str):
-            permissions = [permissions]
+        if not isinstance(permissions, str):
+            raise TypeError("permissions must be a string")
 
-        if not permissions:
+        if not permissions.strip():
             raise ValueError("permissions must not be empty")
 
         collection_id = int(collection_id)

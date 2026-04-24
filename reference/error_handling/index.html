@@ -344,6 +344,26 @@
   
 
       
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ai_and_llms/" class="md-tabs__link">
+          
+  
+  
+  AI & LLMs
+
+        </a>
+      </li>
+    
+  
+
+      
     </ul>
   </div>
 </nav>
@@ -782,6 +802,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../user_guide/13_users_and_permissions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Users & Collection Permissions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../user_guide/10_deleting_data/" class="md-nav__link">
         
   
@@ -1188,6 +1236,90 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#exception-hierarchy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exception hierarchy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-responses-are-mapped" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How responses are mapped
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#handling-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Handling errors
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Handling errors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#catch-all-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Catch-all pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#branching-on-cause" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Branching on cause
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#retrying-server-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retrying server errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#package-level-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Package-level exceptions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Package-level exceptions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#deletenotappliederror" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1197,8 +1329,8 @@
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#templateerror" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1208,23 +1340,67 @@
   </a>
   
 </li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#http-errors" class="md-nav__link">
+  <a href="#ssl-network" class="md-nav__link">
     <span class="md-ellipsis">
       
-        HTTP errors
+        SSL &amp; network
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SSL &amp; network">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ssl-certificate-failures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SSL certificate failures
       
     </span>
   </a>
   
 </li>
+        
+          <li class="md-nav__item">
+  <a href="#connection-failures" class="md-nav__link">
+    <span class="md-ellipsis">
       
-        <li class="md-nav__item">
+        Connection failures
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#ssl-warnings" class="md-nav__link">
     <span class="md-ellipsis">
       
         SSL warnings
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backwards-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backwards compatibility
       
     </span>
   </a>
@@ -1877,6 +2053,121 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI & LLMs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    AI & LLMs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ai_and_llms/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../skill/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent skill
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -1904,6 +2195,90 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#exception-hierarchy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exception hierarchy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-responses-are-mapped" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How responses are mapped
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#handling-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Handling errors
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Handling errors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#catch-all-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Catch-all pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#branching-on-cause" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Branching on cause
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#retrying-server-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retrying server errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#package-level-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Package-level exceptions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Package-level exceptions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#deletenotappliederror" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1913,8 +2288,8 @@
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#templateerror" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1924,23 +2299,67 @@
   </a>
   
 </li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#http-errors" class="md-nav__link">
+  <a href="#ssl-network" class="md-nav__link">
     <span class="md-ellipsis">
       
-        HTTP errors
+        SSL &amp; network
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SSL &amp; network">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ssl-certificate-failures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SSL certificate failures
       
     </span>
   </a>
   
 </li>
+        
+          <li class="md-nav__item">
+  <a href="#connection-failures" class="md-nav__link">
+    <span class="md-ellipsis">
       
-        <li class="md-nav__item">
+        Connection failures
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#ssl-warnings" class="md-nav__link">
     <span class="md-ellipsis">
       
         SSL warnings
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backwards-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backwards compatibility
       
     </span>
   </a>
@@ -1968,76 +2387,213 @@
 
 
 <h1 id="error-handling">Error Handling</h1>
-<p>pyMetadataEditor raises two custom exceptions in addition to standard Python and HTTP errors.</p>
+<p>pyMetadataEditor translates every non-success response from the Metadata Editor API into a semantic, catchable Python exception. The goal is twofold:</p>
+<ul>
+<li>you see a readable, actionable message by default (no bare <code>HTTPError: 403</code> tracebacks), and</li>
+<li>you can still catch errors programmatically at whatever level of specificity you need.</li>
+</ul>
+<p>All API-layer exceptions inherit from <a href="https://requests.readthedocs.io/en/latest/api/#requests.exceptions.HTTPError"><code>requests.exceptions.HTTPError</code></a>, so existing <code>except HTTPError</code> handlers continue to fire.</p>
 <hr />
-<h2 id="deletenotappliederror"><code>DeleteNotAppliedError</code></h2>
-<p><strong>When it occurs:</strong> A delete request was accepted by the API but the deletion was not confirmed. This typically means that a system administrator has restricted deletion rights for your API key.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pymetadataeditor</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeleteNotAppliedError</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">me</span><span class="o">.</span><span class="n">delete_project_by_id</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">1042</span><span class="p">)</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="k">except</span> <span class="n">DeleteNotAppliedError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Deletion blocked: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="c1"># Contact your system administrator to adjust permissions</span>
+<h2 id="exception-hierarchy">Exception hierarchy</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>requests.exceptions.HTTPError
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>└── MetadataEditorAPIError              # base class — catch this for &quot;any API error&quot;
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    ├── AuthenticationError              # 401 / 403 or key-level denial
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    ├── ProjectAccessError               # 4xx with &quot;permission denied&quot; / &quot;unauthorized&quot; wording
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    ├── ResourceNotFoundError            # 404, or connection failure reaching the API
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    ├── BadRequestError                  # other 4xx (validation, malformed payload, …)
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    └── ServerError                      # 5xx — transient server-side failure
 </code></pre></div>
-<p>This exception is raised by:
-- <code>delete_project_by_id()</code>
-- <code>delete_collection_by_id()</code>
-- <code>delete_resource_by_id()</code>
-- <code>delete_template()</code></p>
-<hr />
-<h2 id="templateerror"><code>TemplateError</code></h2>
-<p><strong>When it occurs:</strong> A template UID was not found, the template is incompatible with the requested operation, or the metadata type doesn't match the template.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pymetadataeditor</span><span class="w"> </span><span class="kn">import</span> <span class="n">TemplateError</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">me</span><span class="o">.</span><span class="n">make_metadata_outline</span><span class="p">(</span><span class="s2">&quot;INVALID_TEMPLATE_UID&quot;</span><span class="p">,</span> <span class="n">output_mode</span><span class="o">=</span><span class="s2">&quot;pydantic&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">except</span> <span class="n">TemplateError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Template error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="c1"># Check available templates with me.list_templates()</span>
+<p>Import them from the package root:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pymetadataeditor</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">MetadataEditorAPIError</span><span class="p">,</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">AuthenticationError</span><span class="p">,</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">ProjectAccessError</span><span class="p">,</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">ResourceNotFoundError</span><span class="p">,</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">BadRequestError</span><span class="p">,</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">ServerError</span><span class="p">,</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="p">)</span>
 </code></pre></div>
-<p>Common causes:
-- Passing a template UID that doesn't exist in your instance (verify with <code>me.list_templates()</code>)
-- Trying to use a template from one metadata type with a project of a different type
-- Referencing a template that was deleted</p>
+<p>Every instance exposes structured context so you can branch on the underlying cause without string-matching the message:</p>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>status_code</code></td>
+<td><code>int \| None</code></td>
+<td>HTTP status code returned by the API</td>
+</tr>
+<tr>
+<td><code>api_message</code></td>
+<td><code>str \| None</code></td>
+<td>The <code>message</code> field from the API's JSON error body</td>
+</tr>
+<tr>
+<td><code>url</code></td>
+<td><code>str \| None</code></td>
+<td>The full URL that was requested</td>
+</tr>
+<tr>
+<td><code>response</code></td>
+<td><code>requests.Response \| None</code></td>
+<td>The raw response, for deep inspection</td>
+</tr>
+</tbody>
+</table>
 <hr />
-<h2 id="http-errors">HTTP errors</h2>
-<p>Network and API errors are raised as <code>requests.exceptions.HTTPError</code> with descriptive messages that include the HTTP status code and response body. Common cases:</p>
+<h2 id="how-responses-are-mapped">How responses are mapped</h2>
 <table>
 <thead>
 <tr>
 <th>Situation</th>
 <th>HTTP status</th>
-<th>Likely cause</th>
+<th>Exception raised</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Wrong API key</td>
-<td><code>403 Forbidden</code></td>
-<td>API key is invalid or revoked</td>
+<td>Missing / invalid / revoked API key</td>
+<td><code>401</code>, <code>403</code></td>
+<td><code>AuthenticationError</code></td>
 </tr>
 <tr>
-<td>Project not found</td>
-<td><code>404 Not Found</code></td>
-<td>The <code>id</code> doesn't exist or you don't have access</td>
+<td>API key OK but forbidden for this project or collection</td>
+<td><code>4xx</code> with "permission", "forbidden", "unauthorized", …</td>
+<td><code>ProjectAccessError</code></td>
 </tr>
 <tr>
-<td>Invalid request</td>
-<td><code>400 Bad Request</code></td>
-<td>Malformed metadata or missing required fields</td>
+<td>Project, template, collection, or endpoint does not exist</td>
+<td><code>404</code>, or 4xx with "not found" / "does not exist"</td>
+<td><code>ResourceNotFoundError</code></td>
 </tr>
 <tr>
-<td>Server error</td>
-<td><code>500 Internal Server Error</code></td>
-<td>Metadata Editor instance issue — contact administrator</td>
+<td>Network unreachable (no response at all)</td>
+<td>—</td>
+<td><code>ResourceNotFoundError</code></td>
+</tr>
+<tr>
+<td>Malformed payload, validation error, other client errors</td>
+<td>other <code>4xx</code></td>
+<td><code>BadRequestError</code></td>
+</tr>
+<tr>
+<td>Metadata Editor server error</td>
+<td><code>5xx</code></td>
+<td><code>ServerError</code></td>
+</tr>
+<tr>
+<td>Anything unrecognised</td>
+<td>any</td>
+<td><code>MetadataEditorAPIError</code> (the base)</td>
 </tr>
 </tbody>
 </table>
+<p>The mapping uses the HTTP status code first, then the API's <code>message</code> field to distinguish permission-denied from not-found on generic 4xx responses.</p>
 <hr />
-<h2 id="ssl-warnings">SSL warnings</h2>
-<p>If <code>verify_ssl=False</code>, an <code>InsecureRequestWarning</code> is shown once per unique warning message. This is expected behavior when connecting to instances with self-signed certificates.</p>
-<p>To suppress the warning entirely, you can filter it with Python's <code>warnings</code> module — but this is not recommended, as it may hide legitimate security issues.</p>
+<h2 id="handling-errors">Handling errors</h2>
+<h3 id="catch-all-pattern">Catch-all pattern</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pymetadataeditor</span><span class="w"> </span><span class="kn">import</span> <span class="n">MetadataEditorAPIError</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">me</span><span class="o">.</span><span class="n">create_project_log</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="k">except</span> <span class="n">MetadataEditorAPIError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Request to </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2"> failed with status </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="o">.</span><span class="n">api_message</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="branching-on-cause">Branching on cause</h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pymetadataeditor</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">AuthenticationError</span><span class="p">,</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">ProjectAccessError</span><span class="p">,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">ResourceNotFoundError</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">ServerError</span><span class="p">,</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="p">)</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="n">me</span><span class="o">.</span><span class="n">get_project_metadata_by_id</span><span class="p">(</span><span class="n">project_id</span><span class="p">,</span> <span class="s2">&quot;dict&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="k">except</span> <span class="n">AuthenticationError</span><span class="p">:</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="c1"># Prompt the user to re-enter or refresh their API key</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="o">...</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="k">except</span> <span class="n">ProjectAccessError</span><span class="p">:</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    <span class="c1"># Grant access via assign_collection_project_access / assign_collection_acl</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    <span class="o">...</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="k">except</span> <span class="n">ResourceNotFoundError</span><span class="p">:</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>    <span class="c1"># The id doesn&#39;t exist (or network can&#39;t reach the API)</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>    <span class="o">...</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="k">except</span> <span class="n">ServerError</span><span class="p">:</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>    <span class="c1"># Retry with backoff — the server is temporarily unhealthy</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>    <span class="o">...</span>
+</code></pre></div>
+<h3 id="retrying-server-errors">Retrying server errors</h3>
+<p>Only <code>ServerError</code> (5xx) is safe to retry blindly. Everything else indicates a bad request or missing resource and should bubble up.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pymetadataeditor</span><span class="w"> </span><span class="kn">import</span> <span class="n">ServerError</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>        <span class="n">me</span><span class="o">.</span><span class="n">list_projects</span><span class="p">()</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>        <span class="k">break</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="k">except</span> <span class="n">ServerError</span><span class="p">:</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>        <span class="k">if</span> <span class="n">attempt</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>            <span class="k">raise</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">attempt</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="package-level-exceptions">Package-level exceptions</h2>
+<p>In addition to the HTTP hierarchy above, two conditions raise their own exceptions:</p>
+<h3 id="deletenotappliederror"><code>DeleteNotAppliedError</code></h3>
+<p>The API accepted the delete request but the record still exists on a follow-up check — usually the signing API key has been restricted from deletions.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pymetadataeditor.interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeleteNotAppliedError</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">me</span><span class="o">.</span><span class="n">delete_project_by_id</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">1042</span><span class="p">)</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="k">except</span> <span class="n">DeleteNotAppliedError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Deletion blocked: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>Raised by:</p>
+<ul>
+<li><code>delete_project_by_id()</code></li>
+<li><code>delete_collection_by_id()</code></li>
+<li><code>delete_resource_by_id()</code></li>
+<li><code>delete_template()</code></li>
+<li><code>delete_admin_metadata()</code></li>
+</ul>
+<h3 id="templateerror"><code>TemplateError</code></h3>
+<p>A template UID was not found, or the template is incompatible with the requested metadata type.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pymetadataeditor.interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">TemplateError</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="n">me</span><span class="o">.</span><span class="n">make_metadata_outline</span><span class="p">(</span><span class="s2">&quot;NOT_A_REAL_UID&quot;</span><span class="p">,</span> <span class="n">output_mode</span><span class="o">=</span><span class="s2">&quot;pydantic&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="k">except</span> <span class="n">TemplateError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Template error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">me</span><span class="o">.</span><span class="n">list_templates</span><span class="p">())</span>
+</code></pre></div>
+<p>Common causes:</p>
+<ul>
+<li>A template UID that does not exist in the instance (verify with <code>me.list_templates()</code>)</li>
+<li>Using a template from one metadata type against a project of a different type</li>
+<li>Referencing a template that was later deleted</li>
+</ul>
+<hr />
+<h2 id="ssl-network">SSL &amp; network</h2>
+<h3 id="ssl-certificate-failures">SSL certificate failures</h3>
+<p>If the API's SSL certificate cannot be verified, <code>requests.exceptions.SSLError</code> is re-raised with a pointer toward the workaround:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">me</span> <span class="o">=</span> <span class="n">MetadataEditor</span><span class="p">(</span><span class="n">api_url</span><span class="o">=</span><span class="n">api_url</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span> <span class="n">verify_ssl</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="connection-failures">Connection failures</h3>
+<p>If the server is unreachable (DNS failure, timeout, refused connection), a <code>ResourceNotFoundError</code> is raised with a message explaining the URL could not be reached.</p>
+<h3 id="ssl-warnings">SSL warnings</h3>
+<p>With <code>verify_ssl=False</code>, <code>urllib3</code> emits <code>InsecureRequestWarning</code> once per unique URL. This is expected for instances with self-signed certificates; filter it with the standard <code>warnings</code> module if noisy, but only in trusted deployments.</p>
+<hr />
+<h2 id="backwards-compatibility">Backwards compatibility</h2>
+<ul>
+<li>All new exceptions subclass <code>requests.exceptions.HTTPError</code>, so existing <code>except HTTPError</code> blocks keep working.</li>
+<li>Code that inspected <code>response.status_code</code> on a raised <code>HTTPError</code> still works: the same attribute is available on every <code>MetadataEditorAPIError</code>.</li>
+<li>The previous <code>DeleteNotAppliedError</code> and <code>TemplateError</code> behaviours are unchanged.</li>
+</ul>
 
 
 

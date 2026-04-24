@@ -15,8 +15,8 @@ from pymetadataeditor.interface import DeleteNotAppliedError, TemplateError
 @pytest.fixture
 def metadata_editor():
     # instantiate
-    your_api_key = os.getenv("API_KEY")
-    api_url = os.getenv("API_URL")
+    your_api_key = os.getenv("ME_API_KEY_QA")
+    api_url = os.getenv("ME_API_URL_QA")
     me = MetadataEditor(api_url=api_url, api_key=your_api_key, verify_ssl=False)
     return me
 

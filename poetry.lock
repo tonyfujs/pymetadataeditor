@@ -751,6 +751,49 @@ files = [
 ]
 
 [[package]]
+name = "emval"
+version = "0.1.12"
+description = "emval is a blazingly fast email validator"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "emval-0.1.12-cp313-cp313t-macosx_10_12_x86_64.whl", hash = "sha256:211064ed33b13fdeb3f259ee4450b5dfdee69eaea3fbecac191f735dc5a472da"},
+    {file = "emval-0.1.12-cp313-cp313t-macosx_11_0_arm64.whl", hash = "sha256:b69d38b73912157389237272885c5a809e48832fd0ed6a6f4c240145af73804b"},
+    {file = "emval-0.1.12-cp313-cp313t-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:76a87dcbdbd5fededc1cfcfa4a508b7a1cfabd92abe5b2bf16cac76537982eba"},
+    {file = "emval-0.1.12-cp313-cp313t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9564ec568b170eeeb9473325973e289057838c68d3b94a0aaab432ee63cfcf8c"},
+    {file = "emval-0.1.12-cp313-cp313t-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:0dc93122f6853425f0dfed88894138418389bd9181f0309da4b0c43d5bfb88e1"},
+    {file = "emval-0.1.12-cp313-cp313t-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:24c146bf708f0c6e0c57c3de57e7a916e1ea14e61f5a29f67b83d65599b459aa"},
+    {file = "emval-0.1.12-cp313-cp313t-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:4d9c0d89eb550e474781dc59a0fbda8b6d8a8ec95d2cab1d16179f240634824f"},
+    {file = "emval-0.1.12-cp313-cp313t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c7fd5e6f8961eca337b1a2bf42e61a7841fc48f45924068b904fe6d5b40b8996"},
+    {file = "emval-0.1.12-cp313-cp313t-musllinux_1_2_aarch64.whl", hash = "sha256:383dc6b32459a2fe7cc294d1586d3f787d56ceb370a12f90813bc1ce8155cd81"},
+    {file = "emval-0.1.12-cp313-cp313t-musllinux_1_2_armv7l.whl", hash = "sha256:b9e05ef0e112b600294a65d09ed23ee6458e0c14a04d0bbaedebbe8efaf3aee1"},
+    {file = "emval-0.1.12-cp313-cp313t-musllinux_1_2_i686.whl", hash = "sha256:67eb4f95f731e7d40f96647bf5e5f38b2bdd7c7a4e8147ad04bfa3445e12645f"},
+    {file = "emval-0.1.12-cp313-cp313t-musllinux_1_2_x86_64.whl", hash = "sha256:e42e7e497ad938a9c0e0fc458d3afd391031170e106dfaf769e4b972bb94a24e"},
+    {file = "emval-0.1.12-cp313-cp313t-win32.whl", hash = "sha256:f08428428712e6d5f7412f8e6350d87af2f4a3927e26c61ef5563b3c8ed69a58"},
+    {file = "emval-0.1.12-cp313-cp313t-win_amd64.whl", hash = "sha256:7ff57c81d8270711600318b34a5fec929063f32b77c9bc489ef70371cac63d10"},
+    {file = "emval-0.1.12-cp38-abi3-macosx_10_12_x86_64.whl", hash = "sha256:be3f0446d36f567db7d9f23c189c1ccadce45f5b632aeeec98ef084803be73c7"},
+    {file = "emval-0.1.12-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:9774458900e91b714d14b21cd78df33f29b51557ae2e640c38761339f77e8336"},
+    {file = "emval-0.1.12-cp38-abi3-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:06b1613f52b9c3c9fc58df400b9a3fbe47c1dd517f98d7af4bf659a4b4327df0"},
+    {file = "emval-0.1.12-cp38-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e16e5bf4bf8b5ad2c337e3b29ef2761069838070223ba9c6fb379708af2842a0"},
+    {file = "emval-0.1.12-cp38-abi3-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:cc670e1dd8d57d02b1a50251bdd520b72a4a4fe827fb17b4dd4111b747dc7ff9"},
+    {file = "emval-0.1.12-cp38-abi3-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:92dfd39784c9389550d33c1fe971d465240d391cc908365e47fb7a1bb771ca92"},
+    {file = "emval-0.1.12-cp38-abi3-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:4228ce4b3d45b278713e646d704d9a4dfdd5cdaaad16b6ca5b9e47c6fab04e32"},
+    {file = "emval-0.1.12-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:36e90f1a3e56e30b3ec7739403e26eb15393d301be6756c0ceabefbab673b368"},
+    {file = "emval-0.1.12-cp38-abi3-musllinux_1_2_aarch64.whl", hash = "sha256:02c7192032d3f6017febd1747c03640a3f87b4b9bd401b57e5312c20cb036c02"},
+    {file = "emval-0.1.12-cp38-abi3-musllinux_1_2_armv7l.whl", hash = "sha256:d5fb11ab7829c287044fa8740d8c1dd9e169b338f119043f328f3cee286870c2"},
+    {file = "emval-0.1.12-cp38-abi3-musllinux_1_2_i686.whl", hash = "sha256:c06a6c6e27833642301c4e56c052f63a6ca6987b714250957112d26cabb396af"},
+    {file = "emval-0.1.12-cp38-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:d32cbe5654bba0ff99e3562adedb7907ab2f116c2f2d16dfda71ba7f1b8440f5"},
+    {file = "emval-0.1.12-cp38-abi3-win32.whl", hash = "sha256:682b72baa322c769d5217f58a40e0d953d33d739159539b7c44feb0d42d2742c"},
+    {file = "emval-0.1.12-cp38-abi3-win_amd64.whl", hash = "sha256:c759bd9a77dae4b5354b94ed39ff2321c5cf83aa2a16cd1518cd903e991c4a98"},
+    {file = "emval-0.1.12.tar.gz", hash = "sha256:b80e37ec8df34d3ec39ad15251c7064b3d39d0c9da05132a17840e7ad02f30b0"},
+]
+
+[package.extras]
+polars = ["polars (>=1.32.2)"]
+tests = ["pytest"]
+
+[[package]]
 name = "et-xmlfile"
 version = "2.0.0"
 description = "An implementation of lxml.xmlfile for the standard library"
@@ -3933,4 +3976,4 @@ requests = "*"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "ca8e959c6f6b4252884a473df0f966e688ff6d16483976265fdf914a9f00de06"
+content-hash = "fc5fe18bbc7c05793f88ed23319018b65212eac693ecd0488938a81b956b3813"

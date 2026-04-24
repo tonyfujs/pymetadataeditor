@@ -111,12 +111,27 @@ The `MetadataEditor` class is the single entry point for all operations. It dele
 - **Change template** — reassign a different template to an existing project
 - **Delete template** — remove a custom template
 
+### User Management
+- **List users** — retrieve a DataFrame of all registered users (id, email, username)
+- **Find user by email** — look up a user's integer ID by email address or username
+
 ### Collections
 - **List / get collections** — browse available project collections
 - **Create / update collections** — manage collection metadata
 - **Copy / move collections** — bulk-move or copy projects between collections
 - **Add / remove projects** — manage collection membership
 - **Set template for collection** — apply a template to all projects in a collection
+
+### Collection Permissions
+- **List project access** — view which users have project access in a collection
+- **Assign project access** — grant a user project-level access to a collection
+- **Remove project access** — revoke a user's project-level access from a collection
+- **List ACL** — view which users have ACL (administrative) access to a collection
+- **Check ACL** — verify whether a specific user has ACL access to a collection
+- **Assign ACL** — grant a user ACL access to a collection
+- **Update ACL** — modify an existing user's ACL permissions on a collection
+- **Remove ACL** — revoke a user's ACL access from a collection
+- **Get collection permissions** — retrieve the authenticated user's permission summary across all collections
 
 ### Resources (File Attachments)
 - **Get resources** — list files attached to a project

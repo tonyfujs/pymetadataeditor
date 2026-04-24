@@ -56,6 +56,7 @@ nav:
       - Managing Collections: user_guide/08_managing_collections.md
       - Managing Resources: user_guide/09_managing_resources.md
       - Managing Admin Metadata: user_guide/12_managing_admin_metadata.md
+      - Users & Collection Permissions: user_guide/13_users_and_permissions.md
       - Deleting Data: user_guide/10_deleting_data.md
       - Advanced Usage: user_guide/11_advanced.md
   - How-To Guides:
@@ -86,3 +87,6 @@ nav:
           - templates.py: developer/modules/templates.md
           - llm_helpers.py: developer/modules/llm_helpers.md
           - utils.py: developer/modules/utils.md
+  - AI & LLMs:
+      - Overview: ai_and_llms.md
+      - Agent skill: skill.md

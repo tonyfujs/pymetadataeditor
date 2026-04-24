@@ -1,7 +1,9 @@
 """A module to handle HTTP requests with specific error handling for SSL and JSON decoding errors.
 
 This module defines a class `RequestsWithSpecificErrors` that provides methods for making GET and POST requests
-to a specified API URL. It includes error handling for SSL errors, HTTP errors, and JSON decoding errors.
+to a specified API URL. It includes error handling for SSL errors, HTTP errors, and JSON decoding errors, and
+translates API responses into the package's custom exception hierarchy (see `MetadataEditorAPIError` and its
+subclasses) so that end users see helpful, actionable error messages instead of raw HTTP tracebacks.
 """
 
 from io import BufferedReader
@@ -12,6 +14,162 @@ from typing import Any, Dict, List, Optional, Union
 import requests
 from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, SecretStr, model_validator
 from requests.exceptions import HTTPError, SSLError
+
+__all__ = [
+    "RequestsWithSpecificErrors",
+    "MetadataEditorAPIError",
+    "AuthenticationError",
+    "ProjectAccessError",
+    "ResourceNotFoundError",
+    "BadRequestError",
+    "ServerError",
+]
+
+
+class MetadataEditorAPIError(HTTPError):
+    """Base class for all errors raised when the Metadata Editor API returns a non-success response.
+
+    Inherits from `requests.exceptions.HTTPError`, so code that already catches `HTTPError` continues
+    to work. Carries the API-provided message and the raw response for programmatic inspection.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        status_code: Optional[int] = None,
+        api_message: Optional[str] = None,
+        url: Optional[str] = None,
+        response: Optional[requests.Response] = None,
+    ):
+        """Initialize the error with a user-facing message and structured context."""
+        super().__init__(message, response=response)
+        self.status_code = status_code
+        self.api_message = api_message
+        self.url = url
+
+
+class AuthenticationError(MetadataEditorAPIError):
+    """Raised when the API rejects the supplied credentials (HTTP 401 or 403)."""
+
+
+class ProjectAccessError(MetadataEditorAPIError):
+    """Raised when the API accepts the credentials but denies access to a specific project or resource."""
+
+
+class ResourceNotFoundError(MetadataEditorAPIError):
+    """Raised when the requested project, template, collection, or endpoint does not exist (HTTP 404)."""
+
+
+class BadRequestError(MetadataEditorAPIError):
+    """Raised for other 4xx client errors that do not fall into a more specific category."""
+
+
+class ServerError(MetadataEditorAPIError):
+    """Raised when the Metadata Editor server returns a 5xx error."""
+
+
+_ACCESS_DENIED_PATTERNS = (
+    "don't have permission",
+    "do not have permission",
+    "permission to access",
+    "access is denied",
+    "access denied",
+    "not authorized",
+    "unauthorized",
+    "forbidden",
+)
+
+_NOT_FOUND_PATTERNS = (
+    "not found",
+    "does not exist",
+    "no such",
+)
+
+
+def _extract_api_message(response: requests.Response) -> Optional[str]:
+    """Return the `message` field from a JSON error body, or None if not present/parseable."""
+    try:
+        body = response.json()
+    except (ValueError, JSONDecodeError, requests.exceptions.JSONDecodeError):
+        return None
+    if isinstance(body, dict):
+        msg = body.get("message")
+        if isinstance(msg, str) and msg.strip():
+            return msg.strip()
+    return None
+
+
+def _translate_http_error(
+    response: Optional[requests.Response],
+    url: str,
+    api_url: str,
+) -> MetadataEditorAPIError:
+    """Map a failed `requests.Response` to the most specific `MetadataEditorAPIError` subclass.
+
+    Falls back to a generic `MetadataEditorAPIError` with the raw API message if classification fails,
+    so the caller always sees a readable message even when we cannot classify it precisely.
+    """
+    if response is None:
+        return ResourceNotFoundError(
+            f"Could not reach the Metadata Editor API at {api_url}. "
+            "Check that the URL is correct and the server is reachable.",
+            url=url,
+        )
+
+    status = response.status_code
+    api_message = _extract_api_message(response)
+    message_lower = (api_message or "").lower()
+
+    def _kwargs():
+        return {
+            "status_code": status,
+            "api_message": api_message,
+            "url": url,
+            "response": response,
+        }
+
+    if status == 404:
+        if api_message:
+            return ResourceNotFoundError(api_message, **_kwargs())
+        return ResourceNotFoundError(
+            f"Page not found at {url}. Check that the API URL is correct. "
+            "Generally the required URL looks like "
+            "'https://<name_of_your_metadata_database>.org/index.php/api', but "
+            f"the URL that was passed was '{api_url}'.",
+            **_kwargs(),
+        )
+
+    if status in (401, 403):
+        default = (
+            f"Access to {url} was denied by the Metadata Editor API. "
+            "Check that the API key is correct and has the required permissions."
+        )
+        return AuthenticationError(api_message or default, **_kwargs())
+
+    if 400 <= status < 500:
+        if any(pattern in message_lower for pattern in _ACCESS_DENIED_PATTERNS):
+            return ProjectAccessError(api_message, **_kwargs())
+        if any(pattern in message_lower for pattern in _NOT_FOUND_PATTERNS):
+            return ResourceNotFoundError(api_message, **_kwargs())
+        if api_message:
+            return BadRequestError(api_message, **_kwargs())
+        return BadRequestError(
+            f"The Metadata Editor API rejected the request to {url} (status {status}).",
+            **_kwargs(),
+        )
+
+    if 500 <= status < 600:
+        default = (
+            f"The Metadata Editor server returned an error (status {status}) for {url}. "
+            "This usually indicates a temporary problem on the server — try again shortly."
+        )
+        return ServerError(api_message or default, **_kwargs())
+
+    return MetadataEditorAPIError(
+        api_message or f"Unexpected response from the Metadata Editor API (status {status}) for {url}.",
+        **_kwargs(),
+    )
 
 
 class RequestsWithSpecificErrors(BaseModel):
@@ -68,9 +226,14 @@ class RequestsWithSpecificErrors(BaseModel):
 
         Raises:
             ValueError: If the URL does not start with 'https'.
-            PermissionError: If the response status code is 403, indicating that access is denied.
-            Exception: If the request fails due to other HTTP errors, with details of the status code and response text.
-            Exception: If any other unexpected error occurs during the request.
+            SSLError: If the server's SSL certificate cannot be verified.
+            AuthenticationError: If the API key is rejected (HTTP 401/403).
+            ProjectAccessError: If the API denies access to a specific project or resource.
+            ResourceNotFoundError: If the requested project, template, or endpoint does not exist.
+            BadRequestError: For other 4xx client errors.
+            ServerError: For 5xx server errors.
+            MetadataEditorAPIError: Base class for all of the above; catch this to handle any API error.
+            JSONDecodeError: If the response body is not valid JSON.
         """
         method = method.lower()
         assert method in ["get", "post"], f"unknown method {method}"
@@ -105,34 +268,14 @@ class RequestsWithSpecificErrors(BaseModel):
                 f"Usually this means the admin of {self.api_url} has not verified an SSL certificate.\n"
                 f"You can bypass the requirement by setting MetadataEditor.verify_ssl=False.\n{e}"
             ) from None
-        except HTTPError as e:
-            if response is None or response.status_code == 404:
-                error_msg = (
-                    f"Page not found. Try checking the URL.\nGenerally the required URL looks like "
-                    f"'https://<name_of_your_metadata_database>.org/index.php/api', but the URL that was passed "
-                    f"was '{self.api_url}'"
-                )
-                raise HTTPError(error_msg) from None
-            elif response.status_code == 403:
-                raise PermissionError(
-                    f"Access to that URL is denied for {url} Check that the API key is correct"
-                ) from e
-            # elif response.status_code == 400 and "message" in response.text:
-            #     if isinstance(response.text, dict):
-            #         error_message = response.text["message"]
-            #     else:
-            #         error_message = response.text
-            #     raise PermissionError(error_message) from e
-            else:
-                raise HTTPError(f"Status Code: {response.status_code}, Response: {response.text}") from e
+        except HTTPError:
+            raise _translate_http_error(response, url=url, api_url=str(self.api_url)) from None
         try:
             json_response = response.json()
         except (JSONDecodeError, requests.exceptions.JSONDecodeError) as e:
             raise JSONDecodeError(
                 f"Error decoding JSON response: {e.msg}\n{response.text}\nFull Response: {response}", e.doc, e.pos
             ) from e
-        # if self.verify_ssl == False:
-        # we must have shown this warning the first time, ok to silence thereafter
         return json_response
 
     def get_request(

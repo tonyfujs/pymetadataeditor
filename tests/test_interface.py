@@ -11,7 +11,15 @@ import requests
 from pydantic import BaseModel, ValidationError
 from requests.exceptions import SSLError
 
-from pymetadataeditor import MetadataEditor
+from pymetadataeditor import (
+    AuthenticationError,
+    BadRequestError,
+    MetadataEditor,
+    MetadataEditorAPIError,
+    ProjectAccessError,
+    ResourceNotFoundError,
+    ServerError,
+)
 from pymetadataeditor.interface import DeleteNotAppliedError, RequestsWithSpecificErrors, TemplateError
 
 
@@ -90,10 +98,11 @@ def test_MetadataEditor_instantiation(monkeypatch):
         return MockResponse(http_status_code=404)
 
     monkeypatch.setattr(requests, "request", mock_response)
-    with pytest.raises(requests.HTTPError) as e:
+    with pytest.raises(ResourceNotFoundError) as e:
         me = MetadataEditor(api_url="https://example.com", api_key=test_api_key)
         me.list_projects(limit=100)
-    assert str(e.value).split(".")[0] == "Page not found"
+    assert str(e.value).startswith("Page not found")
+    assert isinstance(e.value, requests.HTTPError)  # back-compat
 
     # bad SSL
     def mock_response(*args, **kwargs):
@@ -110,13 +119,11 @@ def test_MetadataEditor_instantiation(monkeypatch):
         return MockResponse(http_status_code=403)
 
     monkeypatch.setattr(requests, "request", mock_response)
-    with pytest.raises(PermissionError) as e:
+    with pytest.raises(AuthenticationError) as e:
         me = MetadataEditor(api_url="https://example.com", api_key=test_api_key)
         me.list_projects(limit=100)
-    # assert str(e.value).split(".")[0] == "Access to that URL is denied for https://example.com"
-    assert (
-        str(e.value) == "Access to that URL is denied for https://example.com/editor Check that the API key is correct"
-    )
+    assert "denied" in str(e.value).lower()
+    assert "api key" in str(e.value).lower()
 
     # good instantiation
     def mock_response(*args, **kwargs):
@@ -191,16 +198,15 @@ def test_list_projects(monkeypatch, metadata_editor):
 
 
 def test_get_project_by_id(monkeypatch, metadata_editor):
-    # id is bad
+    # id is bad — API returns a 400 with a JSON body explaining the access denial.
     def mock_response(*args, **kwargs):
         return MockResponse(
             http_status_code=400,
-            json_data={},
-            error_message={"message": "You don't have permission to access this project"},
+            json_data={"status": "failed", "message": "You don't have permissions to access this project"},
         )
 
     monkeypatch.setattr(requests, "request", mock_response)
-    with pytest.raises(Exception, match="You don't have permission to access this project"):
+    with pytest.raises(ProjectAccessError, match="You don't have permissions to access this project"):
         metadata_editor.get_project_by_id(1)
 
     # id is good
@@ -295,8 +301,7 @@ def test_update_project_log_by_id(tmpdir, monkeypatch, metadata_editor):
     def mock_response(*args, **kwargs):
         return MockResponse(
             http_status_code=400,
-            json_data={},
-            error_message={"message": "You don't have permission to access this project"},
+            json_data={"status": "failed", "message": "You don't have permissions to access this project"},
         )
 
     monkeypatch.setattr(requests, "request", mock_response)
@@ -306,7 +311,7 @@ def test_update_project_log_by_id(tmpdir, monkeypatch, metadata_editor):
 
     monkeypatch.setattr(metadata_editor, "get_metadata_class", mock_get_metadata_class)
 
-    with pytest.raises(Exception, match="You don't have permission to access this project"):
+    with pytest.raises(ProjectAccessError, match="You don't have permissions to access this project"):
         metadata_editor.update_project_log_by_id(
             id=1, new_metadata={"series_description": series_description, "metadata_information": metadata_information}
         )
@@ -1233,6 +1238,121 @@ def test_delete_admin_metadata_not_applied(monkeypatch, metadata_editor):
         metadata_editor.delete_admin_metadata(project_id=123, template_uid="tpl_1")
 
 
+# ----------------------------------------------------------------------------
+# API error translation
+# ----------------------------------------------------------------------------
+
+
+def _patch_with_response(monkeypatch, **mock_kwargs):
+    def mock_response(*args, **kwargs):
+        return MockResponse(**mock_kwargs)
+
+    monkeypatch.setattr(requests, "request", mock_response)
+
+
+def test_translate_400_access_denied(monkeypatch, metadata_editor):
+    """A 400 with an access-denied message should become a ProjectAccessError."""
+    _patch_with_response(
+        monkeypatch,
+        http_status_code=400,
+        json_data={"status": "failed", "message": "You don't have permissions to access this project"},
+    )
+    with pytest.raises(ProjectAccessError) as e:
+        metadata_editor.get_project_by_id(9104)
+    assert str(e.value) == "You don't have permissions to access this project"
+    assert e.value.status_code == 400
+    assert e.value.api_message == "You don't have permissions to access this project"
+    assert e.value.url.endswith("/editor/9104")
+    # Subclass contract: still catchable by the package base and by requests.HTTPError.
+    assert isinstance(e.value, MetadataEditorAPIError)
+    assert isinstance(e.value, requests.HTTPError)
+
+
+def test_translate_400_not_found_message(monkeypatch, metadata_editor):
+    """A 400 whose message says the resource doesn't exist should become ResourceNotFoundError."""
+    _patch_with_response(
+        monkeypatch,
+        http_status_code=400,
+        json_data={"status": "failed", "message": "Project does not exist"},
+    )
+    with pytest.raises(ResourceNotFoundError) as e:
+        metadata_editor.get_project_by_id(9999)
+    assert "does not exist" in str(e.value)
+
+
+def test_translate_400_generic(monkeypatch, metadata_editor):
+    """A 400 whose message does not match any pattern should become BadRequestError with the raw API message."""
+    _patch_with_response(
+        monkeypatch,
+        http_status_code=400,
+        json_data={"status": "failed", "message": "idno is required"},
+    )
+    with pytest.raises(BadRequestError) as e:
+        metadata_editor.get_project_by_id(1)
+    assert str(e.value) == "idno is required"
+    # Not misclassified as an access error.
+    assert not isinstance(e.value, ProjectAccessError)
+
+
+def test_translate_400_without_json_message(monkeypatch, metadata_editor):
+    """A 400 with no usable message should still produce a readable BadRequestError, not a raw HTTPError."""
+    _patch_with_response(monkeypatch, http_status_code=400, json_data={})
+    with pytest.raises(BadRequestError) as e:
+        metadata_editor.get_project_by_id(1)
+    assert "400" in str(e.value)
+    assert e.value.api_message is None
+
+
+def test_translate_401_authentication(monkeypatch, metadata_editor):
+    _patch_with_response(
+        monkeypatch,
+        http_status_code=401,
+        json_data={"status": "failed", "message": "API key is invalid"},
+    )
+    with pytest.raises(AuthenticationError) as e:
+        metadata_editor.list_projects(limit=10)
+    assert str(e.value) == "API key is invalid"
+    assert e.value.status_code == 401
+
+
+def test_translate_404_with_api_message(monkeypatch, metadata_editor):
+    """A 404 with a server-provided message should surface that message."""
+    _patch_with_response(
+        monkeypatch,
+        http_status_code=404,
+        json_data={"status": "failed", "message": "Project not found"},
+    )
+    with pytest.raises(ResourceNotFoundError) as e:
+        metadata_editor.get_project_by_id(1)
+    assert str(e.value) == "Project not found"
+
+
+def test_translate_500_server_error(monkeypatch, metadata_editor):
+    _patch_with_response(monkeypatch, http_status_code=500, json_data={})
+    with pytest.raises(ServerError) as e:
+        metadata_editor.list_projects(limit=10)
+    assert "500" in str(e.value)
+    assert "server" in str(e.value).lower()
+
+
+def test_translate_unclassified_status(monkeypatch, metadata_editor):
+    """Weird status codes should still produce a MetadataEditorAPIError rather than a raw HTTPError."""
+    _patch_with_response(monkeypatch, http_status_code=418, json_data={"message": "I'm a teapot"})
+    with pytest.raises(MetadataEditorAPIError) as e:
+        metadata_editor.list_projects(limit=10)
+    assert "teapot" in str(e.value)
+    assert e.value.status_code == 418
+
+
+def test_translated_errors_are_catchable_as_httperror(monkeypatch, metadata_editor):
+    """Callers who still catch requests.HTTPError (existing downstream code) keep working."""
+    _patch_with_response(
+        monkeypatch,
+        http_status_code=400,
+        json_data={"status": "failed", "message": "You don't have permissions to access this project"},
+    )
+    with pytest.raises(requests.HTTPError):
+        metadata_editor.get_project_by_id(1)
 def test_list_users(monkeypatch, metadata_editor):
     def mock_response(*args, **kwargs):
         return MockResponse(

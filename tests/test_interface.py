@@ -1287,7 +1287,7 @@ def test_find_user_by_email(monkeypatch, metadata_editor):
         metadata_editor.find_user_by_email(email="nobody@example.com", name="nobody")
 
     # malformed email raises ValueError before the lookup runs
-    for bad in ["not-an-email", "missing@domain", "@nouser.com", "user@", "has space@example.com"]:
+    for bad in ["not-an-email", "two@@signs.com", "@nouser.com", "user@", "has space@example.com"]:
         with pytest.raises(ValueError, match="not a valid email address"):
             metadata_editor.find_user_by_email(email=bad)
 

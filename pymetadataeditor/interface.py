@@ -9,7 +9,7 @@ from typing import Callable, Dict, Iterable, List, Optional, Tuple, Type, Union
 
 import pandas as pd
 import tiktoken
-from email_validator import EmailNotValidError, validate_email
+from emval import validate_email as _validate_email_syntax
 from markitdown import MarkItDown
 from metadataschemas.metadata_manager import MetadataManager
 from metadataschemas.utils.schema_base_model import SchemaBaseModel
@@ -1746,8 +1746,10 @@ class MetadataEditor:
 
         if email_lower:
             try:
-                validate_email(email_lower, check_deliverability=False)
-            except EmailNotValidError as exc:
+                # emval raises the builtin SyntaxError on bad input; deliverable_address
+                # disables the DNS lookup since we only need syntactic validity here.
+                _validate_email_syntax(email_lower, deliverable_address=False)
+            except SyntaxError as exc:
                 raise ValueError(f"{email!r} is not a valid email address: {exc}") from exc
 
         users_df = self.list_users()

@@ -51,7 +51,7 @@ New section `# USER METHODS` in `interface.py`, placed before collection methods
 - Convenience wrapper around `list_users()`
 - Fetches all users, normalizes email/name to lowercase, matches against `email` (primary) or `username` (fallback)
 - Returns the user's integer `id`
-- Raises `ValueError` when: both `email` and `name` are empty, the email is syntactically invalid, or no user matches the supplied email/name. Email syntax is checked via the `email-validator` library (the same engine behind Pydantic's `EmailStr`) rather than a handwritten rule — it correctly handles IDN domains, quoted local parts, and other RFC 5321/5322 edge cases. The error message names the value that failed so callers can surface it to the end user.
+- Raises `ValueError` when: both `email` and `name` are empty, the email is syntactically invalid, or no user matches the supplied email/name. Email syntax is checked via the Rust-backed `emval` library rather than a handwritten rule — it handles RFC 5321/5322 edge cases (IDN domains, quoted local parts, etc.) and is substantially faster than the pure-Python `email-validator`. `emval` raises Python's builtin `SyntaxError` on bad input; we wrap that in a `ValueError` whose message names the offending value so callers can surface it to the end user.
 - **Design note:** Named `find_user_by_email` (vs `lookup_user_id` in the reference implementation) to better describe the primary lookup path. The `name` parameter is a fallback, not an independent search path.
 
 ---

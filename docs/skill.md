@@ -6,7 +6,7 @@ This document gives an AI agent everything needed to understand and work with th
 
 ## Package Overview
 
-`pymetadataeditor` (v0.3.2) is a Python client library for managing metadata in a [Metadata Editor](https://github.com/mah0001/metadata-editor) database via its REST API.
+`pymetadataeditor` (v0.4.0) is a Python client library for managing metadata in a [Metadata Editor](https://github.com/mah0001/metadata-editor) database via its REST API.
 
 It supports:
 - Creating, reading, updating, and deleting metadata projects
@@ -14,6 +14,9 @@ It supports:
 - Converting metadata between Python dicts, Pydantic models, and Excel spreadsheets
 - Automatically generating metadata from source documents using an LLM (OpenAI GPT-4o or compatible)
 - Working with customizable metadata templates
+- Managing admin metadata records (full CRUD + JSON Patch)
+- Looking up users and administering collection permissions (project access + ACL)
+- Translating raw HTTP errors into an actionable exception hierarchy
 
 **Target users:** Data managers, researchers, and developers who need to programmatically manage structured metadata for datasets.
 
@@ -150,6 +153,42 @@ The `MetadataEditor` class is the single entry point for all operations. It dele
 
 ### Low-Level Access
 - **Generic API request** — direct GET/POST to the API for edge cases not covered by other methods
+
+---
+
+## Exception Hierarchy
+
+All API-layer errors derive from `MetadataEditorAPIError`, which itself inherits from `requests.exceptions.HTTPError` so existing code that catches `HTTPError` continues to work. Each exception exposes `status_code`, `api_message`, `url`, and the raw `response` for programmatic inspection.
+
+```
+HTTPError (requests)
+└── MetadataEditorAPIError
+    ├── AuthenticationError     # 401 / 403 — bad or missing API key
+    ├── ProjectAccessError      # 4xx with "permission denied" / "unauthorized" message
+    ├── ResourceNotFoundError   # 404, or network failure reaching the API
+    ├── BadRequestError         # other 4xx (malformed payload, validation, etc.)
+    └── ServerError             # 5xx — transient server problem
+```
+
+Two additional exceptions are raised for package-specific conditions (not HTTP-layer):
+
+- `DeleteNotAppliedError` — the API accepted the delete but the record still exists
+- `TemplateError` — unknown template UID, or template/metadata-type mismatch
+
+All six API-layer classes are exported from the package root:
+
+```python
+from pymetadataeditor import (
+    MetadataEditorAPIError,
+    AuthenticationError,
+    ProjectAccessError,
+    ResourceNotFoundError,
+    BadRequestError,
+    ServerError,
+)
+```
+
+See [Error Handling reference](reference/error_handling.md) for behavior per status code and example handlers.
 
 ---
 
@@ -337,21 +376,87 @@ me.delete_admin_metadata(project_id=123, template_uid="my_admin_template")
 
 ---
 
+### 8. Grant a colleague access to a collection
+
+```python
+# Find the user by email
+user_id = me.find_user_by_email("alice@example.com")
+
+# Give them project-level access (they can see and edit projects in the collection)
+me.assign_collection_project_access(
+    collection_id=5,
+    user_id=user_id,
+    permissions="view",
+)
+
+# And collection-level ACL access (they can administer the collection itself)
+me.assign_collection_acl(
+    collection_id=5,
+    user_id=user_id,
+    permissions="edit",
+)
+
+# Confirm what was granted
+me.list_collection_acl(collection_id=5)
+me.list_collection_project_access(collection_id=5)
+```
+
+---
+
+### 9. Handle API errors gracefully
+
+```python
+from pymetadataeditor import (
+    AuthenticationError,
+    ResourceNotFoundError,
+    ProjectAccessError,
+    MetadataEditorAPIError,
+)
+
+try:
+    me.get_project_metadata_by_id(9999, "dict")
+except ResourceNotFoundError as e:
+    print(f"No project: {e.api_message}")
+except AuthenticationError:
+    print("API key was rejected — check METADATA_API_KEY")
+except ProjectAccessError:
+    print("You don't have permission to view that project")
+except MetadataEditorAPIError as e:
+    # Catch-all for any other API failure (includes BadRequestError / ServerError)
+    print(f"API error {e.status_code}: {e.api_message}")
+```
+
+---
+
 ## Existing Documentation
+
+The package ships a full [MkDocs + Material](https://squidfunk.github.io/mkdocs-material/) site under `docs/`, built by `mkdocs build` and deployed via GitHub Actions.
 
 | Document | Description |
 |----------|-------------|
-| [README.md](../README.md) | Installation, basic usage examples |
-| [docs/API_Reference.md](API_Reference.md) | Auto-generated full API reference from docstrings |
-| [docs/examples.md](examples.md) | Practical worked examples (batch upload, migration, collection management) |
-| [docs/using_automated_metadata_creation.md](using_automated_metadata_creation.md) | Detailed guide to LLM-powered metadata generation |
+| [README.md](../README.md) | Installation, basic usage, hosted-docs link |
+| [docs/index.md](index.md) | Site landing page |
+| [docs/getting_started.md](getting_started.md) | End-to-end first workflow (connect → browse → retrieve → update) |
+| [docs/user_guide/](user_guide/) | One page per functional area (browsing, creating, retrieving, updating, formats, LLM, collections, resources, admin metadata, users & permissions, deleting, advanced) |
+| [docs/how_to/](how_to/) | Recipes: batch upload, collection moves, instance-to-instance migration |
+| [docs/reference/api.md](reference/api.md) | Auto-generated (mkdocstrings) `MetadataEditor` reference |
+| [docs/reference/output_modes.md](reference/output_modes.md) | Dict / Pydantic / Excel output format reference |
+| [docs/reference/metadata_types.md](reference/metadata_types.md) | Supported metadata types and API aliases |
+| [docs/reference/error_handling.md](reference/error_handling.md) | Full exception hierarchy and handling patterns |
+| [docs/reference/schemas/](reference/schemas/) | Per-type schema references (document, geospatial, image, indicator, indicators_db, microdata, resource, script, table, video) |
+| [docs/developer/architecture.md](developer/architecture.md) | Internal architecture |
+| [docs/developer/modules/](developer/modules/) | Deep-dive per-module reference |
+| [docs/using_automated_metadata_creation.md](using_automated_metadata_creation.md) | Long-form LLM-powered metadata generation guide |
+| [docs/examples.md](examples.md) | Worked examples (batch upload, migration, collection management) |
 | [docs/demo.md](demo.md) | End-to-end demonstration workflow |
+| [llms.txt](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/llms.txt) | llms.txt-spec summary of the documentation site (repo root) |
+| [llms-full.txt](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/llms-full.txt) | Single-file concatenation of every doc for LLM ingestion (repo root) |
 
 ---
 
 ## Notes for LLM Code Generation
 
-When an LLM (e.g., ChatGPT) is being asked to write `pymetadataeditor` code, providing `docs/API_Reference.md` as context alongside this skill file gives it full method signatures and docstrings. The examples in `docs/examples.md` also serve as good few-shot examples.
+When an LLM (e.g., ChatGPT) is being asked to write `pymetadataeditor` code, the fastest way to load complete context is to feed it `llms-full.txt` (everything in one file) or `llms.txt` (a map to the individual pages). For direct method signatures, `docs/reference/api.md` is built by mkdocstrings from the source docstrings and is always current.
 
 Key things to get right:
 - Always instantiate `MetadataEditor` first with `api_url` and `api_key`
@@ -360,3 +465,7 @@ Key things to get right:
 - `make_metadata_outline()` with `"pydantic"` mode returns a live Pydantic object that can be modified with dot notation before uploading
 - Template UIDs are strings (e.g., `"IHSN_INDICATOR_1-0_Template_v01_EN"`), not integers
 - `metadata_type_or_template_uid` accepts either a type name (e.g., `"indicator"`) or a template UID
+- Admin metadata is keyed by `(project_id, template_uid)` — a project can carry multiple admin records
+- `find_user_by_email()` resolves a user to the integer `user_id` needed by permission methods
+- Collection access has two tiers: project access (per-project visibility) and ACL (collection-level admin rights); they are separate endpoints with separate methods
+- Catch `MetadataEditorAPIError` to handle any API-layer failure, or a specific subclass for finer control

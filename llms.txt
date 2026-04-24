@@ -1,0 +1,70 @@
+# pyMetadataEditor
+
+> Python client library for the [Metadata Editor](https://github.com/mah0001/metadata-editor) REST API. It lets data curators create, retrieve, update, and manage structured metadata for research datasets across ten data types (microdata, indicators, indicators_db, geospatial, documents, scripts, images, videos, tables, resources), with LLM-powered automatic metadata generation, admin-metadata CRUD, user lookup, and collection permission management.
+
+The public API is a single class, ``MetadataEditor`` (from ``pymetadataeditor``), that wraps the REST API. Every metadata method accepts an ``output_mode`` of ``"dict"``, ``"pydantic"``, or ``"excel"``. Errors raised against the Metadata Editor API are translated into a semantic exception hierarchy rooted at ``MetadataEditorAPIError`` (itself a subclass of ``requests.exceptions.HTTPError``).
+
+Start with the getting-started guide and the agent skill, then dive into user-guide topics as needed. The API reference page is auto-generated from source docstrings by mkdocstrings and is always current.
+
+## Start here
+
+- [index.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/index.md): Site landing page — overview of capabilities and supported metadata types.
+- [getting_started.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/getting_started.md): End-to-end first workflow: connect, browse, retrieve, and update a project.
+- [skill.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/skill.md): Agent skill: architecture, capability map, common workflows, and key conventions.
+
+## User guide
+
+- [user_guide/01_browsing_projects.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/user_guide/01_browsing_projects.md): List, filter, and discover existing projects.
+- [user_guide/02_schemas_and_templates.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/user_guide/02_schemas_and_templates.md): Templates, schemas, and how they drive field validation.
+- [user_guide/03_creating_metadata.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/user_guide/03_creating_metadata.md): Build and upload new project metadata.
+- [user_guide/04_retrieving_metadata.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/user_guide/04_retrieving_metadata.md): Download a project in dict, Pydantic, or Excel form.
+- [user_guide/05_updating_metadata.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/user_guide/05_updating_metadata.md): Full-replace updates and single-op JSON Patch edits.
+- [user_guide/06_working_with_formats.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/user_guide/06_working_with_formats.md): Round-trip metadata between dict, Pydantic, and Excel.
+- [user_guide/07_ai_powered_generation.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/user_guide/07_ai_powered_generation.md): Draft or augment metadata from source files with an LLM.
+- [user_guide/08_managing_collections.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/user_guide/08_managing_collections.md): Create, list, copy, move, and populate collections.
+- [user_guide/09_managing_resources.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/user_guide/09_managing_resources.md): Attach and update file resources on a project.
+- [user_guide/10_deleting_data.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/user_guide/10_deleting_data.md): Safe deletion of projects, collections, templates, resources.
+- [user_guide/11_advanced.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/user_guide/11_advanced.md): Lower-level access and edge-case patterns.
+- [user_guide/12_managing_admin_metadata.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/user_guide/12_managing_admin_metadata.md): Admin metadata CRUD keyed by (project_id, template_uid).
+- [user_guide/13_users_and_permissions.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/user_guide/13_users_and_permissions.md): Look up users and manage project-access + ACL permissions on collections.
+
+## How-to recipes
+
+- [how_to/move_projects_between_collections.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/how_to/move_projects_between_collections.md): Bulk-move projects between collections.
+- [how_to/batch_upload_from_excel.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/how_to/batch_upload_from_excel.md): Ingest a spreadsheet of records as new projects.
+- [how_to/instance_to_instance_migration.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/how_to/instance_to_instance_migration.md): Copy projects between two Metadata Editor instances.
+
+## Reference
+
+- [reference/api.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/reference/api.md): Full method signatures and docstrings (mkdocstrings-generated).
+- [reference/output_modes.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/reference/output_modes.md): dict / pydantic / excel output modes and their aliases.
+- [reference/metadata_types.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/reference/metadata_types.md): Supported metadata types and the internal API aliases.
+- [reference/error_handling.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/reference/error_handling.md): Exception hierarchy, status-code mapping, handling patterns.
+
+## Developer reference
+
+- [developer/architecture.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/developer/architecture.md): Package internals, module responsibilities, and data flow.
+- [developer/modules/interface.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/developer/modules/interface.md): Every public MetadataEditor method, signature, and example.
+- [developer/modules/requester.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/developer/modules/requester.md): HTTP layer, auth, SSL, and exception translation.
+- [developer/modules/templates.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/developer/modules/templates.md): Template-to-Pydantic conversion and constraint handling.
+- [developer/modules/llm_helpers.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/developer/modules/llm_helpers.md): LLM call orchestration, file conversion, validation.
+- [developer/modules/utils.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/developer/modules/utils.md): JSON Patch validation, empty-value cleaning, rule stripping.
+
+## Schema reference
+
+- [reference/schemas/document.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/reference/schemas/document.md): `document` metadata type.
+- [reference/schemas/geospatial.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/reference/schemas/geospatial.md): `geospatial` metadata type.
+- [reference/schemas/image.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/reference/schemas/image.md): `image` metadata type.
+- [reference/schemas/indicator.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/reference/schemas/indicator.md): `indicator` (time series) metadata type.
+- [reference/schemas/indicators_db.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/reference/schemas/indicators_db.md): `indicators_db` (indicator database) metadata type.
+- [reference/schemas/microdata.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/reference/schemas/microdata.md): `microdata` (survey) metadata type.
+- [reference/schemas/resource.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/reference/schemas/resource.md): `resource` (file attachment) metadata type.
+- [reference/schemas/script.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/reference/schemas/script.md): `script` metadata type.
+- [reference/schemas/table.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/reference/schemas/table.md): `table` metadata type.
+- [reference/schemas/video.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/reference/schemas/video.md): `video` metadata type.
+
+## Optional
+
+- [examples.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/examples.md): Worked examples: batch upload, collection migration, instance-to-instance transfer.
+- [using_automated_metadata_creation.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/using_automated_metadata_creation.md): Long-form LLM-powered metadata generation guide.
+- [demo.md](https://github.com/tonyfujs/pymetadataeditor/blob/DEV/docs/demo.md): End-to-end notebook demonstration (converted from `demo/demo.ipynb`).

@@ -8,11 +8,33 @@ The core module. Provides the `MetadataEditor` class which is the primary interf
 
 This is the only class users interact with directly.
 
-**Exported via `__init__.py`:** `MetadataEditor`, `DeleteNotAppliedError`, `TemplateError`
+**Exported via `__init__.py`:**
+
+- `MetadataEditor`
+- `MetadataEditorAPIError`, `AuthenticationError`, `ProjectAccessError`, `ResourceNotFoundError`, `BadRequestError`, `ServerError` (HTTP-layer hierarchy defined in `requester.py` — see the [Error Handling reference](../../reference/error_handling.md))
+
+Defined here but not re-exported at the package root (import from `pymetadataeditor.interface`):
+
+- `DeleteNotAppliedError`
+- `TemplateError`
 
 ---
 
 ## Custom Exceptions
+
+### HTTP-layer hierarchy
+
+The HTTP-level exceptions are defined in `requester.py` and re-exported at the package root. All inherit from `requests.exceptions.HTTPError`, and carry `status_code`, `api_message`, `url`, and `response` attributes. See the [Error Handling reference](../../reference/error_handling.md) for the full mapping from status code to exception class.
+
+```
+HTTPError (requests)
+└── MetadataEditorAPIError
+    ├── AuthenticationError
+    ├── ProjectAccessError
+    ├── ResourceNotFoundError
+    ├── BadRequestError
+    └── ServerError
+```
 
 ### `DeleteNotAppliedError`
 
@@ -22,6 +44,8 @@ Raised when a delete request is sent to the API but the API did not confirm that
 class DeleteNotAppliedError(Exception):
     def __init__(self, message="Delete request not accepted by system.", response=None)
 ```
+
+Raised by `delete_project_by_id`, `delete_collection_by_id`, `delete_resource_by_id`, `delete_template`, and `delete_admin_metadata`.
 
 ### `TemplateError`
 
@@ -397,6 +421,40 @@ Deletes a custom template. Standard templates cannot be deleted.
 
 ---
 
+### Users
+
+#### `list_users() -> pd.DataFrame`
+
+Returns a DataFrame of all users registered on the instance, indexed by `id` with columns `email` and `username`.
+
+---
+
+#### `find_user_by_email(email, name) -> int`
+
+```python
+def find_user_by_email(
+    self,
+    email: str,
+    name: str = "",
+) -> int
+```
+
+Looks up a user's integer id by email address (primary match) or username (fallback). Matching is case-insensitive; when `email` is non-empty it is validated with the Rust-backed [`emval`](https://github.com/bnkc/emval) library.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `email` | `str` | required | The user's email address |
+| `name` | `str` | `""` | Username fallback if email is empty or does not resolve |
+
+Raises `ValueError` when both inputs are empty, the email is not syntactically valid, or no matching user exists.
+
+```python
+user_id = me.find_user_by_email("alice@example.com")
+user_id = me.find_user_by_email("", name="alice")
+```
+
+---
+
 ### Collections
 
 #### `list_collections() -> pd.DataFrame`
@@ -524,6 +582,152 @@ def set_template_for_collection(self, collection_id: int, template_uid: str)
 ```
 
 Assigns a template to all projects in a collection.
+
+---
+
+### Collection Permissions
+
+Two independent tiers of access. Project access controls which projects within a collection a user can see or edit; ACL (Access Control List) controls administrative access to the collection itself. A single user can hold either tier independently of the other.
+
+#### Project Access
+
+##### `list_collection_project_access(collection_id) -> pd.DataFrame`
+
+```python
+def list_collection_project_access(self, collection_id: int) -> pd.DataFrame
+```
+
+Returns a DataFrame of users with project access in the collection. Columns include `user_id`, `email`, and `permissions`.
+
+---
+
+##### `assign_collection_project_access(collection_id, user_id, permissions, recursive)`
+
+```python
+def assign_collection_project_access(
+    self,
+    collection_id: int,
+    user_id: int,
+    permissions: Union[List[str], str],
+    recursive: bool = False,
+) -> Optional[dict]
+```
+
+Grants project-level permissions to a user. `permissions` can be a string or a list of strings. Raises `ValueError` if `permissions` is empty, and `NotImplementedError` if `recursive=True` (reserved for a future release).
+
+```python
+me.assign_collection_project_access(collection_id=5, user_id=42, permissions="view")
+```
+
+---
+
+##### `remove_collection_project_access(collection_id, user_id, recursive)`
+
+```python
+def remove_collection_project_access(
+    self,
+    collection_id: int,
+    user_id: int,
+    recursive: bool = False,
+) -> Optional[dict]
+```
+
+Revokes a user's project-level access. Raises `NotImplementedError` if `recursive=True`.
+
+---
+
+#### ACL (Access Control List)
+
+##### `list_collection_acl(collection_id) -> pd.DataFrame`
+
+```python
+def list_collection_acl(self, collection_id: int) -> pd.DataFrame
+```
+
+Returns a DataFrame of users with ACL access on the collection. Columns include `user_id`, `email`, and `permissions`.
+
+---
+
+##### `check_collection_acl(collection_id, user_id) -> dict`
+
+```python
+def check_collection_acl(self, collection_id: int, user_id: int) -> dict
+```
+
+Returns the API response for whether a single user has ACL access.
+
+---
+
+##### `assign_collection_acl(collection_id, user_id, permissions, recursive)`
+
+```python
+def assign_collection_acl(
+    self,
+    collection_id: int,
+    user_id: int,
+    permissions: str,
+    recursive: bool = False,
+) -> Optional[dict]
+```
+
+Grants ACL access. `permissions` must be a single string (e.g. `"view"`, `"edit"`, `"admin"`); passing a list raises `TypeError`, empty strings raise `ValueError`, and `recursive=True` raises `NotImplementedError`.
+
+```python
+me.assign_collection_acl(collection_id=5, user_id=42, permissions="edit")
+```
+
+---
+
+##### `update_collection_acl(collection_id, user_id, permissions, recursive)`
+
+```python
+def update_collection_acl(
+    self,
+    collection_id: int,
+    user_id: int,
+    permissions: str,
+    recursive: bool = False,
+) -> Optional[dict]
+```
+
+Updates an existing ACL assignment. Use this to change a permission level after `assign_collection_acl` — re-assigning the same user will usually conflict at the API layer.
+
+```python
+me.update_collection_acl(collection_id=5, user_id=42, permissions="admin")
+```
+
+---
+
+##### `remove_collection_acl(collection_id, user_id, recursive)`
+
+```python
+def remove_collection_acl(
+    self,
+    collection_id: int,
+    user_id: int,
+    recursive: bool = False,
+) -> Optional[dict]
+```
+
+Revokes ACL access. Raises `NotImplementedError` if `recursive=True`.
+
+---
+
+#### Permission Inspection
+
+##### `get_collection_permissions() -> dict`
+
+```python
+def get_collection_permissions(self) -> dict
+```
+
+Returns the authenticated user's permission summary across all collections. The returned dict has `user_id`, `is_admin`, `admin_type`, and a `collections` dict keyed by collection ID.
+
+```python
+perms = me.get_collection_permissions()
+print(perms["is_admin"])
+print(perms["collections"])
+```
 
 ---
 

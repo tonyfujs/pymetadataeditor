@@ -1899,10 +1899,32 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#user-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        User Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#collections" class="md-nav__link">
     <span class="md-ellipsis">
       
         Collections
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#collection-permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Collection Permissions
       
     </span>
   </a>
@@ -2209,6 +2231,11 @@
 <li><strong>Change template</strong> — reassign a different template to an existing project</li>
 <li><strong>Delete template</strong> — remove a custom template</li>
 </ul>
+<h3 id="user-management">User Management</h3>
+<ul>
+<li><strong>List users</strong> — retrieve a DataFrame of all registered users (id, email, username)</li>
+<li><strong>Find user by email</strong> — look up a user's integer ID by email address or username</li>
+</ul>
 <h3 id="collections">Collections</h3>
 <ul>
 <li><strong>List / get collections</strong> — browse available project collections</li>
@@ -2216,6 +2243,18 @@
 <li><strong>Copy / move collections</strong> — bulk-move or copy projects between collections</li>
 <li><strong>Add / remove projects</strong> — manage collection membership</li>
 <li><strong>Set template for collection</strong> — apply a template to all projects in a collection</li>
+</ul>
+<h3 id="collection-permissions">Collection Permissions</h3>
+<ul>
+<li><strong>List project access</strong> — view which users have project access in a collection</li>
+<li><strong>Assign project access</strong> — grant a user project-level access to a collection</li>
+<li><strong>Remove project access</strong> — revoke a user's project-level access from a collection</li>
+<li><strong>List ACL</strong> — view which users have ACL (administrative) access to a collection</li>
+<li><strong>Check ACL</strong> — verify whether a specific user has ACL access to a collection</li>
+<li><strong>Assign ACL</strong> — grant a user ACL access to a collection</li>
+<li><strong>Update ACL</strong> — modify an existing user's ACL permissions on a collection</li>
+<li><strong>Remove ACL</strong> — revoke a user's ACL access from a collection</li>
+<li><strong>Get collection permissions</strong> — retrieve the authenticated user's permission summary across all collections</li>
 </ul>
 <h3 id="resources-file-attachments">Resources (File Attachments)</h3>
 <ul>

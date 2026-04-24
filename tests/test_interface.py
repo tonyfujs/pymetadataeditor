@@ -24,8 +24,7 @@ class MockResponse:
         raise_json_decode_error: bool = False,
         raise_ssl: bool = False,
     ):
-        """Used to create mock responses from the API so that we don't actually call the API everytime we run tests
-        """
+        """Used to create mock responses from the API so that we don't actually call the API everytime we run tests"""
         self.status_code = http_status_code
         self.json_data = json_data if json_data is not None else {}
         self.text = error_message if error_message is not None else {}
@@ -1268,9 +1267,6 @@ def test_find_user_by_email(monkeypatch, metadata_editor):
     # find by name fallback
     assert metadata_editor.find_user_by_email(email="", name="bob") == 2
 
-    # not found
-    assert metadata_editor.find_user_by_email(email="nobody@example.com") is None
-
     # email takes priority over name when both provided
     assert metadata_editor.find_user_by_email(email="alice@example.com", name="bob") == 1
 
@@ -1278,9 +1274,37 @@ def test_find_user_by_email(monkeypatch, metadata_editor):
     # bob (id=2) appears before alice's email match, but email should still win
     assert metadata_editor.find_user_by_email(email="bob@example.com", name="alice") == 2
 
+    # no match: email present in registry but nobody found -> raises with that email
+    with pytest.raises(ValueError, match="nobody@example.com"):
+        metadata_editor.find_user_by_email(email="nobody@example.com")
+
+    # no match: name-only lookup that misses -> raises with that username
+    with pytest.raises(ValueError, match="nobody"):
+        metadata_editor.find_user_by_email(email="", name="nobody")
+
+    # no match: both email and name provided, neither matches -> message mentions both
+    with pytest.raises(ValueError, match="nobody@example.com"):
+        metadata_editor.find_user_by_email(email="nobody@example.com", name="nobody")
+
+    # malformed email raises ValueError before the lookup runs
+    for bad in ["not-an-email", "two@@signs.com", "@nouser.com", "user@", "has space@example.com"]:
+        with pytest.raises(ValueError, match="not a valid email address"):
+            metadata_editor.find_user_by_email(email=bad)
+
     # empty inputs raise ValueError
     with pytest.raises(ValueError):
         metadata_editor.find_user_by_email(email="", name="")
+
+
+def test_find_user_by_email_empty_registry(monkeypatch, metadata_editor):
+    def mock_response(*args, **kwargs):
+        return MockResponse(http_status_code=200, json_data={"status": "success", "users": []})
+
+    monkeypatch.setattr(requests, "request", mock_response)
+
+    # empty users list + valid email -> not-found error instead of None
+    with pytest.raises(ValueError, match="alice@example.com"):
+        metadata_editor.find_user_by_email(email="alice@example.com")
 
 
 def test_list_collection_project_access(monkeypatch, metadata_editor):
@@ -1322,7 +1346,9 @@ def test_assign_collection_project_access(monkeypatch, metadata_editor):
 
     # recursive raises NotImplementedError
     with pytest.raises(NotImplementedError):
-        metadata_editor.assign_collection_project_access(collection_id=10, user_id=1, permissions=["view"], recursive=True)
+        metadata_editor.assign_collection_project_access(
+            collection_id=10, user_id=1, permissions=["view"], recursive=True
+        )
 
     # empty permissions raises ValueError
     with pytest.raises(ValueError):
@@ -1379,47 +1405,60 @@ def test_check_collection_acl(monkeypatch, metadata_editor):
 
 
 def test_assign_collection_acl(monkeypatch, metadata_editor):
+    captured = {}
+
     def mock_response(*args, **kwargs):
+        captured["json"] = kwargs.get("json")
         return MockResponse(http_status_code=200, json_data={"status": "success"})
 
     monkeypatch.setattr(requests, "request", mock_response)
 
-    result = metadata_editor.assign_collection_acl(collection_id=10, user_id=1, permissions=["edit"])
-    assert result == {"status": "success"}
-
-    # string permission gets wrapped in list
     result = metadata_editor.assign_collection_acl(collection_id=10, user_id=1, permissions="edit")
     assert result == {"status": "success"}
+    # permissions is forwarded to the API as a string, not wrapped in a list
+    assert captured["json"]["permissions"] == "edit"
 
     # recursive raises NotImplementedError
     with pytest.raises(NotImplementedError):
-        metadata_editor.assign_collection_acl(collection_id=10, user_id=1, permissions=["edit"], recursive=True)
+        metadata_editor.assign_collection_acl(collection_id=10, user_id=1, permissions="edit", recursive=True)
 
-    # empty permissions raises ValueError
+    # empty string permissions raises ValueError
     with pytest.raises(ValueError):
-        metadata_editor.assign_collection_acl(collection_id=10, user_id=1, permissions=[])
+        metadata_editor.assign_collection_acl(collection_id=10, user_id=1, permissions="")
+
+    # whitespace-only permissions raises ValueError
+    with pytest.raises(ValueError):
+        metadata_editor.assign_collection_acl(collection_id=10, user_id=1, permissions="   ")
+
+    # list permissions raises TypeError (must be a string)
+    with pytest.raises(TypeError):
+        metadata_editor.assign_collection_acl(collection_id=10, user_id=1, permissions=["edit"])
 
 
 def test_update_collection_acl(monkeypatch, metadata_editor):
+    captured = {}
+
     def mock_response(*args, **kwargs):
+        captured["json"] = kwargs.get("json")
         return MockResponse(http_status_code=200, json_data={"status": "success"})
 
     monkeypatch.setattr(requests, "request", mock_response)
 
-    result = metadata_editor.update_collection_acl(collection_id=10, user_id=1, permissions=["admin"])
-    assert result == {"status": "success"}
-
-    # string permission gets wrapped in list
     result = metadata_editor.update_collection_acl(collection_id=10, user_id=1, permissions="admin")
     assert result == {"status": "success"}
+    assert captured["json"]["permissions"] == "admin"
 
     # recursive raises NotImplementedError
     with pytest.raises(NotImplementedError):
-        metadata_editor.update_collection_acl(collection_id=10, user_id=1, permissions=["admin"], recursive=True)
+        metadata_editor.update_collection_acl(collection_id=10, user_id=1, permissions="admin", recursive=True)
 
-    # empty permissions raises ValueError
+    # empty string permissions raises ValueError
     with pytest.raises(ValueError):
-        metadata_editor.update_collection_acl(collection_id=10, user_id=1, permissions=[])
+        metadata_editor.update_collection_acl(collection_id=10, user_id=1, permissions="")
+
+    # list permissions raises TypeError (must be a string)
+    with pytest.raises(TypeError):
+        metadata_editor.update_collection_acl(collection_id=10, user_id=1, permissions=["admin"])
 
 
 def test_remove_collection_acl(monkeypatch, metadata_editor):

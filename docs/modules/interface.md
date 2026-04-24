@@ -405,24 +405,27 @@ Returns a DataFrame of all users registered in the Metadata Editor instance, wit
 
 ---
 
-#### `find_user_by_email(email, name) -> Optional[int]`
+#### `find_user_by_email(email, name) -> int`
 
 ```python
 def find_user_by_email(
     self,
     email: str,
     name: str = "",
-) -> Optional[int]
+) -> int
 ```
 
-Looks up a user's integer ID by email address (primary match) or username (fallback). Returns `None` if no match is found.
+Looks up a user's integer ID by email address (primary match) or username (fallback).
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `email` | `str` | required | The user's email address to search for |
 | `name` | `str` | `""` | Optional username to match against if email is not sufficient |
 
-Raises `ValueError` if both `email` and `name` are empty.
+Raises `ValueError` when:
+- both `email` and `name` are empty,
+- the supplied `email` is not a syntactically valid address (validated via the Rust-backed [`emval`](https://github.com/bnkc/emval) library), or
+- no user matches the supplied email/username.
 
 ```python
 user_id = me.find_user_by_email("alice@example.com")
@@ -657,7 +660,7 @@ def assign_collection_acl(
     self,
     collection_id: int,
     user_id: int,
-    permissions: Union[List[str], str],
+    permissions: str,
     recursive: bool = False,
 ) -> Optional[dict]
 ```
@@ -668,10 +671,14 @@ Assigns ACL access to a collection for a user. Returns the API response as a dic
 |-----------|------|---------|-------------|
 | `collection_id` | `int` | required | The collection to grant ACL access to |
 | `user_id` | `int` | required | The target user's ID |
-| `permissions` | `Union[List[str], str]` | required | Permission level(s) to assign |
+| `permissions` | `str` | required | Permission level to assign (e.g. `"view"`, `"edit"`, `"admin"`) |
 | `recursive` | `bool` | `False` | If `True`, raises `NotImplementedError` (not yet implemented) |
 
-Raises `ValueError` if `permissions` is empty.
+Raises `TypeError` if `permissions` is not a string, and `ValueError` if it is empty.
+
+```python
+me.assign_collection_acl(collection_id=5, user_id=42, permissions="edit")
+```
 
 ---
 
@@ -682,12 +689,16 @@ def update_collection_acl(
     self,
     collection_id: int,
     user_id: int,
-    permissions: Union[List[str], str],
+    permissions: str,
     recursive: bool = False,
 ) -> Optional[dict]
 ```
 
-Updates existing ACL permissions for a user on a collection. Use this to change permission levels after initial assignment. Returns the API response as a dict. Raises `NotImplementedError` if `recursive=True`.
+Updates existing ACL permissions for a user on a collection. Use this to change the permission level after initial assignment. `permissions` is a single string (e.g. `"view"`, `"edit"`, `"admin"`). Raises `TypeError` if `permissions` is not a string, `ValueError` if it is empty, and `NotImplementedError` if `recursive=True`.
+
+```python
+me.update_collection_acl(collection_id=5, user_id=42, permissions="admin")
+```
 
 ---
 

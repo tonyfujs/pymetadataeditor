@@ -28,10 +28,10 @@ from pymetadataeditor.llm_helpers import (
     get_date_as_text,
     json_to_markdown,
 )
-from pymetadataeditor.requester import RequestsWithSpecificErrors
+from pymetadataeditor.requester import RequestsWithSpecificErrors, ResourceNotFoundError
 from pymetadataeditor.templates import pydantic_from_template
 
-from .utils import remove_empty_from_dict, validate_json_patches
+from .utils import format_keywords, paginate_all_pages, remove_empty_from_dict, validate_json_patches, validate_sort_by
 
 __all__ = ["MetadataEditor", "DeleteNotAppliedError", "TemplateError"]
 
@@ -195,35 +195,25 @@ class MetadataEditor:
             pd.DataFrame: Information about the projects
         """
         if isinstance(limit, str):
-            assert limit.lower() == "all", f"Expected limit to be 'All' or a positive integer but got '{limit}'"
-            new_offset = offset
-            new_limit = 500
-            dfs = []
-            while True:
-                df = self.list_projects(
-                    keywords=keywords, metadata_type=metadata_type, offset=new_offset, limit=new_limit, sort_by=sort_by
-                )
-                dfs.append(df)
-                if len(df) < new_limit:
-                    break
-                new_offset += new_limit
-            return pd.concat(dfs)
+            if limit.lower() != "all":
+                raise ValueError(f"Expected limit to be 'All' or a positive integer but got {limit!r}")
+            return paginate_all_pages(
+                lambda off, lim: self.list_projects(
+                    keywords=keywords, metadata_type=metadata_type, offset=off, limit=lim, sort_by=sort_by
+                ),
+                offset=offset,
+            )
 
         list_projects_get_path = "/editor"
         params = {"offset": offset, "limit": limit}
-        if keywords is not None:
-            if not isinstance(keywords, str) and isinstance(keywords, Iterable):
-                keywords = "%".join(keywords)
-            keywords = keywords.replace(" ", "%")
-            params["keywords"] = keywords
+        formatted_keywords = format_keywords(keywords)
+        if formatted_keywords is not None:
+            params["keywords"] = formatted_keywords
         if metadata_type is not None:
-            metadata_type = self._mm.standardize_metadata_name(metadata_type)
-            params["type"] = metadata_type
-        if sort_by is not None:
-            sort_by = sort_by.lower()
-            valid_sort_by = ["title_asc", "title_desc", "updated_asc", "updated_desc"]
-            assert sort_by in valid_sort_by, f"{sort_by} not valid, must be one of {valid_sort_by}"
-            params["sort_by"] = sort_by
+            params["type"] = self._mm.standardize_metadata_name(metadata_type)
+        sort_by_lower = validate_sort_by(sort_by)
+        if sort_by_lower is not None:
+            params["sort_by"] = sort_by_lower
         response = self._apinterface.get_request(pth=list_projects_get_path, params=params)
         try:
             projects = response["projects"]
@@ -1448,6 +1438,7 @@ class MetadataEditor:
 
         Raises:
             ValueError: If no admin metadata is found for the given project_id and template_uid.
+            MetadataEditorAPIError: If the API returns any other error (auth, bad request, server error).
 
         Example:
         ```python
@@ -1459,7 +1450,7 @@ class MetadataEditor:
         pth = f"admin-metadata/data/{project_id}/" + "{}"
         try:
             response = self._apinterface.get_request(pth, id=template_uid)
-        except (HTTPError, PermissionError) as e:
+        except ResourceNotFoundError as e:
             raise ValueError(f"No admin metadata found for project_id={project_id}, template_uid={template_uid}") from e
         return response
 
@@ -1498,26 +1489,20 @@ class MetadataEditor:
         ```
         """
         if isinstance(limit, str):
-            assert limit.lower() == "all", f"Expected limit to be 'All' or a positive integer but got '{limit}'"
-            new_offset = offset
-            new_limit = 500
-            dfs = []
-            while True:
-                df = self.list_admin_metadata(
+            if limit.lower() != "all":
+                raise ValueError(f"Expected limit to be 'All' or a positive integer but got {limit!r}")
+            return paginate_all_pages(
+                lambda off, lim: self.list_admin_metadata(
                     project_id=project_id,
                     template_uid=template_uid,
                     date_from=date_from,
                     date_to=date_to,
-                    offset=new_offset,
-                    limit=new_limit,
-                )
-                dfs.append(df)
-                if len(df) < new_limit:
-                    break
-                new_offset += new_limit
-            if dfs:
-                return pd.concat(dfs, ignore_index=True)
-            return pd.DataFrame()
+                    offset=off,
+                    limit=lim,
+                ),
+                offset=offset,
+                ignore_index=True,
+            )
 
         params: Dict = {"offset": offset, "limit": limit}
         if project_id is not None:
@@ -1531,7 +1516,15 @@ class MetadataEditor:
         if date_to is not None:
             params["date_to"] = date_to
 
-        response = self._apinterface.get_request(pth="admin-metadata/data_query", params=params)
+        try:
+            response = self._apinterface.get_request(pth="admin-metadata/data_query", params=params)
+        except ResourceNotFoundError as e:
+            # The metadata-editor server returns 400 + "One or more templates not found" when the
+            # caller has zero accessible admin-metadata templates (rather than 200 + empty list).
+            # Treat that as "no records" so list_admin_metadata mirrors list_admin_metadata_templates.
+            if "templates not found" in (e.api_message or "").lower():
+                return pd.DataFrame()
+            raise
         data = response.get("data", [])
         if not data:
             return pd.DataFrame()
@@ -1650,7 +1643,7 @@ class MetadataEditor:
 
         try:
             self.get_admin_metadata(project_id=project_id, template_uid=template_uid)
-        except (ValueError, HTTPError, PermissionError, JSONDecodeError):
+        except ValueError:
             pass  # deleted successfully — record no longer found
         else:
             raise DeleteNotAppliedError()
@@ -1912,31 +1905,22 @@ class MetadataEditor:
             pd.DataFrame: Information on the projects in the collection, such as id, idno, title and type.
         """
         if isinstance(limit, str):
-            assert limit.lower() == "all", f"Expected limit to be 'all' or a positive integer but got '{limit}'"
-            new_offset = offset
-            new_limit = 500
-            dfs = []
-            while True:
-                df = self.list_projects_in_collection(
-                    collection=collection, keywords=keywords, offset=new_offset, limit=new_limit, sort_by=sort_by
-                )
-                dfs.append(df)
-                if len(df) < new_limit:
-                    break
-                new_offset += new_limit
-            return pd.concat(dfs)
+            if limit.lower() != "all":
+                raise ValueError(f"Expected limit to be 'All' or a positive integer but got {limit!r}")
+            return paginate_all_pages(
+                lambda off, lim: self.list_projects_in_collection(
+                    collection=collection, keywords=keywords, offset=off, limit=lim, sort_by=sort_by
+                ),
+                offset=offset,
+            )
 
         params = {"limit": limit, "offset": offset}
-        if keywords is not None:
-            if not isinstance(keywords, str) and isinstance(keywords, Iterable):
-                keywords = "%".join(keywords)
-            keywords = keywords.replace(" ", "%")
-            params["keywords"] = keywords
-        if sort_by is not None:
-            sort_by = sort_by.lower()
-            valid_sort_by = ["title_asc", "title_desc", "updated_asc", "updated_desc"]
-            assert sort_by in valid_sort_by, f"{sort_by} not valid, must be one of {valid_sort_by}"
-            params["sort_by"] = sort_by
+        formatted_keywords = format_keywords(keywords)
+        if formatted_keywords is not None:
+            params["keywords"] = formatted_keywords
+        sort_by_lower = validate_sort_by(sort_by)
+        if sort_by_lower is not None:
+            params["sort_by"] = sort_by_lower
         ret = self._apinterface.get_request("editor?collection={}", id=collection, params=params)
         if len(ret["projects"]) == 0:
             return pd.DataFrame([], columns=["id", "type", "idno", "title"]).set_index("id")

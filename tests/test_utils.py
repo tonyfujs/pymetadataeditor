@@ -72,6 +72,18 @@ def test_paginate_all_pages_empty_first_page_returns_empty_dataframe():
     assert calls == [(0, 5)]
 
 
+def test_paginate_all_pages_empty_first_page_preserves_schema():
+    empty_with_schema = pd.DataFrame({"created": []}, index=pd.Index([], name="id"))
+    calls: List[Tuple[int, int]] = []
+    fetch_page = _scripted_fetch([empty_with_schema], calls)
+
+    result = paginate_all_pages(fetch_page, page_size=5)
+
+    assert list(result.columns) == ["created"]
+    assert result.index.name == "id"
+    assert len(result) == 0
+
+
 def test_paginate_all_pages_honours_starting_offset():
     pages = _make_fake_pages(2)
     calls: List[Tuple[int, int]] = []

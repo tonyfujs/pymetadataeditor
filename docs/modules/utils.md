@@ -4,13 +4,70 @@
 
 ## Overview
 
-Shared helper functions used across the package. This module provides utilities for validating JSON Patch operations (RFC 6902), cleaning empty values from nested data structures, and stripping Pydantic validation constraints from type annotations.
+Shared helper functions used across the package. This module provides utilities for validating JSON Patch operations (RFC 6902), cleaning empty values from nested data structures, stripping Pydantic validation constraints from type annotations, and pagination/parameter helpers shared by the listing endpoints.
 
 These functions are primarily consumed by `interface.py` and `templates.py` and are not part of the public API.
 
 ---
 
 ## Function Reference
+
+### `paginate_all_pages(fetch_page, offset=0, page_size=500, *, ignore_index=False) -> pd.DataFrame`
+
+Fetches successive pages from a callable until a short page is returned, then concatenates them into a single DataFrame.
+
+**Parameters:**
+- `fetch_page` (`Callable[[int, int], pd.DataFrame]`): Invoked as `fetch_page(offset, page_size)`. Must return the corresponding page as a `pd.DataFrame`.
+- `offset` (int): Starting offset for the first page. Defaults to 0.
+- `page_size` (int): Page size requested on each call. Defaults to 500.
+- `ignore_index` (bool, keyword-only): If `True`, the concatenated DataFrame is re-indexed (matches `pd.concat(..., ignore_index=True)`). Defaults to `False`.
+
+**Returns:** `pd.DataFrame` — The concatenated pages, or an empty `pd.DataFrame` when no rows were returned.
+
+**Used by:** `interface.py` → `list_projects()`, `list_admin_metadata()`, `list_projects_in_collection()` — invoked when the caller passes `limit='All'`.
+
+```python
+all_projects = paginate_all_pages(
+    lambda off, lim: me.list_projects(offset=off, limit=lim),
+    offset=0,
+)
+```
+
+---
+
+### `format_keywords(keywords) -> Optional[str]`
+
+Formats a keyword filter value for the Metadata Editor API. Iterables (other than strings) are joined with `%`. Whitespace inside the resulting string is also replaced with `%`. `None` passes through unchanged.
+
+**Parameters:**
+- `keywords` (`Optional[Union[str, Iterable[str]]]`): A keyword string, an iterable of keyword strings, or `None`.
+
+**Returns:** `Optional[str]` — The formatted keyword string, or `None`.
+
+**Used by:** `interface.py` → `list_projects()`, `list_projects_in_collection()`.
+
+```python
+format_keywords("hello world")          # "hello%world"
+format_keywords(["foo", "bar baz"])     # "foo%bar%baz"
+format_keywords(None)                   # None
+```
+
+---
+
+### `validate_sort_by(sort_by) -> Optional[str]`
+
+Lowercases and validates a `sort_by` value against the supported set (`title_asc`, `title_desc`, `updated_asc`, `updated_desc`).
+
+**Parameters:**
+- `sort_by` (`Optional[str]`): The sort value (case-insensitive) or `None`.
+
+**Returns:** `Optional[str]` — The lowercased sort value, or `None`.
+
+**Raises:** `ValueError` — If `sort_by` is provided but not one of the supported values.
+
+**Used by:** `interface.py` → `list_projects()`, `list_projects_in_collection()`.
+
+---
 
 ### `validate_json_patches(patches: list) -> list`
 

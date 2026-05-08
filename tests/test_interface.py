@@ -190,7 +190,7 @@ def test_list_projects(monkeypatch, metadata_editor):
     metadata_editor.list_projects(metadata_type="geospatial", limit=100)
 
     # bad then good sort_by
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         metadata_editor.list_projects(sort_by="bad_key", limit=100)
     metadata_editor.list_projects(sort_by="title_asc", limit=100)
 
@@ -1035,6 +1035,34 @@ def test_get_admin_metadata_not_found(monkeypatch, metadata_editor):
         metadata_editor.get_admin_metadata(project_id=123, template_uid="tpl_1")
 
 
+def test_get_admin_metadata_propagates_access_error(monkeypatch, metadata_editor):
+    """A 400 'Access denied' must surface as ProjectAccessError, not be masked as 'not found'."""
+
+    def mock_response(*args, **kwargs):
+        return MockResponse(
+            http_status_code=400,
+            json_data={"status": "failed", "message": "Access denied, you don't have permissions"},
+        )
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    with pytest.raises(ProjectAccessError, match="Access denied"):
+        metadata_editor.get_admin_metadata(project_id=123, template_uid="tpl_1")
+
+
+def test_get_admin_metadata_propagates_bad_request(monkeypatch, metadata_editor):
+    """A generic 400 must surface as BadRequestError with the API message, not be masked as 'not found'."""
+
+    def mock_response(*args, **kwargs):
+        return MockResponse(
+            http_status_code=400,
+            json_data={"status": "failed", "message": "Invalid template_uid"},
+        )
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    with pytest.raises(BadRequestError, match="Invalid template_uid"):
+        metadata_editor.get_admin_metadata(project_id=123, template_uid="tpl_1")
+
+
 def test_list_admin_metadata_no_filters(monkeypatch, metadata_editor):
     call_count = {"n": 0}
 
@@ -1105,6 +1133,37 @@ def test_list_admin_metadata_empty_result(monkeypatch, metadata_editor):
     result = metadata_editor.list_admin_metadata(limit=10)
     assert isinstance(result, pd.DataFrame)
     assert len(result) == 0
+
+
+def test_list_admin_metadata_no_accessible_templates(monkeypatch, metadata_editor):
+    """Server returns 400 'One or more templates not found' when the caller has no template ACLs;
+    that should be normalised to an empty DataFrame, not propagated as an error.
+    """
+
+    def mock_response(*args, **kwargs):
+        return MockResponse(
+            http_status_code=400,
+            json_data={"status": "error", "message": "One or more templates not found"},
+        )
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    result = metadata_editor.list_admin_metadata(limit=10)
+    assert isinstance(result, pd.DataFrame)
+    assert len(result) == 0
+
+
+def test_list_admin_metadata_other_400_propagates(monkeypatch, metadata_editor):
+    """Other 400s (e.g. invalid date format) must still raise — only the 'templates not found' quirk is swallowed."""
+
+    def mock_response(*args, **kwargs):
+        return MockResponse(
+            http_status_code=400,
+            json_data={"status": "error", "message": "Invalid date_from format. Use YYYY-MM-DD"},
+        )
+
+    monkeypatch.setattr(requests, "request", mock_response)
+    with pytest.raises(BadRequestError, match="Invalid date_from"):
+        metadata_editor.list_admin_metadata(limit=10, date_from="2024/01/01")
 
 
 def test_upsert_admin_metadata_success(monkeypatch, metadata_editor):

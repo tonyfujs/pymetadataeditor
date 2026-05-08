@@ -1,12 +1,88 @@
-from typing import Annotated, Any, Dict, List, Optional, Type, Union, get_args, get_origin
+from typing import Annotated, Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, Union, get_args, get_origin
 
+import pandas as pd
 from metadataschemas.utils.utils import is_list_annotation, is_optional_annotation, is_optional_list
 from pydantic import BaseModel, Field
 
+_VALID_SORT_BY: Tuple[str, ...] = ("title_asc", "title_desc", "updated_asc", "updated_desc")
+
+
+def paginate_all_pages(
+    fetch_page: Callable[[int, int], pd.DataFrame],
+    offset: int = 0,
+    page_size: int = 500,
+    *,
+    ignore_index: bool = False,
+) -> pd.DataFrame:
+    """Fetch successive pages from ``fetch_page`` until a short page is returned, then concatenate.
+
+    The supplied callable must accept ``(offset, page_size)`` and return the corresponding page as a
+    ``pd.DataFrame``. Iteration stops as soon as a page shorter than ``page_size`` comes back.
+
+    Args:
+        fetch_page: Callable invoked as ``fetch_page(offset, page_size)`` for each page.
+        offset: Starting offset for the first page. Defaults to 0.
+        page_size: Page size requested from ``fetch_page`` on each call. Defaults to 500.
+        ignore_index: If True, the concatenated DataFrame is re-indexed (matches
+            ``pd.concat(..., ignore_index=True)``). Defaults to False.
+
+    Returns:
+        pd.DataFrame: The concatenated pages. If every page is empty, the schema (columns/index)
+            of the first fetched page is preserved.
+    """
+    current_offset = offset
+    pages: List[pd.DataFrame] = []
+    while True:
+        page = fetch_page(current_offset, page_size)
+        pages.append(page)
+        if len(page) < page_size:
+            break
+        current_offset += page_size
+    return pd.concat(pages, ignore_index=ignore_index)
+
+
+def format_keywords(keywords: Optional[Union[str, Iterable[str]]]) -> Optional[str]:
+    """Format a keyword filter value for the Metadata Editor API.
+
+    Iterables (other than strings) are joined with ``%``. Whitespace inside the resulting string is
+    also replaced with ``%``. ``None`` passes through unchanged.
+
+    Args:
+        keywords: A keyword string, an iterable of keyword strings, or ``None``.
+
+    Returns:
+        The formatted keyword string, or ``None`` if ``keywords`` is ``None``.
+    """
+    if keywords is None:
+        return None
+    if not isinstance(keywords, str) and isinstance(keywords, Iterable):
+        keywords = "%".join(keywords)
+    return keywords.replace(" ", "%")
+
+
+def validate_sort_by(sort_by: Optional[str]) -> Optional[str]:
+    """Lowercase and validate a ``sort_by`` value against the supported set.
+
+    Args:
+        sort_by: One of ``title_asc``, ``title_desc``, ``updated_asc``, ``updated_desc`` (case-insensitive),
+            or ``None``.
+
+    Returns:
+        The lowercased sort value, or ``None`` if ``sort_by`` is ``None``.
+
+    Raises:
+        ValueError: If ``sort_by`` is provided but not one of the supported values.
+    """
+    if sort_by is None:
+        return None
+    normalized = sort_by.lower()
+    if normalized not in _VALID_SORT_BY:
+        raise ValueError(f"sort_by must be one of {list(_VALID_SORT_BY)}, got {sort_by!r}")
+    return normalized
+
 
 def validate_json_patches(patches):
-    """
-    Validates a list of JSON patches according to the JSON Patch specification.
+    """Validates a list of JSON patches according to the JSON Patch specification.
 
     Args:
         patches (list): A list of JSON patch dictionaries.
@@ -152,8 +228,7 @@ def remove_empty_from_list(v):
 
 
 def strip_constraints_from_annotated(annotation: Any) -> Any:
-    """
-    Strip constraints from Annotated types, Optional, List, and combinations,
+    """Strip constraints from Annotated types, Optional, List, and combinations,
     while preserving the base type.
     """
     # # Handle Annotated types, e.g., Annotated[str, constr(min_length=1)]
@@ -194,8 +269,7 @@ def strip_constraints_from_annotated(annotation: Any) -> Any:
 
 
 def strip_model_rules(original_model: Type[BaseModel]) -> Type[BaseModel]:
-    """
-    Create a copy of a Pydantic model class (and its nested models) with validation rules stripped,
+    """Create a copy of a Pydantic model class (and its nested models) with validation rules stripped,
     but retaining titles and descriptions. Handles Annotated types like StringConstraints.
     """
     stripped_fields = {}

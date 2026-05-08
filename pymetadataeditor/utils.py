@@ -27,7 +27,8 @@ def paginate_all_pages(
             ``pd.concat(..., ignore_index=True)``). Defaults to False.
 
     Returns:
-        pd.DataFrame: The concatenated pages, or an empty ``pd.DataFrame`` if no rows were returned.
+        pd.DataFrame: The concatenated pages. If every page is empty, the schema (columns/index)
+            of the first fetched page is preserved.
     """
     current_offset = offset
     pages: List[pd.DataFrame] = []
@@ -37,10 +38,7 @@ def paginate_all_pages(
         if len(page) < page_size:
             break
         current_offset += page_size
-    non_empty = [page for page in pages if len(page) > 0]
-    if not non_empty:
-        return pd.DataFrame()
-    return pd.concat(non_empty, ignore_index=ignore_index)
+    return pd.concat(pages, ignore_index=ignore_index)
 
 
 def format_keywords(keywords: Optional[Union[str, Iterable[str]]]) -> Optional[str]:
